@@ -1,39 +1,68 @@
-# FitFlow: Protocol
+# FitFlow Android Project: AI Personal Fitness Companion
 
-FitFlow is a high-performance fitness companion designed for modern athletes. It combines cutting-edge AI generation with a "Hyper Energy" aesthetic to deliver personalized 30-day workout protocols. Built with a unified design language across Web (React) and Mobile (Android Jetpack Compose).
+FitFlow for Android is a high-performance, native mobile application built with Jetpack Compose. It translates the FitFlow fitness protocol into a mobile-first experience, focusing on intensity, tracking, and AI-driven workout customization.
 
-![Tech](https://img.shields.io/badge/Tech-React_%7C_Kotlin-00E5FF?style=for-the-badge)
+## Project Overview
 
-##  Key Features
+The Android version of FitFlow is designed to be the primary portable interface for the system. It maintains functional and visual parity with the web version while utilizing native Android components for a smoother, high-frame-rate experience.
 
-###  Performance Tracking
-- **Hyper-Visual Dashboard**: Real-time tracking of Steps, Water Intake, and Workout Streaks.
-- **Dynamic Color Logic**: Orange for intensity/activity, Cyan for recovery/vitality.
-- **Resource Database**: A comprehensive library of exercise protocols with the ability to add user-defined assets.
+## Key Features
 
-###  Multi-Platform Architecture
-- **Web Interface**: Responsive React SPA with `motion` animations and futuristic styling.
-- **Android App**: Native Jetpack Compose implementation mirroring the web's design language and logic.
+### Physical Calibration and Onboarding
+- Native input modules for height and mass density.
+- Real-time BMI calculation and health categorization.
+- Objective-based goal selection (Weight Loss, Muscle Gain, Endurance, Maintenance).
 
-##  Tech Stack
+### Workout Protocol Setup
+- Equipment level selection (Bodyweight, Minimalist, Full Protocol).
+- Target muscle group focus selection.
+- Adjustable weekly frequency via custom-styled sliders.
 
-| Platform | Core Technologies |
-| :--- | :--- |
-| **Android** | Kotlin, Jetpack Compose, Material 3, Navigation Compose |
+### Monthly Timeline and Planning
+- 30-Day schedule presented in a weekly-segmented list format.
+- Direct visibility of scheduled exercises for each day.
+- Dynamic highlighting of the current active day.
 
+### Dynamic Health Dashboard
+- Performance tracking for steps and water intake.
+- Visual progress bars for fitness goals.
+- Streak cycle tracking for consistent activity.
 
-## Design Philosophy: "Hyper Energy"
-FitFlow utilizes a high-contrast dark theme optimized for focus and intensity.
-- **Accent Orange (#FF5F07)**: Represents thermal energy and action.
-- **Secondary Cyan (#00E5FF)**: Represents digital precision and flow.
-- **Background**: Cyber-grid patterns with radial depth gradients.
+## Technical Stack
 
-## Getting Started
+- Language: Kotlin
+- UI Framework: Jetpack Compose
+- Component Library: Material 3 (Material Design 3)
+- Navigation: Navigation Compose
+- Architecture: MVVM (Model-View-ViewModel) pattern
+- Minimum SDK: API 26 (Android 8.0 Oreo)
+- Target SDK: API 34 (Android 14)
 
+## Design System: Hyper Energy Theme
 
-### Android
-1. Open the `/android_project` folder in Android Studio.
-2. Build and run on an emulator or physical device.
-3. Requires Android 8.0 (API 26) or higher.
+The application uses a specific high-intensity design system defined in the UI package:
+- Primary Color (Hyper Orange): #FF5F07 - Used for actions and intensity indicators.
+- Secondary Color (Electric Cyan): #00E5FF - Used for vital metrics and recovery states.
+- Background (Surface 0): #0A0B10 - Deep high-contrast dark mode foundation.
+- Typography: Focuses on Bold, Black, and Italic weights for a high-performance aesthetic.
 
+## Project Structure
 
+- com.fitflow.MainActivity: Entry point and navigation host controller.
+- com.fitflow.ui.theme: Design system definitions including Colors, Typography, and Shapes.
+- com.fitflow.ui.screens: Composable screens (Dashboard, Onboarding, Setup, Profile, Planner, Library).
+- com.fitflow.ui.components: Reusable UI widgets like BottomNavbar and MetricCards.
+
+## Setup Instructions
+
+1. Open Android Studio (Brave Badger variant or newer recommended).
+2. Select Open and navigate to the android_project directory.
+3. Allow Gradle to synchronize dependencies.
+4. For AI features, ensured the Gemini API SDK is properly configured in the build.gradle file.
+5. Deploy to a physical device or emulator running at least Android 8.0.
+
+## Development Guidelines
+
+- Ensure all new screens are added to the navigation graph in MainActivity.kt.
+- Maintain the Hyper Energy color palette for all new custom components.
+- Use LazyColumn or LazyVerticalGrid for all list-based layouts to ensure performance.
