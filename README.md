@@ -1,6 +1,6 @@
-# FitFlow Android Project: AI Personal Fitness Companion
+# FitFlow Android Project
 
-FitFlow for Android is a high-performance, native mobile application built with Jetpack Compose. It translates the FitFlow fitness protocol into a mobile-first experience, focusing on intensity, tracking, and AI-driven workout customization.
+FitFlow for Android is a high-performance, native mobile application built with Jetpack Compose. It translates the FitFlow fitness protocol into a mobile-first experience, focusing on intensity, tracking.
 
 ## Project Overview
 
@@ -58,8 +58,7 @@ The application uses a specific high-intensity design system defined in the UI p
 1. Open Android Studio (Brave Badger variant or newer recommended).
 2. Select Open and navigate to the android_project directory.
 3. Allow Gradle to synchronize dependencies.
-4. For AI features, ensured the Gemini API SDK is properly configured in the build.gradle file.
-5. Deploy to a physical device or emulator running at least Android 8.0.
+4. Deploy to a physical device or emulator running at least Android 8.0.
 
 ## Development Guidelines
 
