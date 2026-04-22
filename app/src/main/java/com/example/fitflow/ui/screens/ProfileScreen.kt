@@ -28,9 +28,48 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
             .background(BackgroundDark)
             .padding(16.dp)
     ) 
-       
-            
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("IDENTITY", color = White40, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
+                Row {
+                    Text("SUBJECT ", color = TextDim, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                    Text("ZERO", color = AccentNeon, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                }
+            }
+            IconButton(
+                onClick = {},
+                modifier = Modifier.background(White05, RoundedCornerShape(16.dp)).border(1.dp, White05, RoundedCornerShape(16.dp))
+            ) {
+                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = White40)
+            }
+        }
+
+        // Stats Card
+        Card(
+            colors = CardDefaults.cardColors(containerColor = CardDark),
+            shape = RoundedCornerShape(32.dp),
+            modifier = Modifier.fillMaxWidth().border(1.dp, White05, RoundedCornerShape(32.dp))
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                StatsItem("WEIGHT", "65", "kg", false)
+                StatsItem("HEIGHT", "170", "cm", false)
+                StatsItem("BMI", "22.5", "", true)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+        Text("OPERATIONS", color = White40, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+        Spacer(modifier = Modifier.height(16.dp))
         
+
     }
 
 
