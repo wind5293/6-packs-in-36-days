@@ -14,18 +14,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.fitflow.ui.components.BottomNavbar
-import com.fitflow.ui.screens.DashboardScreen
-import com.fitflow.ui.screens.LibraryScreen
-import com.fitflow.ui.screens.PlannerScreen
-import com.fitflow.ui.screens.ProfileScreen
-import com.fitflow.ui.theme.FitFlowTheme
+import com.example.fitflow.ui.components.BottomNavbar
+import com.example.fitflow.ui.screens.DashboardScreen
+import com.example.fitflow.ui.screens.LibraryScreen
+import com.example.fitflow.ui.screens.PlannerScreen
+import com.example.fitflow.ui.screens.ProfileScreen
+import com.example.fitflow.ui.theme.FitflowTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            FitFlowTheme {
+            FitflowTheme {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: "dashboard"
