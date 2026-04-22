@@ -27,7 +27,7 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
             .fillMaxSize()
             .background(BackgroundDark)
             .padding(16.dp)
-    ) 
+    ) {
         // Header
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
@@ -68,10 +68,37 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
         Spacer(modifier = Modifier.height(32.dp))
         Text("OPERATIONS", color = White40, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
         Spacer(modifier = Modifier.height(16.dp))
-        
 
+        // Action Button
+        Card(
+            colors = CardDefaults.cardColors(containerColor = White05),
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, White05, RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(24.dp))
+                .clickable { onReCalibrate() }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.size(48.dp).background(AccentNeon.copy(alpha=0.1f), RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = AccentNeon)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text("RE-CALIBRATE BODY STATS", color = TextDim, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("REVIEW YOUR ONBOARDING SETUP", color = White40, fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
+                    }
+                }
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = White40)
+            }
+        }
     }
-
+}
 
 @Composable
 fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) {
