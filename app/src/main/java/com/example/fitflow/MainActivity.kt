@@ -19,29 +19,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             FitFlowTheme {
                 val navController = rememberNavController()
+
                 NavHost(
                     navController = navController,
                     startDestination = "dashboard"
                 ) {
                     composable("dashboard") { DashboardScreen() }
+                    composable("planner") { PlannerScreen() }
+                    composable("library") { LibraryScreen() }
+                    composable("profile") { ProfileScreen(onReCalibrate = {}) }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FitflowTheme {
-        Greeting("Android")
     }
 }
