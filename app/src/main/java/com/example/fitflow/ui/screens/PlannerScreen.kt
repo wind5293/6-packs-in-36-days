@@ -1,4 +1,4 @@
-package com.fitflow.ui.screens
+package com.example.fitflow.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fitflow.ui.theme.*
+import com.example.fitflow.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,5 +182,5 @@ val Transparent = Color(0x00000000)
 @Preview(showBackground = true)
 @Composable
 fun PlannerScreenPreview() {
-    FitFlowTheme { PlannerScreen() }
+    FitflowTheme { PlannerScreen() }
 }
