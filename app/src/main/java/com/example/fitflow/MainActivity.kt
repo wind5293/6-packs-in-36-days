@@ -19,15 +19,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             FitFlowTheme {
                 val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route ?: "dashboard"
 
-                NavHost(
-                    navController = navController,
-                    startDestination = "dashboard"
-                ) {
-                    composable("dashboard") { DashboardScreen() }
-                    composable("planner") { PlannerScreen() }
-                    composable("library") { LibraryScreen() }
-                    composable("profile") { ProfileScreen(onReCalibrate = {}) }
+                Scaffold(
+                    bottomBar = {
+                        BottomNavbar(currentRoute) { route ->
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }
+                ) { paddingValues ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = "dashboard",
+                        modifier = Modifier.padding(paddingValues)
+                    ) {
+                        composable("dashboard") { DashboardScreen() }
+                        composable("planner") { PlannerScreen() }
+                        composable("library") { LibraryScreen() }
+                        composable("profile") { ProfileScreen(onReCalibrate = {}) }
+                    }
                 }
             }
         }
