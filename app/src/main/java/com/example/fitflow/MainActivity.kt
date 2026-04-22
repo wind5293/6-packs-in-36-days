@@ -16,7 +16,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
-import com.example.fitflow.ui.screens.LibraryScreen
+//import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.PlannerScreen
 import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.theme.FitflowTheme
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("dashboard") { DashboardScreen() }
                         composable("planner") { PlannerScreen() }
-                        composable("library") { LibraryScreen() }
+                        //composable("library") { LibraryScreen() }
                         composable("profile") {
                             ProfileScreen(onReCalibrate = {
                                 navController.navigate("onboarding")
