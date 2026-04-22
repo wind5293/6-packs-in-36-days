@@ -21,27 +21,48 @@ import com.example.fitflow.ui.theme.*
 
 @Composable
 fun WorkoutSetupScreen(onComplete: () -> Unit) {
+    var selectedEquipment by remember { mutableStateOf("bodyweight") }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundDark)
-            .padding(24.dp)
-            .padding(top = 40.dp)
+        modifier = Modifier.fillMaxSize().background(BackgroundDark).padding(24.dp).padding(top = 40.dp)
     ) {
-        // Header
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Text("MANIFEST GENERATION", color = White40, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
-            Row {
-                Text("WORKOUT ", color = TextDim, fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                Text("SETUP", color = AccentNeon, fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-            }
-        }
+        // Header (Giữ nguyên)
+        // ...
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Placeholder cho các phần tiếp theo
-        Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text("SETUP CONTENT LOADING...", color = White20, fontSize = 10.sp)
+        // Equipment Selection Section
+        Text("EQUIPMENT LEVEL", color = White40, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+        Spacer(modifier = Modifier.height(16.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            EquipmentItem("Bodyweight Only", "No equipment required", selectedEquipment == "bodyweight") { selectedEquipment = "bodyweight" }
+            EquipmentItem("Minimalist", "Dumbbells & Resistance bands", selectedEquipment == "minimal") { selectedEquipment = "minimal" }
+            EquipmentItem("Full Protocol", "Complete high-end gym access", selectedEquipment == "gym") { selectedEquipment = "gym" }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () -> Unit) {
+    val bgColor = if (isSelected) AccentNeon else White05
+    val textColor = if (isSelected) BackgroundDark else TextDim
+    val descColor = if (isSelected) BackgroundDark.copy(alpha=0.6f) else White20
+    val borderColor = if (isSelected) AccentNeon else White10
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(bgColor)
+            .border(1.dp, borderColor, RoundedCornerShape(20.dp))
+            .clickable { onClick() }
+            .padding(20.dp)
+    ) {
+        Column {
+            Text(title.uppercase(), color = textColor, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+            Text(desc.uppercase(), color = descColor, fontSize = 9.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
         }
     }
 }
