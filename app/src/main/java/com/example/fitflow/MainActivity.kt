@@ -22,6 +22,7 @@ import com.example.fitflow.ui.screens.PlannerScreen
 import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.theme.FitflowTheme
+import com.fitflow.ui.screens.LibraryScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +63,9 @@ class MainActivity : ComponentActivity() {
                             OnboardingScreen(onComplete = {
                                 navController.navigate("workout_setup")
                             })
+                        }
+                        composable("library") {
+                            LibraryScreen()
                         }
                         composable("workout_setup") {
                             WorkoutSetupScreen(onComplete = {

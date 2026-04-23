@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitflow.ui.theme.*
@@ -55,7 +57,12 @@ fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
 }
 
 @Composable
-fun NavItem(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, selected: Boolean, onClick: () -> Unit) {
+fun NavItem(
+    label: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
     val color = if (selected) AccentNeon else White40
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -64,8 +71,18 @@ fun NavItem(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector
             .clickable { onClick() }
             .padding(8.dp)
     ) {
-        Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(24.dp))
+        Icon(
+            icon,
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(24.dp)
+        )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(label, color = color, fontSize = 9.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Black)
+        Text(
+            label,
+            color = color,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Black
+        )
     }
 }
