@@ -1,4 +1,4 @@
-package com.fitflow.ui.screens
+package com.example.fitflow.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
