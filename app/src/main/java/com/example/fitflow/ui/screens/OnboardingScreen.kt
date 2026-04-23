@@ -1,4 +1,4 @@
-package com.fitflow.ui.screens
+package com.example.fitflow.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fitflow.ui.theme.*
 
 @Composable
-fun OnboardingScreen(onComplete: () -> Unit) {
+fun OnboardingScreen(onComplete: (height: Float, wight: Float) -> Unit) {
     var height by remember { mutableFloatStateOf(170f) }
     var weight by remember { mutableFloatStateOf(65f) }
     var selectedGoal by remember { mutableStateOf("Weight Loss") }
@@ -99,7 +99,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
 
         // Complete Button
         Button(
-            onClick = onComplete,
+            onClick = { onComplete(height, weight)},
             colors = ButtonDefaults.buttonColors(containerColor = AccentNeon),
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier.fillMaxWidth().height(64.dp)
