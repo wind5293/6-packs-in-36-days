@@ -109,16 +109,63 @@ fun WorkoutSessionScreen(
 
 		Spacer(Modifier.height(12.dp))
 
+		// Controls
+		Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+			IconButton(onClick = {
+				isRunning = !isRunning
+			}, modifier = Modifier
+				.size(64.dp)
+				.clip(CircleShape)
+				.background(White05)) {
+				if (isRunning) Icon(Icons.Default.Pause, contentDescription = "Pause", tint = AccentNeon)
+				else Icon(Icons.Default.PlayArrow, contentDescription = "Start", tint = AccentNeon)
+			}
+
+			IconButton(onClick = {
+				// skip
+				if (index < exercises.lastIndex) {
+					index += 1
+					remaining = exercises[index].durationSec
+					isRunning = true
+				} else {
+					// finish
+					isRunning = false
+					onFinish()
+				}
+			}, modifier = Modifier
+				.size(64.dp)
+				.clip(CircleShape)
+				.background(White05)) {
+				Icon(Icons.Default.SkipNext, contentDescription = "Skip", tint = AccentNeon)
+			}
+		}
+
+		Spacer(Modifier.height(18.dp))
+
+		// Upcoming exercises
+		Text("UPCOMING", color = White40, fontSize = 12.sp, modifier = Modifier.padding(start = 8.dp))
+		Spacer(Modifier.height(8.dp))
+		Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+			exercises.drop(index + 1).take(5).forEachIndexed { i, ex ->
+				Row(modifier = Modifier
+					.fillMaxWidth()
+					.clip(MaterialTheme.shapes.medium)
+					.background(White05)
+					.padding(12.dp)) {
+					Column(modifier = Modifier.weight(1f)) {
+						Text(ex.name, color = TextDim, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+						Text("${ex.durationSec} sec", color = White40, fontSize = 12.sp)
+					}
+					Text("#${index + 2 + i}", color = White20, modifier = Modifier.align(Alignment.CenterVertically))
+				}
+			}
+		}
+
+		Spacer(Modifier.weight(1f))
 
 	}
 }
 
-
-	Exercise("Jumping Jacks", 30),
-	Exercise("Push Ups", 40),
-	Exercise("Bodyweight Squats", 45),
-	Exercise("Plank Hold", 60),
-	Exercise("Lunges", 40)
 
 
 @Preview(showBackground = true)
