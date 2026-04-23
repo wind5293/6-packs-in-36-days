@@ -166,7 +166,13 @@ fun WorkoutSessionScreen(
 	}
 }
 
-
+fun sampleExercises() = listOf(
+	Exercise("Jumping Jacks", 30),
+	Exercise("Push Ups", 40),
+	Exercise("Bodyweight Squats", 45),
+	Exercise("Plank Hold", 60),
+	Exercise("Lunges", 40)
+)
 
 @Preview(showBackground = true)
 @Composable
