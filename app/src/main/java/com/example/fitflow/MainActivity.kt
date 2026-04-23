@@ -16,9 +16,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
+import com.example.fitflow.ui.screens.WorkoutSetupScreen
 //import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.PlannerScreen
 import com.example.fitflow.ui.screens.ProfileScreen
+import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 
 class MainActivity : ComponentActivity() {
@@ -57,12 +59,12 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable("onboarding") {
-                            com.fitflow.ui.screens.OnboardingScreen(onComplete = {
+                            OnboardingScreen(onComplete = {
                                 navController.navigate("workout_setup")
                             })
                         }
                         composable("workout_setup") {
-                            com.fitflow.ui.screens.WorkoutSetupScreen(onComplete = {
+                            WorkoutSetupScreen(onComplete = {
                                 navController.navigate("dashboard") {
                                     popUpTo("onboarding") { inclusive = true }
                                 }

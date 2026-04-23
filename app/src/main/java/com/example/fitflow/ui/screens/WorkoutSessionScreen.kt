@@ -23,7 +23,7 @@ import kotlinx.coroutines.isActive
 import com.example.fitflow.ui.theme.*
 
 data class Exercise(val name: String, val durationSec: Int)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutSessionScreen(
 	exercises: List<Exercise> = sampleExercises(),
@@ -67,8 +67,9 @@ fun WorkoutSessionScreen(
 			navigationIcon = {
 				IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = AccentNeon) }
 			},
-			colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = BackgroundDark)
+			colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundDark)
 		)
+
 
 		Spacer(Modifier.height(12.dp))
 
