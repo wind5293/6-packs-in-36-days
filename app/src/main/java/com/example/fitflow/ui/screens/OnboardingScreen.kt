@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fitflow.ui.theme.*
+import com.example.fitflow.ui.theme.*
 
 @Composable
 fun OnboardingScreen(onComplete: () -> Unit) {

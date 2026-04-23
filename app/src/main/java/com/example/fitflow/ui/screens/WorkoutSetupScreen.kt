@@ -1,4 +1,4 @@
-package com.fitflow.ui.screens
+package com.example.fitflow.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fitflow.ui.theme.*
+import com.example.fitflow.ui.theme.*
 
 @Composable
 fun WorkoutSetupScreen(onComplete: () -> Unit) {
@@ -110,5 +110,5 @@ fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () 
 @Preview(showBackground = true)
 @Composable
 fun WorkoutSetupScreenPreview() {
-    FitFlowTheme { WorkoutSetupScreen({}) }
+    FitflowTheme { WorkoutSetupScreen({}) }
 }
