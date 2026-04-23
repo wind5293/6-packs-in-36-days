@@ -76,24 +76,46 @@ fun HeaderSection() {
     ) {
         Column {
             Text(
-                text = stringResource(R.string.status_report),
+                text = stringResource(R.string.dashboard_status_report),
                 color = White40,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 3.sp
             )
             Row {
-                Text(stringResource(R.string.first_half), color = TextDim, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                Text(stringResource(R.string.second_half), color = AccentNeon, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                Text(stringResource(
+                    R.string.dashboard_first_half_title),
+                    color = TextDim,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic
+                )
+                Text(stringResource(R.string.dashboard_second_half_title),
+                    color = AccentNeon,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic
+                )
             }
         }
         IconButton(
             onClick = {},
             modifier = Modifier
-                .background(White05, RoundedCornerShape(50))
-                .border(1.dp, White05, RoundedCornerShape(50))
+                .background(
+                    White05,
+                    RoundedCornerShape(50)
+                )
+                .border(
+                    1.dp,
+                    White05,
+                    RoundedCornerShape(50)
+                )
         ) {
-            Icon(Icons.Default.Notifications, contentDescription = "Notify", tint = White40)
+            Icon(
+                Icons.Default.Notifications,
+                contentDescription = "Notify",
+                tint = White40
+            )
         }
     }
 }
@@ -104,15 +126,40 @@ fun StreakSummarySection() {
         Card(
             colors = CardDefaults.cardColors(containerColor = CardDark),
             shape = RoundedCornerShape(32.dp),
-            modifier = Modifier.weight(1f).height(160.dp).border(1.dp, AccentNeon.copy(alpha=0.3f), RoundedCornerShape(32.dp))
+            modifier = Modifier
+                .weight(1f)
+                .height(160.dp)
+                .border(
+                    1.dp,
+                    AccentNeon.copy(alpha=0.3f),
+                    RoundedCornerShape(32.dp))
         ) {
-            Column(modifier = Modifier.padding(24.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = AccentNeon.copy(alpha = 0.5f))
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Icon(
+                    Icons.Default.Star,
+                    contentDescription = null,
+                    tint = AccentNeon.copy(alpha = 0.5f)
+                )
                 Column {
                     Text(
-                        "0",
-                        fontSize = 48.sp, color = AccentNeon, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                    Text("STREAK CYCLE", fontSize = 10.sp, color = White40, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                        stringResource(R.string.dashboard_0),
+                        fontSize = 48.sp,
+                        color = AccentNeon,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Text(
+                        stringResource(R.string.dashboard_streak_cycle),
+                        fontSize = 10.sp,
+                        color = White40,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
                 }
             }
         }
@@ -120,13 +167,40 @@ fun StreakSummarySection() {
         Card(
             colors = CardDefaults.cardColors(containerColor = CardDark),
             shape = RoundedCornerShape(32.dp),
-            modifier = Modifier.weight(1f).height(160.dp).border(1.dp, SecondaryBlue.copy(alpha=0.3f), RoundedCornerShape(32.dp))
+            modifier = Modifier
+                .weight(1f)
+                .height(160.dp)
+                .border(
+                    1.dp,
+                    SecondaryBlue.copy(alpha=0.3f),
+                    RoundedCornerShape(32.dp))
         ) {
-            Column(modifier = Modifier.padding(24.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-                Icon(Icons.Default.Favorite, contentDescription = null, tint = SecondaryBlue.copy(alpha = 0.5f))
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Icon(
+                    Icons.Default.Favorite,
+                    contentDescription = null,
+                    tint = SecondaryBlue.copy(alpha = 0.5f)
+                )
                 Column {
-                    Text("WEIGHT LOSS", fontSize = 18.sp, color = SecondaryBlue, fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic)
-                    Text("PHASE 01", fontSize = 10.sp, color = White40, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    Text(
+                        stringResource(R.string.dashboard_weight_loss),
+                        fontSize = 18.sp,
+                        color = SecondaryBlue,
+                        fontWeight = FontWeight.Bold,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Text(
+                        stringResource(R.string.dashboard_phase_01),
+                        fontSize = 10.sp,
+                        color = White40,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
                 }
             }
         }
@@ -138,12 +212,32 @@ fun HealthMetricsSection(
     steps: Int, onAddSteps: () -> Unit,
     water: Int, onAddWater: () -> Unit
 ) {
-    Text("HEALTH METRICS", fontSize = 11.sp, color = White40, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+    Text(
+        stringResource(R.string.dashboard_health_metrics),
+        fontSize = 11.sp,
+        color = White40,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 3.sp
+    )
     Spacer(modifier = Modifier.height(12.dp))
 
-    MetricCard("STEPS", steps.toString(), 10000, "steps", AccentNeon, onAddSteps)
+    MetricCard(
+        stringResource(R.string.dashboard_steps),
+        steps.toString(),
+        10000,
+        stringResource(R.string.dashboard_unit_steps),
+        AccentNeon,
+        onAddSteps
+    )
     Spacer(modifier = Modifier.height(12.dp))
-    MetricCard("WATER", water.toString(), 2500, "ml", SecondaryBlue, onAddWater)
+    MetricCard(
+        stringResource(R.string.dashboard_water),
+        water.toString(),
+        2500,
+        stringResource(R.string.dashboard_unit_ml),
+        SecondaryBlue,
+        onAddWater
+    )
 }
 
 @Composable
@@ -160,25 +254,71 @@ fun MetricCard(
     Card(
         colors = CardDefaults.cardColors(containerColor = CardDark),
         shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth().height(80.dp).border(1.dp, White05, RoundedCornerShape(24.dp))
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .border(
+                1.dp,
+                White05,
+                RoundedCornerShape(24.dp)
+            )
     ) {
         Row(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon Placeholder
-            Box(modifier = Modifier.size(40.dp).background(mainColor.copy(alpha=0.1f), RoundedCornerShape(12.dp)))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        mainColor.copy(alpha=0.1f),
+                        RoundedCornerShape(12.dp)
+                    )
+            )
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(label, color = White40, fontSize = 10.sp, fontWeight = FontWeight.Black)
-                    Text("$value / $goal $unit", color = TextDim, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        label,
+                        color = White40,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        "$value / $goal $unit",
+                        color = TextDim,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(White05, RoundedCornerShape(50))) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .background(
+                            White05,
+                            RoundedCornerShape(50)
+                        )
+                ) {
                     if (progress > 0f) {
-                        Box(modifier = Modifier.fillMaxWidth(progress).height(4.dp).background(mainColor, RoundedCornerShape(50)))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progress)
+                                .height(4.dp)
+                                .background(
+                                    mainColor,
+                                    RoundedCornerShape(50)
+                                )
+                        )
                     }
                 }
             }
@@ -189,11 +329,19 @@ fun MetricCard(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, White10, RoundedCornerShape(12.dp))
+                    .border(
+                        1.dp,
+                        White10,
+                        RoundedCornerShape(12.dp)
+                    )
                     .clickable { onClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add", tint = TextDim)
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Add",
+                    tint = TextDim
+                )
             }
         }
     }

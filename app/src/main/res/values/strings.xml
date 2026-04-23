@@ -1,6 +1,17 @@
 <resources>
     <string name="app_name">fitflow</string>
-    <string name="status_report">STATUS REPORT</string>
-    <string name="first_half">"RISE &amp; "</string>
-    <string name="second_half">GRIND</string>
+
+    <string name="dashboard_status_report">STATUS REPORT</string>
+    <string name="dashboard_first_half_title">"RISE &amp; "</string>
+    <string name="dashboard_second_half_title">GRIND</string>
+    <string name="dashboard_0">0</string>
+    <string name="dashboard_streak_cycle">STREAK CYCLE</string>
+    <string name="dashboard_weight_loss">WEIGHT LOSS</string>
+    <string name="dashboard_phase_01">PHASE 01</string>
+    <string name="dashboard_health_metrics">HEALTH METRICS</string>
+    <string name="dashboard_steps">STEPS</string>
+    <string name="dashboard_water">WATER</string>"
+    <string name="dashboard_unit_steps">steps</string>
+    <string name="dashboard_unit_ml">ml</string>
+
 </resources>
