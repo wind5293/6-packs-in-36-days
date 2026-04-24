@@ -1,4 +1,4 @@
-package com.example.fitflow.ui.screens
+package com.fitflow.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -106,7 +106,7 @@ fun ExerciseCard(category: String, name: String, description: String, reps: Stri
             Spacer(modifier = Modifier.height(8.dp))
             Text(description, color = White40, fontSize = 11.sp, lineHeight = 16.sp)
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Chips Container
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Chip(reps)
@@ -129,8 +129,8 @@ fun Chip(text: String) {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun LibraryScreenPreview() {
-//    FitFlowTheme { LibraryScreen() }
-//}
+@Preview(showBackground = true)
+@Composable
+fun LibraryScreenPreview() {
+
+}

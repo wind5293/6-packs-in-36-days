@@ -20,10 +20,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
+import com.example.fitflow.ui.screens.WorkoutSetupScreen
 //import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.PlannerScreen
 import com.example.fitflow.ui.screens.WorkoutDayDetailScreen
 import com.example.fitflow.ui.screens.ProfileScreen
+import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
@@ -113,6 +115,9 @@ class MainActivity : ComponentActivity() {
                                 viewModel.saveProfile(height, weight)
                                 navController.navigate("workout_setup")
                             })
+                        }
+                        composable("library") {
+                            LibraryScreen()
                         }
                         composable("workout_setup") {
                             com.example.fitflow.ui.screens.WorkoutSetupScreen(onComplete = {
