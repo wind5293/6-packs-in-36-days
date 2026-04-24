@@ -16,7 +16,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fitflow.ui.theme.*
+import com.example.fitflow.ui.theme.AccentNeon
+import com.example.fitflow.ui.theme.BackgroundDark
+import com.example.fitflow.ui.theme.CardDark
+import com.example.fitflow.ui.theme.TextDim
+import com.example.fitflow.ui.theme.White05
+import com.example.fitflow.ui.theme.White40
 
 @Composable
 fun LibraryScreen() {
