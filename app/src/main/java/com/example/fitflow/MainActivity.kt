@@ -20,6 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
+import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.WorkoutSetupScreen
 //import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.PlannerScreen
