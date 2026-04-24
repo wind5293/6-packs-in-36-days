@@ -10,7 +10,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Fitflow">
+        android:theme="@style/Theme.Fitflow"
+        android:name=".FitFlowApplication">
         <activity
             android:name=".MainActivity"
             android:exported="true"

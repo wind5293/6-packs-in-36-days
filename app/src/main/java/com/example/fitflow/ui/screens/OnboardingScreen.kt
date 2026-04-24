@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
@@ -20,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fitflow.ui.theme.*
 
 @Composable
-fun OnboardingScreen(onComplete: () -> Unit) {
+fun OnboardingScreen(onComplete: (height: Float, wight: Float) -> Unit) {
     var height by remember { mutableFloatStateOf(170f) }
     var weight by remember { mutableFloatStateOf(65f) }
     var selectedGoal by remember { mutableStateOf("Weight Loss") }
@@ -31,6 +33,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDark)
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
             .padding(top = 40.dp)
     ) {
@@ -58,9 +61,26 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 inactiveTrackColor = White10
             )
         )
-        Text("${height.toInt()}", color = TextDim, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text("${height.toInt()} cm", color = TextDim, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Weight Slider
+        Text("WEIGHT (KG)", color = White40, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Slider(
+            value = weight,
+            onValueChange = { weight = it },
+            valueRange = 30f..150f,
+            colors = SliderDefaults.colors(
+                thumbColor = AccentNeon,
+                activeTrackColor = AccentNeon,
+                inactiveTrackColor = White10
+            )
+        )
+        Text("${weight.toInt()} kg", color = TextDim, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         // BMI Card
         Card(
@@ -95,11 +115,11 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(32.dp))
 
         // Complete Button
         Button(
-            onClick = onComplete,
+            onClick = { onComplete(height, weight) },
             colors = ButtonDefaults.buttonColors(containerColor = AccentNeon),
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier.fillMaxWidth().height(64.dp)
@@ -110,6 +130,8 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 Icon(Icons.Default.ArrowForward, contentDescription = null, tint = BackgroundDark)
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
