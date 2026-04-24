@@ -15,18 +15,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fitflow.ui.theme.AccentNeon
-import com.example.fitflow.ui.theme.BackgroundDark
-import com.example.fitflow.ui.theme.CardDark
-import com.example.fitflow.ui.theme.SecondaryBlue
-import com.example.fitflow.ui.theme.TextDim
-import com.example.fitflow.ui.theme.White05
-import com.example.fitflow.ui.theme.White10
-import com.example.fitflow.ui.theme.White40
+import com.example.fitflow.ui.theme.*
+import com.example.fitflow.R
+
 
 
 @Composable

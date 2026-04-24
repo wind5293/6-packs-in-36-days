@@ -11,7 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,6 +28,7 @@ import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
+import com.fitflow.ui.screens.LibraryScreen
 
 
 //import com.example.fitflow.ui.screens.DashboardScreen
@@ -57,7 +57,8 @@ class MainActivity : ComponentActivity() {
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    // Luôn pop về "dashboard" — root thật sự của backstack
+                                    popUpTo("dashboard") { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
@@ -119,10 +120,11 @@ class MainActivity : ComponentActivity() {
                         composable("library") {
                             LibraryScreen()
                         }
-                        composable("workout_setup") {
+                                        composable("workout_setup") {
                             com.example.fitflow.ui.screens.WorkoutSetupScreen(onComplete = {
                                 navController.navigate("dashboard") {
-                                    popUpTo("onboarding") { inclusive = true }
+                                    popUpTo(0) { inclusive = true }
+                                    launchSingleTop = true
                                 }
                             })
                         }
