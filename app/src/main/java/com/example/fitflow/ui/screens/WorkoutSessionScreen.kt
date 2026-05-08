@@ -18,15 +18,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fitflow.data.model.Exercise
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import com.example.fitflow.ui.theme.*
 
-data class Exercise(val name: String, val durationSec: Int)
+data class TimedExercise(val name: String, val durationSec: Int)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutSessionScreen(
-	exercises: List<Exercise> = sampleExercises(),
+	exercises: List<TimedExercise> = sampleExercises(),
 	onBack: () -> Unit = {},
 	onFinish: () -> Unit = {}
 ) {
@@ -168,11 +169,11 @@ fun WorkoutSessionScreen(
 }
 
 fun sampleExercises() = listOf(
-	Exercise("Jumping Jacks", 30),
-	Exercise("Push Ups", 40),
-	Exercise("Bodyweight Squats", 45),
-	Exercise("Plank Hold", 60),
-	Exercise("Lunges", 40)
+	TimedExercise("Jumping Jacks", 30),
+	TimedExercise("Push Ups", 40),
+	TimedExercise("Bodyweight Squats", 45),
+	TimedExercise("Plank Hold", 60),
+	TimedExercise("Lunges", 40)
 )
 
 @Preview(showBackground = true)

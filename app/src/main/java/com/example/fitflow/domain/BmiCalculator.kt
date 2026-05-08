@@ -8,8 +8,8 @@ fun calculateBmi(height: Float, weight: Float): Float {
 
 fun getBmiCategory(bmi: Float): BmiCategory {
     return when {
-        bmi < 18.5f -> return BmiCategory.UNDERWEIGHT
-        bmi < 25.0f -> return BmiCategory.NORMAL
-        else -> return BmiCategory.OVERWEIGHT
+        bmi < 18.5f -> BmiCategory.UNDERWEIGHT
+        bmi < 25.0f -> BmiCategory.NORMAL
+        else -> BmiCategory.OVERWEIGHT
     }
 }

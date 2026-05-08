@@ -5,4 +5,5 @@ data class Exercise(
     val sets: Int,
     val reps: Int,
     val kcal: Int,
+    val durationSec: Int?,
 )

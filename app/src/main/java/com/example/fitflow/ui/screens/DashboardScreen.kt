@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
@@ -21,10 +23,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fitflow.ui.theme.*
 import com.example.fitflow.R
-
-
 
 @Composable
 fun DashboardScreen() {
@@ -35,7 +34,8 @@ fun DashboardScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         HeaderSection()
@@ -61,21 +61,22 @@ fun HeaderSection() {
         Column {
             Text(
                 text = "STATUS REPORT",
-                color = White40,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 3.sp
             )
             Row {
-                Text(stringResource(
-                    R.string.dashboard_first_half_title),
-                    color = TextDim,
+                Text(
+                    stringResource(R.string.dashboard_first_half_title),
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
                     fontStyle = FontStyle.Italic
                 )
-                Text(stringResource(R.string.dashboard_second_half_title),
-                    color = AccentNeon,
+                Text(
+                    stringResource(R.string.dashboard_second_half_title),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
                     fontStyle = FontStyle.Italic
@@ -86,19 +87,19 @@ fun HeaderSection() {
             onClick = {},
             modifier = Modifier
                 .background(
-                    White05,
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                     RoundedCornerShape(50)
                 )
                 .border(
                     1.dp,
-                    White05,
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                     RoundedCornerShape(50)
                 )
         ) {
             Icon(
                 Icons.Default.Notifications,
                 contentDescription = "Notify",
-                tint = White40
+                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
             )
         }
     }
@@ -108,39 +109,39 @@ fun HeaderSection() {
 fun StreakSummarySection() {
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         Card(
-            colors = CardDefaults.cardColors(containerColor = CardDark),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(32.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(160.dp)
                 .border(
                     1.dp,
-                    AccentNeon.copy(alpha=0.3f),
-                    RoundedCornerShape(32.dp))
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    RoundedCornerShape(32.dp)
+                )
         ) {
             Column(
                 modifier = Modifier
                     .padding(24.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Icon(
                     Icons.Default.Star,
                     contentDescription = null,
-                    tint = AccentNeon.copy(alpha = 0.5f)
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 )
                 Column {
                     Text(
                         stringResource(R.string.dashboard_0),
                         fontSize = 48.sp,
-                        color = AccentNeon,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Black,
                         fontStyle = FontStyle.Italic
                     )
                     Text(
                         stringResource(R.string.dashboard_streak_cycle),
                         fontSize = 10.sp,
-                        color = White40,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 2.sp
                     )
@@ -149,39 +150,39 @@ fun StreakSummarySection() {
         }
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = CardDark),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(32.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(160.dp)
                 .border(
                     1.dp,
-                    SecondaryBlue.copy(alpha=0.3f),
-                    RoundedCornerShape(32.dp))
+                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f),
+                    RoundedCornerShape(32.dp)
+                )
         ) {
             Column(
                 modifier = Modifier
                     .padding(24.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Icon(
                     Icons.Default.Favorite,
                     contentDescription = null,
-                    tint = SecondaryBlue.copy(alpha = 0.5f)
+                    tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
                 )
                 Column {
                     Text(
                         stringResource(R.string.dashboard_weight_loss),
                         fontSize = 18.sp,
-                        color = SecondaryBlue,
+                        color = MaterialTheme.colorScheme.secondary,
                         fontWeight = FontWeight.Bold,
                         fontStyle = FontStyle.Italic
                     )
                     Text(
                         stringResource(R.string.dashboard_phase_01),
                         fontSize = 10.sp,
-                        color = White40,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 2.sp
                     )
@@ -199,7 +200,7 @@ fun HealthMetricsSection(
     Text(
         stringResource(R.string.dashboard_health_metrics),
         fontSize = 11.sp,
-        color = White40,
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
         fontWeight = FontWeight.Bold,
         letterSpacing = 3.sp
     )
@@ -210,7 +211,7 @@ fun HealthMetricsSection(
         steps.toString(),
         10000,
         stringResource(R.string.dashboard_unit_steps),
-        AccentNeon,
+        MaterialTheme.colorScheme.primary,
         onAddSteps
     )
     Spacer(modifier = Modifier.height(12.dp))
@@ -219,7 +220,7 @@ fun HealthMetricsSection(
         water.toString(),
         2500,
         stringResource(R.string.dashboard_unit_ml),
-        SecondaryBlue,
+        MaterialTheme.colorScheme.secondary,
         onAddWater
     )
 }
@@ -236,19 +237,20 @@ fun MetricCard(
     val progress = (value.toFloat() / goal.toFloat()).coerceIn(0f, 1f)
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = CardDark),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
             .border(
                 1.dp,
-                White05,
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                 RoundedCornerShape(24.dp)
             )
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon Placeholder
@@ -256,7 +258,7 @@ fun MetricCard(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        mainColor.copy(alpha=0.1f),
+                        mainColor.copy(alpha = 0.1f),
                         RoundedCornerShape(12.dp)
                     )
             )
@@ -266,19 +268,18 @@ fun MetricCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Row(
-                    modifier = Modifier
-                    .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         label,
-                        color = White40,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black
                     )
                     Text(
                         "$value / $goal $unit",
-                        color = TextDim,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -289,7 +290,7 @@ fun MetricCard(
                         .fillMaxWidth()
                         .height(4.dp)
                         .background(
-                            White05,
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                             RoundedCornerShape(50)
                         )
                 ) {
@@ -315,7 +316,7 @@ fun MetricCard(
                     .clip(RoundedCornerShape(12.dp))
                     .border(
                         1.dp,
-                        White10,
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
                         RoundedCornerShape(12.dp)
                     )
                     .clickable { onClick() },
@@ -324,7 +325,7 @@ fun MetricCard(
                 Icon(
                     Icons.Default.Add,
                     contentDescription = "Add",
-                    tint = TextDim
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }

@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.Exercise
-import com.example.fitflow.ui.theme.*
 import kotlinx.coroutines.delay
 
 @Composable
@@ -32,35 +31,25 @@ fun WorkoutDayDetailScreen(
     onBack: () -> Unit,
     onDayComplete: () -> Unit = {}
 ) {
-    // Index bài tập hiện tại đang cần hoàn thành (0-indexed)
     var currentExerciseIndex by remember { mutableIntStateOf(0) }
     var showRestTimer by remember { mutableStateOf(false) }
+    // Trạng thái riêng cho "đã bấm Finish" để tránh gọi lại onDayComplete nhiều lần
+    var dayFinished by remember { mutableStateOf(false) }
 
     val exercises = dayPlan.exercises
     val allDone = exercises.isNotEmpty() && currentExerciseIndex >= exercises.size
 
     if (showRestTimer) {
         RestTimerDialog(
-            onFinish = {
-                showRestTimer = false
-                // Sau khi timer xong, nếu vừa xong bài cuối thì đánh dấu ngày hoàn thành
-                if (currentExerciseIndex >= exercises.size) {
-                    onDayComplete()
-                }
-            },
-            onSkip = {
-                showRestTimer = false
-                if (currentExerciseIndex >= exercises.size) {
-                    onDayComplete()
-                }
-            }
+            onFinish = { showRestTimer = false },
+            onSkip   = { showRestTimer = false }
         )
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
             .padding(top = 16.dp)
     ) {
@@ -74,23 +63,34 @@ fun WorkoutDayDetailScreen(
             IconButton(
                 onClick = onBack,
                 modifier = Modifier
-                    .background(White05, RoundedCornerShape(16.dp))
-                    .border(1.dp, White10, RoundedCornerShape(16.dp))
+                    .background(
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                        RoundedCornerShape(16.dp)
+                    )
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = White40)
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
                     "DAY ${dayPlan.dayNumber}",
-                    color = AccentNeon,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 3.sp
                 )
                 Text(
                     if (dayPlan.isRest) "REST & RECOVERY" else "WORKOUT SESSION",
-                    color = TextDim,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Black,
                     fontStyle = FontStyle.Italic
@@ -99,20 +99,28 @@ fun WorkoutDayDetailScreen(
         }
 
         when {
-            dayPlan.isRest -> RestDayContent()
-            allDone        -> DayCompleteContent(onBack = onBack)
+            dayPlan.isRest -> RestDayContent(onBack = onBack)
+            allDone        -> DayCompleteContent(
+                onFinish = {
+                    if (!dayFinished) {
+                        dayFinished = true
+                        onDayComplete()
+                    }
+                    onBack()
+                },
+                onBack = onBack
+            )
             else           -> WorkoutContent(
                 exercises = exercises,
                 currentIndex = currentExerciseIndex,
                 onExerciseDone = {
                     currentExerciseIndex++
-                    // Chỉ hiện timer nếu còn bài tiếp theo
+                    // Hiện rest timer nếu còn bài tiếp theo
                     if (currentExerciseIndex < exercises.size) {
                         showRestTimer = true
-                    } else {
-                        // Bài cuối xong → đánh dấu hoàn thành ngay
-                        onDayComplete()
                     }
+                    // Khi bài cuối xong → KHÔNG tự gọi onDayComplete,
+                    // người dùng sẽ thấy DayCompleteContent và bấm FINISH
                 }
             )
         }
@@ -136,14 +144,18 @@ private fun RestTimerDialog(onFinish: () -> Unit, onSkip: () -> Unit) {
     Dialog(onDismissRequest = {}) {
         Column(
             modifier = Modifier
-                .background(CardDark, RoundedCornerShape(32.dp))
-                .border(1.dp, White10, RoundedCornerShape(32.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(32.dp))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                    RoundedCornerShape(32.dp)
+                )
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 "REST",
-                color = SecondaryBlue,
+                color = MaterialTheme.colorScheme.secondary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 3.sp
@@ -151,14 +163,14 @@ private fun RestTimerDialog(onFinish: () -> Unit, onSkip: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 "$secondsLeft",
-                color = TextDim,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 80.sp,
                 fontWeight = FontWeight.Black,
                 fontStyle = FontStyle.Italic
             )
             Text(
                 "seconds",
-                color = White40,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -166,17 +178,25 @@ private fun RestTimerDialog(onFinish: () -> Unit, onSkip: () -> Unit) {
             LinearProgressIndicator(
                 progress = { secondsLeft / 60f },
                 modifier = Modifier.fillMaxWidth().height(4.dp),
-                color = SecondaryBlue,
-                trackColor = White10
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = onSkip,
-                colors = ButtonDefaults.buttonColors(containerColor = White05),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+                ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("SKIP REST", color = White40, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                Text(
+                    "SKIP REST",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
             }
         }
     }
@@ -203,7 +223,7 @@ private fun WorkoutContent(
 
     Text(
         "EXERCISE LIST",
-        color = White40,
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
         fontSize = 11.sp,
         fontWeight = FontWeight.Black,
         letterSpacing = 2.sp,
@@ -236,20 +256,20 @@ private fun ExerciseDetailCard(
     state: ExerciseState,
     onDone: () -> Unit
 ) {
-    val cardAlpha   = if (state == ExerciseState.LOCKED) 0.35f else 1f
+    val cardAlpha  = if (state == ExerciseState.LOCKED) 0.35f else 1f
     val borderColor = when (state) {
-        ExerciseState.DONE   -> SecondaryBlue.copy(alpha = 0.4f)
-        ExerciseState.ACTIVE -> AccentNeon.copy(alpha = 0.6f)
-        ExerciseState.LOCKED -> White05
+        ExerciseState.DONE   -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+        ExerciseState.ACTIVE -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+        ExerciseState.LOCKED -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
     }
-    val badgeColor  = when (state) {
-        ExerciseState.DONE   -> SecondaryBlue
-        ExerciseState.ACTIVE -> AccentNeon
-        ExerciseState.LOCKED -> White40
+    val badgeColor = when (state) {
+        ExerciseState.DONE   -> MaterialTheme.colorScheme.secondary
+        ExerciseState.ACTIVE -> MaterialTheme.colorScheme.primary
+        ExerciseState.LOCKED -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
     }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = CardDark),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(20.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -267,7 +287,12 @@ private fun ExerciseDetailCard(
                     contentAlignment = Alignment.Center
                 ) {
                     if (state == ExerciseState.DONE) {
-                        Icon(Icons.Default.Check, contentDescription = null, tint = SecondaryBlue, modifier = Modifier.size(18.dp))
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     } else {
                         Text("$index", color = badgeColor, fontSize = 14.sp, fontWeight = FontWeight.Black)
                     }
@@ -276,11 +301,16 @@ private fun ExerciseDetailCard(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(exercise.name, color = TextDim, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        exercise.name,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         "${exercise.sets} sets  ×  ${exercise.reps} reps",
-                        color = White40,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -288,11 +318,23 @@ private fun ExerciseDetailCard(
 
                 Box(
                     modifier = Modifier
-                        .background(AccentNeon.copy(alpha = 0.08f), RoundedCornerShape(10.dp))
-                        .border(1.dp, AccentNeon.copy(alpha = 0.2f), RoundedCornerShape(10.dp))
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                            RoundedCornerShape(10.dp)
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            RoundedCornerShape(10.dp)
+                        )
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Text("${exercise.kcal} kcal", color = AccentNeon, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "${exercise.kcal} kcal",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
@@ -301,11 +343,17 @@ private fun ExerciseDetailCard(
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
                     onClick = onDone,
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentNeon),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth().height(44.dp)
                 ) {
-                    Text("DONE", color = BackgroundDark, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                    Text(
+                        "DONE",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
                 }
             }
         }
@@ -317,50 +365,127 @@ private fun ExerciseDetailCard(
 @Composable
 private fun SummaryChip(label: String, value: String) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = CardDark),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.border(1.dp, White10, RoundedCornerShape(16.dp))
+        modifier = Modifier.border(
+            1.dp,
+            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+            RoundedCornerShape(16.dp)
+        )
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(value, color = AccentNeon, fontSize = 20.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-            Text(label, color = White40, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+            Text(
+                value,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic
+            )
+            Text(
+                label,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
+            )
         }
     }
 }
 
 @Composable
-private fun RestDayContent() {
+private fun RestDayContent(onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("💤", fontSize = 64.sp)
             Spacer(modifier = Modifier.height(16.dp))
-            Text("RECOVERY DAY", color = SecondaryBlue, fontSize = 20.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+            Text(
+                "RECOVERY DAY",
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 2.sp
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Rest, hydrate, and let your muscles rebuild.", color = White40, fontSize = 13.sp, textAlign = TextAlign.Center)
+            Text(
+                "Rest, hydrate, and let your muscles rebuild.",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(
+                onClick = onBack,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth(0.7f).height(52.dp)
+            ) {
+                Text(
+                    "BACK TO PLAN",
+                    color = MaterialTheme.colorScheme.background,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun DayCompleteContent(onBack: () -> Unit) {
+private fun DayCompleteContent(onFinish: () -> Unit, onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
             Text("🔥", fontSize = 64.sp)
             Spacer(modifier = Modifier.height(16.dp))
-            Text("DAY COMPLETE!", color = AccentNeon, fontSize = 24.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+            Text(
+                "DAY COMPLETE!",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 2.sp
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Well done. Rest up for tomorrow.", color = White40, fontSize = 13.sp, textAlign = TextAlign.Center)
+            Text(
+                "Well done. Rest up for tomorrow.",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.height(32.dp))
+            // Nút chính: FINISH WORKOUT — đánh dấu ngày hoàn thành + quay về Planner
             Button(
-                onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = AccentNeon),
+                onClick = onFinish,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth(0.7f).height(52.dp)
+                modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
-                Text("BACK TO PLAN", color = BackgroundDark, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                Text(
+                    "FINISH WORKOUT",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            // Nút phụ: chỉ quay về mà không đánh dấu hoàn thành
+            TextButton(
+                onClick = onBack,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "BACK WITHOUT SAVING",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
             }
         }
     }

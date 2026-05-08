@@ -19,8 +19,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
+import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.WorkoutSetupScreen
-//import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.PlannerScreen
 import com.example.fitflow.ui.screens.WorkoutDayDetailScreen
 import com.example.fitflow.ui.screens.ProfileScreen
@@ -28,10 +28,6 @@ import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
-import com.fitflow.ui.screens.LibraryScreen
-
-
-//import com.example.fitflow.ui.screens.DashboardScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,20 +95,18 @@ class MainActivity : ComponentActivity() {
                             WorkoutDayDetailScreen(
                                 dayPlan       = dayPlan,
                                 onBack        = { navController.popBackStack() },
-                                onDayComplete = {
-                                    viewModel.markDayComplete(dayNumber)
-                                    navController.popBackStack()
-                                }
+                                // onDayComplete chỉ lưu dữ liệu — KHÔNG navigate.
+                                // DayCompleteContent tự gọi onBack() sau khi mark complete.
+                                onDayComplete = { viewModel.markDayComplete(dayNumber) }
                             )
                         }
-                        //composable("library") { LibraryScreen() }
                         composable("profile") {
                             ProfileScreen(onReCalibrate = {
                                 navController.navigate("onboarding")
                             })
                         }
                         composable("onboarding") {
-                            com.example.fitflow.ui.screens.OnboardingScreen(onComplete = { height, weight ->
+                            OnboardingScreen(onComplete = { height, weight ->
                                 viewModel.saveProfile(height, weight)
                                 navController.navigate("workout_setup")
                             })
@@ -120,8 +114,8 @@ class MainActivity : ComponentActivity() {
                         composable("library") {
                             LibraryScreen()
                         }
-                                        composable("workout_setup") {
-                            com.example.fitflow.ui.screens.WorkoutSetupScreen(onComplete = {
+                        composable("workout_setup") {
+                            WorkoutSetupScreen(onComplete = {
                                 navController.navigate("dashboard") {
                                     popUpTo(0) { inclusive = true }
                                     launchSingleTop = true
