@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -39,8 +40,8 @@ fun PlannerScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDark)
-            .padding(16.dp)
-            .padding(bottom = 80.dp) // Space for bottom bar
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
     ) {
         // Header
         Row(
@@ -65,7 +66,8 @@ fun PlannerScreen(
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+            contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Duyệt qua từng tuần
             groupedByWeek.forEach { (weekIndex, daysInWeek) ->
