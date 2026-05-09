@@ -58,15 +58,8 @@ fun PlannerScreen(
                 )
                 Row {
                     Text(
-                        "MONTHLY ",
+                        "PLANNER",
                         color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
-                    )
-                    Text(
-                        "TIMELINE",
-                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
                         fontStyle = FontStyle.Italic

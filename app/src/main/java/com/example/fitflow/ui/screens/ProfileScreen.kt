@@ -35,8 +35,7 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
             Column {
                 Text("IDENTITY", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
                 Row {
-                    Text("SUBJECT ", color = MaterialTheme.colorScheme.onBackground, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                    Text("ZERO", color = MaterialTheme.colorScheme.primary, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                    Text("PROFILE", color = MaterialTheme.colorScheme.onBackground, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
                 }
             }
             IconButton(

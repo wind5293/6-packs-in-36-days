@@ -44,18 +44,26 @@ fun LoadingScreen(onPlanReady: () -> Unit) {
         Text(
             "PICKING THE BEST",
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Black,
             letterSpacing = 3.sp
         )
-        Text(
-            "EXERCISES FOR YOU",
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Black,
-            fontStyle = FontStyle.Italic,
-            letterSpacing = 1.sp
-        )
+        Row {
+            Text(
+                "EXERCISES ",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic
+            )
+            Text(
+                "FOR YOU",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic
+            )
+        }
 
         Spacer(modifier = Modifier.height(48.dp))
 

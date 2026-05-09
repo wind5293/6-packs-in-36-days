@@ -93,15 +93,8 @@ fun HeaderSection() {
             )
             Row {
                 Text(
-                    stringResource(R.string.dashboard_first_half_title),
+                    "DASHBOARD",
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
-                )
-                Text(
-                    stringResource(R.string.dashboard_second_half_title),
-                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
                     fontStyle = FontStyle.Italic

@@ -40,8 +40,8 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text("MANIFEST GENERATION", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
             Row {
-                Text("WORKOUT ", color = MaterialTheme.colorScheme.onBackground, fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                Text("SETUP",   color = MaterialTheme.colorScheme.primary,       fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                Text("WORKOUT ", color = MaterialTheme.colorScheme.onBackground, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                Text("SETUP",   color = MaterialTheme.colorScheme.primary,       fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
             }
         }
 
