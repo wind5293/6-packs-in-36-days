@@ -11,15 +11,17 @@ class UserPreferences (context: Context) {
     companion object {
         const val KEY_HEIGHT         = "height"
         const val KEY_WEIGHT         = "weight"
+        const val KEY_TARGET_WEIGHT  = "target_weight"
         const val KEY_IS_ONBOARDED   = "is_onboarded"
         const val KEY_COMPLETED_DAYS = "completed_days"
         const val KEY_GOAL           = "goal"
     }
 
-    fun saveUserProfile(height: Float, weight: Float) {
+    fun saveUserProfile(height: Float, weight: Float, targetWeight: Float) {
         prefs.edit()
             .putFloat(KEY_HEIGHT, height)
             .putFloat(KEY_WEIGHT, weight)
+            .putFloat(KEY_TARGET_WEIGHT, targetWeight)
             .apply()
     }
 
@@ -30,6 +32,7 @@ class UserPreferences (context: Context) {
     fun getUserProfile(): UserProfile? {
         val height = prefs.getFloat(KEY_HEIGHT, 0f)
         val weight = prefs.getFloat(KEY_WEIGHT, 0f)
+        val targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, 0f)
 
         if (height == 0f || weight == 0f) {
             return null
@@ -43,7 +46,7 @@ class UserPreferences (context: Context) {
             FitnessGoal.WEIGHT_LOSS
         }
 
-        return UserProfile(height, weight, bmi, bmiCategory, goal)
+        return UserProfile(height, weight, targetWeight, bmi, bmiCategory, goal)
     }
 
     fun setOnboarded(value: Boolean) {

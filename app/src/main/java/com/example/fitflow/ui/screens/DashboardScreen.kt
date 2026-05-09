@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.example.fitflow.data.model.UserProfile
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -39,6 +40,7 @@ import java.time.format.DateTimeFormatter
 fun DashboardScreen(
     completedDays: Set<Int> = emptySet(),
     workoutPlan: List<DayPlan> = emptyList(),
+    userProfile: UserProfile? = null,
     onStartWorkout: () -> Unit = {}
 ) {
     var steps by remember { mutableIntStateOf(0) }
@@ -62,6 +64,14 @@ fun DashboardScreen(
         }
         item {
             Spacer(modifier = Modifier.height(32.dp))
+        }
+        item {
+            if (userProfile != null) {
+                TodaysWeightSection(userProfile = userProfile)
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
         }
         item {
             StreakSummarySection()
@@ -93,6 +103,82 @@ fun DashboardScreen(
                 water = water,
                 onAddWater = { water += 250 }
             )
+        }
+    }
+}
+
+@Composable
+fun TodaysWeightSection(userProfile: UserProfile) {
+    val weightLeft = userProfile.weight - userProfile.targetWeight
+    val emoji = when {
+        weightLeft > 5 -> "🔥"
+        weightLeft > 0 -> "💪"
+        else -> "🎉"
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                RoundedCornerShape(24.dp)
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    "TODAY'S WEIGHT",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "${String.format("%.1f", userProfile.weight)} kg",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        emoji,
+                        fontSize = 24.sp
+                    )
+                }
+                Text(
+                    "${String.format("%.1f", weightLeft)} kg to goal",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    "Updated Today!",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+            }
         }
     }
 }
