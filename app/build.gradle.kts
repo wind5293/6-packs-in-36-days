@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.fitflow"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.fitflow"
@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
+    implementation("com.composables:icons-lucide:1.1.0")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("com.google.ai.client.generativeai:generativeai:0.2.2")
