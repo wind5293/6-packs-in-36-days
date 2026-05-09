@@ -49,16 +49,17 @@ fun OnboardingScreen(onComplete: (height: Float, weight: Float) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row {
-                Text("FIT",  color = MaterialTheme.colorScheme.onBackground, fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                Text("FLOW", color = MaterialTheme.colorScheme.primary,      fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-            }
             Text(
                 "CRAFT YOUR MONTHLY JOURNEY",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 10.sp, fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp, modifier = Modifier.padding(top = 4.dp)
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 3.sp
             )
+            Row {
+                Text("FIT",  color = MaterialTheme.colorScheme.onBackground, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                Text("FLOW", color = MaterialTheme.colorScheme.primary,      fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))

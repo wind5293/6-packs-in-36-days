@@ -4,10 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -26,6 +26,10 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.composables.icons.lucide.Footprints
+import com.composables.icons.lucide.GlassWater
+import com.composables.icons.lucide.Lucide
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import java.time.LocalDate
@@ -47,32 +51,49 @@ fun DashboardScreen(
         .flatMap { it.exercises }
         .sumOf { it.kcal }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        HeaderSection()
-        Spacer(modifier = Modifier.height(32.dp))
-        StreakSummarySection()
-        Spacer(modifier = Modifier.height(24.dp))
-        WeeklyCalendarSection()
-        Spacer(modifier = Modifier.height(24.dp))
-        WorkoutsSummarySection(
-            completedCount = completedCount,
-            totalWorkoutDays = totalWorkoutDays,
-            totalKcal = totalKcal,
-            onStartWorkout = onStartWorkout
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        HealthMetricsSection(
-            steps = steps,
-            onAddSteps = { steps += 500 },
-            water = water,
-            onAddWater = { water += 250 }
-        )
+        item {
+            HeaderSection()
+        }
+        item {
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+        item {
+            StreakSummarySection()
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            WeeklyCalendarSection()
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            WorkoutsSummarySection(
+                completedCount = completedCount,
+                totalWorkoutDays = totalWorkoutDays,
+                totalKcal = totalKcal,
+                onStartWorkout = onStartWorkout
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            HealthMetricsSection(
+                steps = steps,
+                onAddSteps = { steps += 500 },
+                water = water,
+                onAddWater = { water += 250 }
+            )
+        }
     }
 }
 
@@ -93,15 +114,8 @@ fun HeaderSection() {
             )
             Row {
                 Text(
-                    stringResource(R.string.dashboard_first_half_title),
+                    "DASHBOARD",
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
-                )
-                Text(
-                    stringResource(R.string.dashboard_second_half_title),
-                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
                     fontStyle = FontStyle.Italic
@@ -410,119 +424,104 @@ fun HealthMetricsSection(
     )
     Spacer(modifier = Modifier.height(12.dp))
 
-    MetricCard(
-        stringResource(R.string.dashboard_steps),
-        steps.toString(),
-        10000,
-        stringResource(R.string.dashboard_unit_steps),
-        MaterialTheme.colorScheme.primary,
-        onAddSteps
-    )
-    Spacer(modifier = Modifier.height(12.dp))
-    MetricCard(
-        stringResource(R.string.dashboard_water),
-        water.toString(),
-        2500,
-        stringResource(R.string.dashboard_unit_ml),
-        MaterialTheme.colorScheme.secondary,
-        onAddWater
-    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        MetricHorizontalCard(
+            modifier = Modifier.weight(1f),
+            icon = Lucide.Footprints,
+            iconTint = MaterialTheme.colorScheme.primary,
+            value = "0",
+            unit = stringResource(R.string.dashboard_steps).uppercase(),
+            buttonText = "SET A GOAL",
+            onClick = onAddSteps
+        )
+        MetricHorizontalCard(
+            modifier = Modifier.weight(1f),
+            icon = Lucide.GlassWater,
+            iconTint = MaterialTheme.colorScheme.secondary,
+            value = "0",
+            unit = stringResource(R.string.dashboard_water).uppercase(),
+            buttonText = "UNLOCK",
+            onClick = onAddWater
+        )
+    }
 }
 
 @Composable
-fun MetricCard(
-    label: String,
+fun MetricHorizontalCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    iconTint: Color,
     value: String,
-    goal: Int,
     unit: String,
-    mainColor: Color,
+    buttonText: String,
     onClick: () -> Unit
 ) {
-    val progress = (value.toFloat() / goal.toFloat()).coerceIn(0f, 1f)
-
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(24.dp),
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .border(
                 1.dp,
                 MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                 RoundedCornerShape(24.dp)
             )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        mainColor.copy(alpha = 0.1f),
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
                         RoundedCornerShape(12.dp)
-                    )
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        label,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                    Text(
-                        "$value / $goal $unit",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .background(
-                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                            RoundedCornerShape(50)
-                        )
-                ) {
-                    if (progress > 0f) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(progress)
-                                .height(4.dp)
-                                .background(mainColor, RoundedCornerShape(50))
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-                        RoundedCornerShape(12.dp)
-                    )
-                    .clickable { onClick() },
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Add",
-                    tint = MaterialTheme.colorScheme.onBackground
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Column {
+                Text(
+                    value,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    unit,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    letterSpacing = 2.sp
+                )
+            }
+            Button(
+                onClick = onClick,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(36.dp),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    buttonText,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 1.sp
                 )
             }
         }

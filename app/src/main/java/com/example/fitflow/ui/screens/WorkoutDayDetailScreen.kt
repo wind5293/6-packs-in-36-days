@@ -84,18 +84,27 @@ fun WorkoutDayDetailScreen(
             Column {
                 Text(
                     "DAY ${dayPlan.dayNumber}",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 3.sp
                 )
-                Text(
-                    if (dayPlan.isRest) "REST & RECOVERY" else "WORKOUT SESSION",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
-                )
+                Row {
+                    Text(
+                        if (dayPlan.isRest) "REST & " else "WORKOUT ",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Text(
+                        if (dayPlan.isRest) "RECOVERY" else "SESSION",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
             }
         }
 
