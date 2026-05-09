@@ -11,7 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,18 +19,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
+import com.example.fitflow.ui.screens.LibraryScreen
+import com.example.fitflow.ui.screens.LoadingScreen
 import com.example.fitflow.ui.screens.WorkoutSetupScreen
-//import com.example.fitflow.ui.screens.LibraryScreen
 import com.example.fitflow.ui.screens.PlannerScreen
 import com.example.fitflow.ui.screens.WorkoutDayDetailScreen
+import com.example.fitflow.ui.screens.WorkoutSessionScreen
+import com.example.fitflow.ui.screens.TimedExercise
 import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
-
-
-//import com.example.fitflow.ui.screens.DashboardScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,11 +52,14 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val hideNav = currentRoute == "onboarding"
                             || currentRoute == "workout_setup"
+                            || currentRoute == "loading"
                             || (currentRoute?.startsWith("day_detail") == true)
+                            || (currentRoute?.startsWith("workout_session") == true)
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    // Luôn pop về "dashboard" — root thật sự của backstack
+                                    popUpTo("dashboard") { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
@@ -70,7 +72,21 @@ class MainActivity : ComponentActivity() {
                         startDestination = startDestination,
                         modifier = Modifier.padding(paddingValues)
                     ) {
-                        composable("dashboard") { DashboardScreen() }
+                        composable("dashboard") {
+                            val workoutPlan   by viewModel.workoutPlan.collectAsState()
+                            val completedDays by viewModel.completedDays.collectAsState()
+                            DashboardScreen(
+                                completedDays = completedDays,
+                                workoutPlan   = workoutPlan,
+                                onStartWorkout = {
+                                    navController.navigate("planner") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            )
+                        }
                         composable("planner") {
                             val workoutPlan   by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
@@ -96,22 +112,19 @@ class MainActivity : ComponentActivity() {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val dayPlan     = workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
                             WorkoutDayDetailScreen(
-                                dayPlan       = dayPlan,
-                                onBack        = { navController.popBackStack() },
-                                onDayComplete = {
-                                    viewModel.markDayComplete(dayNumber)
-                                    navController.popBackStack()
-                                }
+                                dayPlan         = dayPlan,
+                                onBack          = { navController.popBackStack() },
+                                onDayComplete   = { viewModel.markDayComplete(dayNumber) },
+                                onStartSession  = { navController.navigate("workout_session/$dayNumber") }
                             )
                         }
-                        //composable("library") { LibraryScreen() }
                         composable("profile") {
                             ProfileScreen(onReCalibrate = {
                                 navController.navigate("onboarding")
                             })
                         }
                         composable("onboarding") {
-                            com.example.fitflow.ui.screens.OnboardingScreen(onComplete = { height, weight ->
+                            OnboardingScreen(onComplete = { height, weight ->
                                 viewModel.saveProfile(height, weight)
                                 navController.navigate("workout_setup")
                             })
@@ -119,12 +132,40 @@ class MainActivity : ComponentActivity() {
                         composable("library") {
                             LibraryScreen()
                         }
-                        composable("workout_setup") {
-                            com.example.fitflow.ui.screens.WorkoutSetupScreen(onComplete = {
+                        composable("loading") {
+                            LoadingScreen(onPlanReady = {
                                 navController.navigate("dashboard") {
-                                    popUpTo("onboarding") { inclusive = true }
+                                    popUpTo(0) { inclusive = true }
+                                    launchSingleTop = true
                                 }
                             })
+                        }
+                        composable("workout_setup") {
+                            WorkoutSetupScreen(onComplete = { goal ->
+                                viewModel.saveGoal(goal)
+                                navController.navigate("loading") {
+                                    popUpTo("workout_setup") { inclusive = true }
+                                }
+                            })
+                        }
+                        composable(
+                            route = "workout_session/{dayNumber}",
+                            arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            val dayNumber   = backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val dayPlan     = workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
+                            val timedExercises = dayPlan.exercises.map { ex ->
+                                TimedExercise(name = ex.name, durationSec = ex.reps * 3)
+                            }
+                            WorkoutSessionScreen(
+                                exercises = timedExercises,
+                                onBack    = { navController.popBackStack() },
+                                onFinish  = {
+                                    viewModel.markDayComplete(dayNumber)
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                     }
                 }

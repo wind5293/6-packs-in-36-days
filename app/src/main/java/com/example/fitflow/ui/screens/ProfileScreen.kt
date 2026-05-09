@@ -18,42 +18,41 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fitflow.ui.theme.*
 
 @Composable
 fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        // Header
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("IDENTITY", color = White40, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
+                Text("IDENTITY", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
                 Row {
-                    Text("SUBJECT ", color = TextDim, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                    Text("ZERO", color = AccentNeon, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                    Text("SUBJECT ", color = MaterialTheme.colorScheme.onBackground, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                    Text("ZERO", color = MaterialTheme.colorScheme.primary, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
                 }
             }
             IconButton(
                 onClick = {},
-                modifier = Modifier.background(White05, RoundedCornerShape(16.dp)).border(1.dp, White05, RoundedCornerShape(16.dp))
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
             ) {
-                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = White40)
+                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
             }
         }
 
-        // Stats Card
         Card(
-            colors = CardDefaults.cardColors(containerColor = CardDark),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(32.dp),
-            modifier = Modifier.fillMaxWidth().border(1.dp, White05, RoundedCornerShape(32.dp))
+            modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(24.dp),
@@ -66,16 +65,15 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
         }
 
         Spacer(modifier = Modifier.height(32.dp))
-        Text("OPERATIONS", color = White40, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+        Text("OPERATIONS", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Action Button
         Card(
-            colors = CardDefaults.cardColors(containerColor = White05),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, White05, RoundedCornerShape(24.dp))
+                .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
                 .clip(RoundedCornerShape(24.dp))
                 .clickable { onReCalibrate() }
         ) {
@@ -85,16 +83,19 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(48.dp).background(AccentNeon.copy(alpha=0.1f), RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = AccentNeon)
+                    Box(
+                        modifier = Modifier.size(48.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text("RE-CALIBRATE BODY STATS", color = TextDim, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                        Text("REVIEW YOUR ONBOARDING SETUP", color = White40, fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
+                        Text("RE-CALIBRATE BODY STATS", color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("REVIEW YOUR ONBOARDING SETUP", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
                     }
                 }
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = White40)
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
             }
         }
     }
@@ -103,12 +104,18 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
 @Composable
 fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, color = White40, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+        Text(label, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.Bottom) {
-            Text(value, color = if (isHighlight) AccentNeon else TextDim, fontSize = 24.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+            Text(
+                value,
+                color = if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic
+            )
             if (unit.isNotEmpty()) {
-                Text(unit, color = White40, fontSize = 12.sp, modifier = Modifier.padding(bottom = 4.dp, start = 2.dp))
+                Text(unit, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 12.sp, modifier = Modifier.padding(bottom = 4.dp, start = 2.dp))
             }
         }
     }

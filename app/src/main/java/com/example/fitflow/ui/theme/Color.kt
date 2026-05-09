@@ -21,9 +21,15 @@ val SecondaryBlue = Color(0xFF00E5FF) // Electric Cyan
 val TextDim = Color(0xFFF0F0F5)
 
 val White20 = Color(0x33FFFFFF)
-
 val White10 = Color(0x1AFFFFFF)
-
 val White05 = Color(0x0DFFFFFF)
-
 val White40 = Color(0x66FFFFFF)
+
+// Light mode colors
+val BackgroundLight = Color(0xFFF2F2F7)
+val CardLight       = Color(0xFFFFFFFF)
+val TextDarkMode    = Color(0xFF1A1A2E)
+val Black40         = Color(0x66000000)
+val Black20         = Color(0x33000000)
+val Black10         = Color(0x1A000000)
+val Black05         = Color(0x0D000000)

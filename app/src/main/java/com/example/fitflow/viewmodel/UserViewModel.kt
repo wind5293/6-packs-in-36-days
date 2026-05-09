@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.fitflow.data.UserPreferences
 import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.WorkoutPlangenerator
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,7 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
         _workoutPlan.value = if (profile != null) {
-            WorkoutPlangenerator.generatePlan(profile.bmiCategory)
+            WorkoutPlangenerator.generatePlan(profile.goal)
         } else {
             emptyList()
         }
@@ -34,6 +35,11 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
     fun saveProfile(height: Float, weight: Float) {
         userPreferences.saveUserProfile(height, weight)
         userPreferences.setOnboarded(true)
+        loadUserProfile()
+    }
+
+    fun saveGoal(goal: FitnessGoal) {
+        userPreferences.saveGoal(goal)
         loadUserProfile()
     }
 
