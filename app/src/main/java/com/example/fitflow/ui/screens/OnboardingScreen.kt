@@ -146,7 +146,7 @@ fun OnboardingScreen(onComplete: (height: Float, weight: Float) -> Unit) {
             onClick = { onComplete(height, weight) },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.fillMaxWidth().height(60.dp)
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("ACTIVATE JOURNEY", color = MaterialTheme.colorScheme.onPrimary, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)

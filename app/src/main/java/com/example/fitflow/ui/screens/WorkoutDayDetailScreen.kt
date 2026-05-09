@@ -29,7 +29,8 @@ import kotlinx.coroutines.delay
 fun WorkoutDayDetailScreen(
     dayPlan: DayPlan,
     onBack: () -> Unit,
-    onDayComplete: () -> Unit = {}
+    onDayComplete: () -> Unit = {},
+    onStartSession: () -> Unit = {}
 ) {
     var currentExerciseIndex by remember { mutableIntStateOf(0) }
     var showRestTimer by remember { mutableStateOf(false) }
@@ -113,14 +114,12 @@ fun WorkoutDayDetailScreen(
             else           -> WorkoutContent(
                 exercises = exercises,
                 currentIndex = currentExerciseIndex,
+                onStartSession = onStartSession,
                 onExerciseDone = {
                     currentExerciseIndex++
-                    // Hiện rest timer nếu còn bài tiếp theo
                     if (currentExerciseIndex < exercises.size) {
                         showRestTimer = true
                     }
-                    // Khi bài cuối xong → KHÔNG tự gọi onDayComplete,
-                    // người dùng sẽ thấy DayCompleteContent và bấm FINISH
                 }
             )
         }
@@ -130,16 +129,24 @@ fun WorkoutDayDetailScreen(
 // ─── Rest Timer Dialog ────────────────────────────────────────────────────────
 
 @Composable
-private fun RestTimerDialog(onFinish: () -> Unit, onSkip: () -> Unit) {
-    var secondsLeft by remember { mutableIntStateOf(60) }
+private fun RestTimerDialog(
+    initialSeconds: Int = 60,
+    onFinish: () -> Unit,
+    onSkip: () -> Unit
+) {
+    var selectedDuration by remember { mutableIntStateOf(initialSeconds) }
+    var secondsLeft by remember { mutableIntStateOf(initialSeconds) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(selectedDuration) {
+        secondsLeft = selectedDuration
         while (secondsLeft > 0) {
             delay(1000L)
             secondsLeft--
         }
         onFinish()
     }
+
+    val durations = listOf(30, 60, 90, 120)
 
     Dialog(onDismissRequest = {}) {
         Column(
@@ -160,6 +167,34 @@ private fun RestTimerDialog(onFinish: () -> Unit, onSkip: () -> Unit) {
                 fontWeight = FontWeight.Black,
                 letterSpacing = 3.sp
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                durations.forEach { d ->
+                    FilterChip(
+                        selected = selectedDuration == d,
+                        onClick = { selectedDuration = d },
+                        label = {
+                            Text(
+                                "${d}s",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                            containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                            labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = selectedDuration == d,
+                            borderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                            selectedBorderColor = MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 "$secondsLeft",
@@ -176,7 +211,7 @@ private fun RestTimerDialog(onFinish: () -> Unit, onSkip: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(24.dp))
             LinearProgressIndicator(
-                progress = { secondsLeft / 60f },
+                progress = { secondsLeft / selectedDuration.toFloat() },
                 modifier = Modifier.fillMaxWidth().height(4.dp),
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
@@ -208,8 +243,26 @@ private fun RestTimerDialog(onFinish: () -> Unit, onSkip: () -> Unit) {
 private fun WorkoutContent(
     exercises: List<Exercise>,
     currentIndex: Int,
+    onStartSession: () -> Unit,
     onExerciseDone: () -> Unit
 ) {
+    Button(
+        onClick = onStartSession,
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+    ) {
+        Text(
+            "START TIMED SESSION",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 2.sp
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -345,7 +398,7 @@ private fun ExerciseDetailCard(
                     onClick = onDone,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth().height(44.dp)
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 ) {
                     Text(
                         "DONE",
@@ -420,7 +473,7 @@ private fun RestDayContent(onBack: () -> Unit) {
                 onClick = onBack,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth(0.7f).height(52.dp)
+                modifier = Modifier.fillMaxWidth(0.7f).heightIn(min = 56.dp)
             ) {
                 Text(
                     "BACK TO PLAN",
@@ -463,7 +516,7 @@ private fun DayCompleteContent(onFinish: () -> Unit, onBack: () -> Unit) {
                 onClick = onFinish,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth().height(56.dp)
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
             ) {
                 Text(
                     "FINISH WORKOUT",

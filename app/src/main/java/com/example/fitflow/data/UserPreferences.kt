@@ -1,6 +1,7 @@
 package com.example.fitflow.data
 
 import android.content.Context
+import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.calculateBmi
 import com.example.fitflow.domain.getBmiCategory
@@ -8,10 +9,11 @@ import com.example.fitflow.domain.getBmiCategory
 class UserPreferences (context: Context) {
     private val prefs = context.getSharedPreferences("fitflow_prefs", Context.MODE_PRIVATE)
     companion object {
-        const val KEY_HEIGHT        = "height"
-        const val KEY_WEIGHT        = "weight"
-        const val KEY_IS_ONBOARDED  = "is_onboarded"
+        const val KEY_HEIGHT         = "height"
+        const val KEY_WEIGHT         = "weight"
+        const val KEY_IS_ONBOARDED   = "is_onboarded"
         const val KEY_COMPLETED_DAYS = "completed_days"
+        const val KEY_GOAL           = "goal"
     }
 
     fun saveUserProfile(height: Float, weight: Float) {
@@ -19,6 +21,10 @@ class UserPreferences (context: Context) {
             .putFloat(KEY_HEIGHT, height)
             .putFloat(KEY_WEIGHT, weight)
             .apply()
+    }
+
+    fun saveGoal(goal: FitnessGoal) {
+        prefs.edit().putString(KEY_GOAL, goal.name).apply()
     }
 
     fun getUserProfile(): UserProfile? {
@@ -31,8 +37,13 @@ class UserPreferences (context: Context) {
 
         val bmi = calculateBmi(height, weight)
         val bmiCategory = getBmiCategory(bmi)
+        val goal = try {
+            FitnessGoal.valueOf(prefs.getString(KEY_GOAL, FitnessGoal.WEIGHT_LOSS.name) ?: FitnessGoal.WEIGHT_LOSS.name)
+        } catch (e: IllegalArgumentException) {
+            FitnessGoal.WEIGHT_LOSS
+        }
 
-        return UserProfile(height, weight, bmi, bmiCategory)
+        return UserProfile(height, weight, bmi, bmiCategory, goal)
     }
 
     fun setOnboarded(value: Boolean) {

@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
@@ -17,18 +19,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.ui.theme.FitflowTheme
 
 @Composable
-fun WorkoutSetupScreen(onComplete: () -> Unit) {
+fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
     var selectedEquipment by remember { mutableStateOf("bodyweight") }
     var selectedFocus by remember { mutableStateOf(setOf("Full Body")) }
     var daysPerWeek by remember { mutableFloatStateOf(5f) }
+    var selectedGoal by remember { mutableStateOf(FitnessGoal.WEIGHT_LOSS) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
             .padding(top = 40.dp)
     ) {
@@ -67,13 +72,24 @@ fun WorkoutSetupScreen(onComplete: () -> Unit) {
             )
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text("FITNESS GOAL", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+        Spacer(modifier = Modifier.height(16.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            EquipmentItem("Weight Loss",  "Cardio-focused · Burn calories",    selectedGoal == FitnessGoal.WEIGHT_LOSS)  { selectedGoal = FitnessGoal.WEIGHT_LOSS }
+            EquipmentItem("Muscle Gain",  "Strength-focused · Build muscle",   selectedGoal == FitnessGoal.MUSCLE_GAIN) { selectedGoal = FitnessGoal.MUSCLE_GAIN }
+            EquipmentItem("Endurance",    "Mixed training · Increase stamina", selectedGoal == FitnessGoal.ENDURANCE)   { selectedGoal = FitnessGoal.ENDURANCE }
+            EquipmentItem("Maintenance",  "Balanced workout · Stay fit",       selectedGoal == FitnessGoal.MAINTENANCE) { selectedGoal = FitnessGoal.MAINTENANCE }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = onComplete,
+            onClick = { onComplete(selectedGoal) },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.fillMaxWidth().height(64.dp)
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("FINALIZE PROTOCOL", color = MaterialTheme.colorScheme.onPrimary, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
@@ -81,15 +97,17 @@ fun WorkoutSetupScreen(onComplete: () -> Unit) {
                 Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 @Composable
 fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () -> Unit) {
-    val bgColor    = if (isSelected) MaterialTheme.colorScheme.primary                             else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
-    val textColor  = if (isSelected) MaterialTheme.colorScheme.onPrimary                           else MaterialTheme.colorScheme.onBackground
-    val descColor  = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)        else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary                            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+    val bgColor     = if (isSelected) MaterialTheme.colorScheme.primary                          else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+    val textColor   = if (isSelected) MaterialTheme.colorScheme.onPrimary                        else MaterialTheme.colorScheme.onBackground
+    val descColor   = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)     else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary                          else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
 
     Box(
         modifier = Modifier
@@ -110,5 +128,5 @@ fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () 
 @Preview(showBackground = true)
 @Composable
 fun WorkoutSetupScreenPreview() {
-    FitflowTheme { WorkoutSetupScreen({}) }
+    FitflowTheme { WorkoutSetupScreen({ _ -> }) }
 }
