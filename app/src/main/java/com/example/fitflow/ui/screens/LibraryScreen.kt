@@ -27,7 +27,9 @@ fun LibraryScreen() {
             .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -41,9 +43,16 @@ fun LibraryScreen() {
             )
             IconButton(
                 onClick = {},
-                modifier = Modifier.background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+                modifier = Modifier.background(
+                    MaterialTheme.colorScheme.primary,
+                    RoundedCornerShape(16.dp)
+                )
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Add",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
 
@@ -75,11 +84,24 @@ fun LibraryScreen() {
 }
 
 @Composable
-fun ExerciseCard(category: String, name: String, description: String, reps: String, sets: String, cals: String) {
+fun ExerciseCard(
+    category: String,
+    name: String,
+    description: String,
+    reps: String,
+    sets: String,
+    cals: String
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                RoundedCornerShape(24.dp)
+            )
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
@@ -89,21 +111,45 @@ fun ExerciseCard(category: String, name: String, description: String, reps: Stri
                 fontWeight = FontWeight.Black,
                 letterSpacing = 3.sp,
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(50))
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(50))
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        RoundedCornerShape(50)
+                    )
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        RoundedCornerShape(50)
+                    )
                     .padding(horizontal = 8.dp, vertical = 2.dp)
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Text(name, color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+            Text(
+                name,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(description, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, lineHeight = 16.sp)
+            Text(
+                description,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 11.sp,
+                lineHeight = 16.sp
+            )
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Chip(reps)
                 Chip(sets)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(cals, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, fontWeight = FontWeight.Black, modifier = Modifier.align(Alignment.CenterVertically))
+                Text(
+                    cals,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
             }
         }
     }
@@ -113,10 +159,19 @@ fun ExerciseCard(category: String, name: String, description: String, reps: Stri
 fun Chip(text: String) {
     Box(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+            .background(
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                RoundedCornerShape(8.dp)
+            )
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Text(text, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+        Text(
+            text,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 1.sp
+        )
     }
 }
 
