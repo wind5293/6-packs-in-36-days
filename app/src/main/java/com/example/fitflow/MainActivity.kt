@@ -123,9 +123,17 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("profile") {
-                            ProfileScreen(onReCalibrate = {
-                                navController.navigate("onboarding")
-                            })
+                            val userProfile by viewModel.userProfile.collectAsState()
+                            val completedDays by viewModel.completedDays.collectAsState()
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val startDate by viewModel.startDate.collectAsState()
+                            ProfileScreen(
+                                userProfile = userProfile,
+                                completedDays = completedDays,
+                                workoutPlan = workoutPlan,
+                                startDate = startDate,
+                                onReCalibrate = { navController.navigate("onboarding") }
+                            )
                         }
                         composable("onboarding") {
                             OnboardingScreen(onComplete = { height, weight, targetWeight ->

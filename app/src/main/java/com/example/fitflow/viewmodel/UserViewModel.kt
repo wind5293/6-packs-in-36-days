@@ -10,6 +10,7 @@ import com.example.fitflow.domain.WorkoutPlangenerator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.time.LocalDate
 
 class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() {
     private val _userProfile: MutableStateFlow<UserProfile?> = MutableStateFlow(null)
@@ -21,10 +22,14 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
     private val _completedDays = MutableStateFlow<Set<Int>>(emptySet())
     val completedDays: StateFlow<Set<Int>> = _completedDays.asStateFlow()
 
+    private val _startDate = MutableStateFlow<LocalDate?>(null)
+    val startDate: StateFlow<LocalDate?> = _startDate.asStateFlow()
+
     private fun loadUserProfile() {
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
+        _startDate.value = userPreferences.getStartDate()
         _workoutPlan.value = if (profile != null) {
             WorkoutPlangenerator.generatePlan(profile.goal)
         } else {

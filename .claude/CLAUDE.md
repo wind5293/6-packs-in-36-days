@@ -5,7 +5,7 @@
 FitFlow là ứng dụng Android mentor người dùng tập thể dục tại nhà, lấy cảm hứng từ app **"6 Pack in 30 Days"**. Ứng dụng xây dựng bằng **Kotlin + Jetpack Compose**, theo kiến trúc **MVVM**, hỗ trợ dark/light theme.
 
 **Package**: `com.example.fitflow`
-**Min SDK**: 26 (Android 8.0) | **Target SDK**: 35 | **Compile SDK**: 36
+**Min SDK**: 26 (Android 8.0) | **Target SDK**: 35 | **Compile SDK**: 35
 
 ---
 
@@ -19,7 +19,7 @@ app/src/main/java/com/example/fitflow/
 │   ├── UserPreferences.kt       # SharedPreferences wrapper (lưu profile, onboarding, completed days)
 │   └── model/
 │       ├── DayPlan.kt           # Data class: dayNumber, isRest, exercises
-│       ├── Exercise.kt          # Data class: name, sets, reps, kcal
+│       ├── Exercise.kt          # Data class: category, name, sets, reps, kcal, durationSec (Int)
 │       └── UserProfile.kt       # Data class + BmiCategory enum
 ├── domain/
 │   ├── BmiCalculator.kt         # calculateBmi(), getBmiCategory()
@@ -34,9 +34,9 @@ app/src/main/java/com/example/fitflow/
     ├── components/
     │   └── BottomNavbar.kt      # Bottom navigation: Home, Plan, (+), Library, Me
     └── screens/
-        ├── OnboardingScreen.kt       # Nhập height/weight → tính BMI → suggested goal
+        ├── OnboardingScreen.kt       # Nhập height/weight/targetWeight → tính BMI → suggested goal
         ├── WorkoutSetupScreen.kt     # Chọn equipment, frequency → finalize
-        ├── DashboardScreen.kt        # Trang chủ: streak, health metrics (steps, water)
+        ├── DashboardScreen.kt        # Trang chủ: LazyColumn, TodaysWeight, streak, Calendar, Workouts, health metrics
         ├── PlannerScreen.kt          # Lịch 30 ngày chia theo tuần, LazyColumn
         ├── WorkoutDayDetailScreen.kt # Chi tiết ngày tập: danh sách exercise, nút DONE, rest timer có chọn duration
         ├── WorkoutSessionScreen.kt   # Timer-based session (đã tích hợp route workout_session/{dayNumber})
@@ -107,8 +107,9 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 
 ### ~~1. Trang chủ (Dashboard) cuộn không hợp lý~~ ✅ ĐÃ SỬA
 - ~~`DashboardScreen` dùng `Column` thường thay vì `LazyColumn`~~
-- **Đã sửa**: Thêm `Modifier.verticalScroll(rememberScrollState())` vào root Column của `DashboardScreen`
-- ~~Còn thiếu: Chưa thêm các sections mới~~ → ✅ Đã thêm Calendar + Workouts summary (2026-05-09)
+- **Đã sửa (lần 1, 05-07)**: Thêm `Modifier.verticalScroll(rememberScrollState())` vào root Column
+- **Đã sửa (lần 2, 05-09)**: Chuyển hoàn toàn sang `LazyColumn` — `verticalScroll` bị xóa, mỗi section là một `item {}`
+- ✅ Đã thêm Calendar + Workouts summary + TodaysWeight section
 
 ### ~~2. Thiếu nút Finish trong workout flow~~ ✅ ĐÃ SỬA
 - ~~Tự động gọi `onDayComplete()` khi bài cuối xong~~
@@ -140,8 +141,14 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 
 ### ~~7. WorkoutSessionScreen chưa tích hợp~~ ✅ ĐÃ SỬA
 - ~~File tồn tại nhưng không có route trong `NavHost`~~
-- **Đã sửa** (2026-05-09): Route `workout_session/{dayNumber}` thêm vào NavHost. Nút "START TIMED SESSION" trong `WorkoutDayDetailScreen`. Exercises convert từ `DayPlan` với `durationSec = reps * 3`
+- **Đã sửa** (2026-05-09): Route `workout_session/{dayNumber}` thêm vào NavHost. Nút "START TIMED SESSION" trong `WorkoutDayDetailScreen`.
+- ~~`TimedExercise` class riêng~~ → ✅ Đã xóa, `WorkoutSessionScreen` dùng `Exercise` trực tiếp (2026-05-09, commit 183b059)
 - ~~Vẫn dùng hardcoded colors từ `theme.*`~~ → ✅ Đã chuyển sang `MaterialTheme.colorScheme` (2026-05-09)
+
+### 9. HealthMetricsSection — steps/water hardcoded về "0" ⚠️ CẦN XEM XÉT
+- **Vấn đề**: `MetricHorizontalCard` trong `HealthMetricsSection` hiển thị giá trị `"0"` cứng, không lấy từ `steps`/`water` state nữa sau khi redesign (commit 773f247)
+- **Ảnh hưởng**: Nút "SET A GOAL" và "UNLOCK" không functional — chỉ là UI placeholder
+- **Cần làm**: Nối lại với state, hoặc quyết định feature tracking sẽ implement sau
 
 ### ~~8. Indentation không nhất quán~~ ✅ ĐÃ SỬA
 - ~~`MainActivity.kt` line 123: `composable("workout_setup")` bị thụt lề sai (dùng tab thay vì spaces)~~
@@ -224,9 +231,14 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 
 ### Dependencies đáng chú ý
 - `androidx.navigation:navigation-compose:2.7.7` — Navigation
-- `androidx.compose.material:material-icons-extended` — Icons
+- `androidx.compose.material:material-icons-extended` — Icons (Material)
+- `com.composables:icons-lucide:1.1.0` — Lucide icons (thêm mới, dùng trong MetricHorizontalCard)
 - `com.google.ai.client.generativeai:generativeai:0.2.2` — Gemini AI (có trong deps nhưng chưa sử dụng)
-- `androidx.room:room-ktx` — Room (có trong deps nhưng chưa sử dụng)
+- `androidx.room:room-ktx:2.6.1` — Room (có trong deps nhưng chưa sử dụng)
+
+### Versions (sau downgrade commit 773f247)
+- AGP: `8.7.3` | Kotlin: `2.0.21` | compileSdk: `35`
+- coreKtx: `1.13.1` | lifecycleRuntime: `2.8.6` | activityCompose: `1.9.3` | composeBom: `2024.10.00`
 
 ---
 
@@ -236,13 +248,13 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 
 | Màn hình | Theme | Layout | Navigation | Data | Tổng thể |
 |----------|-------|--------|-----------|------|----------|
-| Onboarding | ✅ MaterialTheme | ⚠️ Slider fixed-range | ✅ OK | ⚠️ Thiếu birth year, target weight | ⚠️ Cần mở rộng |
+| Onboarding | ✅ MaterialTheme | ⚠️ Slider fixed-range | ✅ OK | ✅ Có target weight slider (30–150kg) — còn thiếu birth year | ⚠️ Cần mở rộng |
 | Workout Setup | ✅ MaterialTheme | ✅ Scroll | ✅ OK | ✅ Goal + equipment + frequency | ✅ Hoạt động |
 | Loading | ✅ MaterialTheme | ✅ Center column | ✅ Popbackstack clean | ✅ Fake 2.5s delay | ✅ Hoạt động |
-| Dashboard | ✅ MaterialTheme | ✅ Responsive + scroll | ✅ OK | ✅ Calendar + Workouts từ ViewModel, steps/water local | ✅ Hoạt động |
+| Dashboard | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK | ✅ TodaysWeight + Calendar + Workouts từ ViewModel; steps/water UI-only (hardcoded "0") | ⚠️ Steps/Water cần nối state |
 | Planner | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK | ✅ ViewModel | ✅ Hoạt động |
 | Day Detail | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK + onStartSession | ✅ ViewModel | ✅ Hoạt động |
-| Workout Session | ✅ MaterialTheme | ✅ Column | ✅ Route workout_session/{dayNumber} | ✅ TimedExercise từ DayPlan | ✅ Tích hợp |
+| Workout Session | ✅ MaterialTheme | ✅ Column | ✅ Route workout_session/{dayNumber} | ✅ Exercise (có category) từ DayPlan | ✅ Tích hợp |
 | Library | ✅ MaterialTheme | ✅ OK | ✅ OK | ❌ 2 exercises hardcoded | ⚠️ Cần phát triển |
 | Profile | ✅ MaterialTheme | ✅ OK | ✅ OK | ❌ Stats hardcoded | ⚠️ Cần kết nối ViewModel |
 
@@ -255,14 +267,39 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 | Theme (Type.kt) | `ui/theme/Type.kt` | ⚠️ Chỉ có `bodyLarge`, phần còn lại bị comment |
 | BottomNavbar | `ui/components/BottomNavbar.kt` | ✅ Home, Plan, Library, Me — hoạt động |
 | Navigation | `MainActivity.kt` | ✅ 8 routes, imports sạch, hideNav đầy đủ (2026-05-09) |
-| UserPreferences | `data/UserPreferences.kt` | ✅ Lưu profile, onboarding status, completed days, goal |
-| UserViewModel | `viewmodel/UserViewModel.kt` | ✅ StateFlow cho workoutPlan, completedDays, profile; saveGoal() |
-| WorkoutPlanGenerator | `domain/WorkoutPlanGenerator.kt` | ✅ 4 goal-based pools (WEIGHT_LOSS/MUSCLE_GAIN/ENDURANCE/MAINTENANCE) |
+| UserPreferences | `data/UserPreferences.kt` | ✅ Lưu profile (height, weight, **targetWeight**), onboarding status, completed days, goal |
+| UserViewModel | `viewmodel/UserViewModel.kt` | ✅ StateFlow cho workoutPlan, completedDays, profile; saveGoal(); saveProfile nhận targetWeight |
+| WorkoutPlanGenerator | `domain/WorkoutPlanGenerator.kt` | ✅ 4 goal-based pools, mỗi Exercise có **category** string (Cardio/Strength/Endurance/Maintenance) |
 | strings.xml | `res/values/strings.xml` | ⚠️ Chỉ có strings cho Dashboard, còn thiếu Planner + WorkoutDayDetail |
 
 ---
 
-## Những gì đã hoàn thành (Phiên 2026-05-09)
+## Những gì đã hoàn thành (Sprint 3 — 2026-05-09, commits 183b059→941263f)
+
+### Sprint 3 — Data Model & UI Polish — ✅ HOÀN THÀNH
+
+1. **Exercise model hoàn chỉnh**:
+   - Thêm `category: String` vào `Exercise` data class — giải quyết xung đột namespace với `TimedExercise`, mở đường cho Library filter
+   - `durationSec` non-nullable — contract rõ ràng hơn
+   - `WorkoutPlanGenerator` cập nhật tất cả 36 exercises với đúng category
+   - `TimedExercise` bị xóa hoàn toàn, `WorkoutSessionScreen` dùng `Exercise` trực tiếp
+
+2. **Target Weight trong Onboarding + Dashboard**:
+   - `UserProfile.targetWeight: Float` — lưu/load qua `UserPreferences`
+   - `OnboardingScreen` có slider TARGET WEIGHT (range 30–150kg, secondary color)
+   - `TodaysWeightSection` trên Dashboard — current weight, "X kg to goal", emoji motivational
+
+3. **Dashboard chuyển sang LazyColumn** — 6 sections, mỗi section là `item {}`
+
+4. **HealthMetricsSection redesign** — `MetricHorizontalCard` với Lucide icons, layout 2 cột ngang
+
+5. **Header standardization** — tất cả 7 screens đổi sang pattern "label phụ + tên 1 từ 28sp"
+
+6. **Build toolchain downgrade** — compileSdk 35, AGP 8.7.3, Kotlin 2.0.21 (stability fix)
+
+---
+
+## Những gì đã hoàn thành (Sprint 2 — 2026-05-09, commit d227222)
 
 ### Sprint 2 — Feature Enhancement — ✅ HOÀN THÀNH
 
@@ -372,20 +409,20 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 |---|------|---------|----------|
 | P1.2 | Di chuyển hardcoded strings | `PlannerScreen.kt`, `WorkoutDayDetailScreen.kt`, `strings.xml` | ~17 strings cần vào `strings.xml` để tuân thủ i18n convention |
 
-### 🟠 Priority 2 — Sprint 3 (Enhancement)
+### 🟠 Priority 2 — Sprint 4 (Enhancement)
 
 | # | Task | Mô tả |
 |---|------|-------|
 | P2.1 | **Kết nối Profile → ViewModel** | ProfileScreen lấy stats thực (weight, height, workouts completed, total kcal) từ UserViewModel thay vì hardcode |
 | P2.2 | **Phát triển Library** | Thêm exercise pools đầy đủ từ `WorkoutPlanGenerator` (4 pools × 9 bài), hiện theo category với filter |
 | P2.3 | **Check-in Record section** | Thêm calendar heatmap hoặc streak indicator theo design `1deaf581` — biểu diễn completedDays |
-| P2.4 | **Weight tracking card** | Thêm card theo dõi cân nặng vào Dashboard theo design `9012477c` — cần thêm field weight history vào UserPreferences |
+| P2.4 | **Weight tracking (history)** | `TodaysWeightSection` đã có (current weight + kg to goal). Còn thiếu: weight history chart, input manual cân nặng mới — cần thêm `weightHistory: List<Pair<Date,Float>>` vào UserPreferences |
 
-### 🟡 Priority 3 — Sprint 4 (Polish)
+### 🟡 Priority 3 — Sprint 5 (Polish)
 
 | # | Task | Mô tả |
 |---|------|-------|
-| P3.1 | **Cải thiện Onboarding** | Multi-step flow: height → birth year → current weight → target weight. Ruler/wheel picker thay vì slider — theo design `24d90e7a`, `85afb086` |
+| P3.1 | **Cải thiện Onboarding** | Target weight slider đã có. Còn thiếu: birth year step, ruler/wheel picker thay vì slider — theo design `24d90e7a`, `85afb086` |
 | P3.2 | **Typography system** | Mở rộng `Type.kt` — thêm full typography set (headline, title, label styles) thay vì chỉ `bodyLarge` |
 | P3.3 | **WorkoutSession UX** | Thêm rest timer giữa các bài trong WorkoutSessionScreen (hiện chỉ có trong WorkoutDayDetailScreen) |
 
@@ -393,9 +430,10 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 
 ## Quyết định quan trọng & Lý do
 
-### QĐ-1: Dùng `verticalScroll` thay vì `LazyColumn` cho Dashboard
-- **Quyết định**: Dashboard dùng `Column + verticalScroll` thay vì `LazyColumn`
-- **Lý do**: Dashboard có ít section cố định (header, streak, metrics) — chưa đủ phức tạp để cần lazy loading. `verticalScroll` đơn giản hơn và cho phép giữ cấu trúc composable hiện tại. Khi thêm sections mới (Calendar, Weight chart...), nếu số lượng items tăng đáng kể → chuyển sang `LazyColumn`
+### ~~QĐ-1: Dùng `verticalScroll` thay vì `LazyColumn` cho Dashboard~~ ĐÃ ĐẢO NGƯỢC (2026-05-09)
+- **Quyết định ban đầu**: `Column + verticalScroll` cho Dashboard
+- **Đảo ngược**: Commit 773f247 chuyển hoàn toàn sang `LazyColumn` — mỗi section là một `item {}`
+- **Lý do đảo ngược**: Dashboard đã có 6+ sections (Header, TodaysWeight, Streak, Calendar, WorkoutsSummary, HealthMetrics) — đủ điều kiện dùng `LazyColumn`. Dễ thêm sections mới mà không cần wrap lại
 
 ### QĐ-2: Tách Finish thành 2 nút riêng biệt
 - **Quyết định**: `DayCompleteContent` có 2 nút: **FINISH WORKOUT** (lưu + quay về) và **BACK WITHOUT SAVING** (chỉ quay về)
@@ -417,9 +455,10 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - **Quyết định**: Giữ nguyên các `onClick = {}` rỗng ở DashboardScreen, PlannerScreen, LibraryScreen, ProfileScreen
 - **Lý do**: `onClick` là **required parameter** của `IconButton` và overload clickable của `Card` trong Jetpack Compose — xóa sẽ compile error. Đây là placeholder cho tính năng sẽ implement sau, không phải dead code
 
-### QĐ-8: Đổi tên class thay vì xóa trong WorkoutSessionScreen
-- **Quyết định**: Đổi tên `data class Exercise` → `TimedExercise` trong `WorkoutSessionScreen.kt`, không xóa file
-- **Lý do**: File chưa được tích hợp nhưng chứa logic timer-based session hoàn chỉnh — xóa sẽ mất công sức đã làm. Đổi tên giải quyết xung đột namespace với `data.model.Exercise` mà không phá vỡ logic nội bộ. File sẽ được tích hợp ở P2.4
+### ~~QĐ-8: Đổi tên class thay vì xóa trong WorkoutSessionScreen~~ ĐÃ ĐẢO NGƯỢC (2026-05-09)
+- **Quyết định ban đầu**: Đổi `data class Exercise` → `TimedExercise` để tránh xung đột namespace
+- **Đảo ngược**: Commit 183b059 xóa hoàn toàn `TimedExercise`, thêm field `category: String` vào `data.model.Exercise` và dùng trực tiếp trong `WorkoutSessionScreen`
+- **Lý do đảo ngược**: Thêm `category` vào model gốc giải quyết cả hai vấn đề — không cần class trung gian, `WorkoutPlanGenerator` tự sinh exercises có category, `Library` có thể filter theo category
 
 ### QĐ-9: `DashboardScreen` nhận data qua parameters, không gọi `viewModel()` trực tiếp
 - **Quyết định**: `DashboardScreen(completedDays, workoutPlan, onStartWorkout)` — data truyền từ `MainActivity`
@@ -429,13 +468,25 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - **Quyết định**: 4 `FilterChip` (30s/60s/90s/120s) đặt ngay trong dialog, timer chạy song song với khả năng đổi
 - **Lý do**: UX đơn giản hơn — không cần thêm bước "chọn trước, rồi bắt đầu". `LaunchedEffect(selectedDuration)` reset timer tự nhiên. User vẫn thấy countdown trong khi chọn.
 
-### QĐ-11: `TimedExercise.durationSec = reps * 3`
-- **Quyết định**: Convert `Exercise` → `TimedExercise` với công thức `durationSec = ex.reps * 3` (~3 giây/rep)
-- **Lý do**: `Exercise` model không có field `durationSec`. Convention 3 giây/rep là ước tính hợp lý cho bodyweight exercises. Nếu muốn chính xác hơn sau này, thêm field `durationSec` vào `Exercise` data class.
+### ~~QĐ-11: `TimedExercise.durationSec = reps * 3`~~ ĐÃ THAY THẾ (2026-05-09)
+- **Quyết định cũ**: Convert `Exercise` → `TimedExercise` với `durationSec = reps * 3`
+- **Thay thế**: `durationSec: Int` đã là field của `Exercise` (non-nullable), `WorkoutPlanGenerator` hardcode 60s cho tất cả exercises. Công thức `reps * 3` giữ lại trong `workout_session` route của `MainActivity` khi convert từ `DayPlan`
 
 ### QĐ-12: `WeeklyCalendarSection` dùng `java.time` (API 26+), không dùng Calendar cũ
 - **Quyết định**: `LocalDate`, `DateTimeFormatter`, `DayOfWeek` từ `java.time`
 - **Lý do**: Min SDK = 26 (Android 8.0) nên `java.time` khả dụng không cần desugaring. API hiện đại hơn `java.util.Calendar`, code gọn và immutable.
+
+### QĐ-13: Header pattern thống nhất — label phụ + tên 1 từ
+- **Quyết định**: Tất cả screens dùng cùng pattern: label phụ nhỏ (10sp, onBackground 40%, letterSpacing 3sp, Black) ở trên, tên màn hình 1 từ (28sp, Black, Italic) ở dưới
+- **Lý do**: Commit 42b1678 chuẩn hóa headers — tên 2 từ split màu (ví dụ "MONTHLY TIMELINE" một từ primary) gây khó nhất quán khi đổi nội dung. Pattern label+title cho phép thêm context mà không thay đổi layout
+
+### QĐ-14: `Exercise.category` là string, không phải enum
+- **Quyết định**: `category: String` thay vì `enum class ExerciseCategory`
+- **Lý do**: Pool exercises của `WorkoutPlanGenerator` có 4 category cố định (Cardio/Strength/Endurance/Maintenance) nhưng `LibraryScreen` có thể muốn category tùy ý trong tương lai. String đơn giản hơn, không cần migrate enum nếu thêm category mới
+
+### QĐ-15: Downgrade build toolchain về phiên bản ổn định
+- **Quyết định**: compileSdk 36→35, AGP 8.9.1→8.7.3, Kotlin 2.2.10→2.0.21
+- **Lý do**: Phiên bản mới (AGP 8.9.1 + compileSdk 36) gây build instability trên môi trường dev. Downgrade về phiên bản GA ổn định. Đây là thay đổi kỹ thuật không ảnh hưởng đến runtime behavior
 
 ### QĐ-6: Strings hardcode chấp nhận tạm thời
 - **Quyết định**: PlannerScreen và WorkoutDayDetailScreen còn ~17 strings hardcode, chưa chuyển sang `strings.xml`
@@ -458,7 +509,70 @@ Dự án sử dụng hệ thống multi-agent trong `.claude/agents/`:
 
 ## Changelog
 
-### 2026-05-09 — Feature Sprint
+### 2026-05-09 — Sprint 3: Data Model & UI Polish (commits 183b059 → 941263f)
+
+#### Exercise.kt (`data/model/`)
+- ✅ Thêm field `category: String` (first param) — phân loại Cardio/Strength/Endurance/Maintenance
+- ✅ Đổi `durationSec: Int?` → `durationSec: Int` (non-nullable, bắt buộc khai báo)
+
+#### WorkoutPlanGenerator.kt
+- ✅ Cập nhật tất cả 4 pools (36 exercises) — thêm `category` đầu mỗi constructor call
+
+#### WorkoutSessionScreen.kt
+- ✅ Xóa hoàn toàn `data class TimedExercise` — dùng `data.model.Exercise` trực tiếp
+- ✅ Cập nhật `sampleExercises()` dùng `Exercise` với đủ fields (category, name, sets, reps, kcal, durationSec)
+- ✅ `remaining` type khai báo tường minh: `var remaining: Int by remember {...}`
+
+#### MainActivity.kt
+- ✅ Xóa `import TimedExercise`, thêm `import Exercise`
+- ✅ `workout_session` route: tạo `Exercise(category=ex.category, ..., durationSec=ex.reps*3)` thay vì `TimedExercise`
+- ✅ Fix indentation `hideNav` condition (align `||` về cùng mức)
+- ✅ `dashboard` route: thêm `userProfile` param → `DashboardScreen(completedDays, workoutPlan, userProfile, onStartWorkout)`
+- ✅ `onboarding` route: `onComplete { h, w, tw }` — nhận thêm `targetWeight`
+
+#### DashboardScreen.kt
+- ✅ **Chuyển sang `LazyColumn`**: xóa `verticalScroll(rememberScrollState())`, wrap mỗi section trong `item {}`
+- ✅ Thêm `userProfile: UserProfile? = null` param
+- ✅ Thêm `TodaysWeightSection(userProfile)` — hiển thị current weight, "X kg to goal", emoji motivational (🔥/💪/🎉)
+- ✅ Redesign `HealthMetricsSection` → `MetricHorizontalCard` layout: 2 card ngang dùng Lucide icons (`Footprints`, `GlassWater`), button "SET A GOAL" / "UNLOCK"
+- ⚠️ Steps/water value hiện hardcoded `"0"` — không nối với state nữa
+- ✅ `HeaderSection`: "DASHBOARD" (1 từ, onBackground) thay vì split "FITFLOW" + "DAILY"
+
+#### OnboardingScreen.kt
+- ✅ Thêm `targetWeight: Float` state (default 60f, range 30..150)
+- ✅ Thêm slider TARGET WEIGHT (secondary color) với label và value display
+- ✅ Callback đổi thành `onComplete(height, weight, targetWeight)`
+- ✅ Layout header: label "CRAFT YOUR MONTHLY JOURNEY" trên, logo "FITFLOW" 28sp dưới (thứ tự đảo so với trước)
+
+#### UserProfile.kt
+- ✅ Thêm field `targetWeight: Float`
+
+#### UserPreferences.kt
+- ✅ Thêm `KEY_TARGET_WEIGHT = "target_weight"`
+- ✅ `saveUserProfile(height, weight, targetWeight)` — persist targetWeight
+- ✅ `getUserProfile()` load targetWeight từ prefs
+
+#### UserViewModel.kt
+- ✅ `saveProfile(height, weight, targetWeight)` — forward targetWeight xuống UserPreferences
+
+#### Headers chuẩn hóa (commit 42b1678, tất cả screens)
+- ✅ Pattern chung: label phụ nhỏ (10sp, alpha 0.4, letterSpacing 3sp) + tên màn hình 1 từ (28sp, Black, Italic)
+- ✅ DashboardScreen: "FITFLOW" header → "DASHBOARD"
+- ✅ PlannerScreen: "MONTHLY TIMELINE" → "PLANNER"
+- ✅ LibraryScreen: "DATABASE" → "LIBRARY" (label: "KNOWLEDGE")
+- ✅ ProfileScreen: "SUBJECT ZERO" → "PROFILE" (label: "IDENTITY")
+- ✅ WorkoutDayDetailScreen: "WORKOUT SESSION" 22sp → "WORKOUT/SESSION" 2 màu 28sp (label: "DAY X")
+- ✅ WorkoutSetupScreen: font size 32sp → 28sp
+- ✅ LoadingScreen: "EXERCISES FOR YOU" split 2 màu
+
+#### Build toolchain (commit 773f247)
+- ✅ compileSdk: 36 → 35
+- ✅ AGP: 8.9.1 → 8.7.3 | Kotlin: 2.2.10 → 2.0.21
+- ✅ Thêm dependency `com.composables:icons-lucide:1.1.0`
+
+---
+
+### 2026-05-09 — Feature Sprint (commit d227222)
 
 #### DashboardScreen.kt
 - ✅ Thêm `WeeklyCalendarSection()` — 7 cột S M T W T F S, `CircleShape` highlight ngày hôm nay, điều hướng tuần bằng `ChevronLeft`/`ChevronRight`
