@@ -16,6 +16,7 @@ enum class FitnessGoal {
 data class UserProfile(
     val height: Float,
     val weight: Float,
+    val targetWeight: Float,
     val bmi: Float,
     val bmiCategory: BmiCategory,
     val goal: FitnessGoal = FitnessGoal.WEIGHT_LOSS

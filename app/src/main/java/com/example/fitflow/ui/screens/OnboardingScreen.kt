@@ -17,9 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun OnboardingScreen(onComplete: (height: Float, weight: Float) -> Unit) {
+fun OnboardingScreen(onComplete: (height: Float, weight: Float, targetWeight: Float) -> Unit) {
     var height by remember { mutableFloatStateOf(170f) }
     var weight by remember { mutableFloatStateOf(65f) }
+    var targetWeight by remember { mutableFloatStateOf(60f) }
 
     val bmi = weight / ((height / 100f) * (height / 100f))
 
@@ -104,6 +105,27 @@ fun OnboardingScreen(onComplete: (height: Float, weight: Float) -> Unit) {
             textAlign = TextAlign.Center
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("TARGET WEIGHT (KG)", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+        Spacer(modifier = Modifier.height(4.dp))
+        Slider(
+            value = targetWeight,
+            onValueChange = { targetWeight = it },
+            valueRange = 30f..150f,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.secondary,
+                activeTrackColor = MaterialTheme.colorScheme.secondary,
+                inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+            )
+        )
+        Text(
+            "${targetWeight.toInt()} kg",
+            color = MaterialTheme.colorScheme.onBackground, fontSize = 24.sp, fontWeight = FontWeight.Black,
+            fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
         Spacer(modifier = Modifier.height(20.dp))
 
         Card(
@@ -144,7 +166,7 @@ fun OnboardingScreen(onComplete: (height: Float, weight: Float) -> Unit) {
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            onClick = { onComplete(height, weight) },
+            onClick = { onComplete(height, weight, targetWeight) },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)

@@ -75,9 +75,11 @@ class MainActivity : ComponentActivity() {
                         composable("dashboard") {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
+                            val userProfile by viewModel.userProfile.collectAsState()
                             DashboardScreen(
                                 completedDays = completedDays,
                                 workoutPlan = workoutPlan,
+                                userProfile = userProfile,
                                 onStartWorkout = {
                                     navController.navigate("planner") {
                                         popUpTo("dashboard") { saveState = true }
@@ -126,8 +128,8 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable("onboarding") {
-                            OnboardingScreen(onComplete = { height, weight ->
-                                viewModel.saveProfile(height, weight)
+                            OnboardingScreen(onComplete = { height, weight, targetWeight ->
+                                viewModel.saveProfile(height, weight, targetWeight)
                                 navController.navigate("workout_setup")
                             })
                         }
