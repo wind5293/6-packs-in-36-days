@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
 import com.example.fitflow.ui.screens.LibraryScreen
@@ -25,7 +26,6 @@ import com.example.fitflow.ui.screens.WorkoutSetupScreen
 import com.example.fitflow.ui.screens.PlannerScreen
 import com.example.fitflow.ui.screens.WorkoutDayDetailScreen
 import com.example.fitflow.ui.screens.WorkoutSessionScreen
-import com.example.fitflow.ui.screens.TimedExercise
 import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.theme.FitflowTheme
@@ -51,10 +51,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     bottomBar = {
                         val hideNav = currentRoute == "onboarding"
-                            || currentRoute == "workout_setup"
-                            || currentRoute == "loading"
-                            || (currentRoute?.startsWith("day_detail") == true)
-                            || (currentRoute?.startsWith("workout_session") == true)
+                                || currentRoute == "workout_setup"
+                                || currentRoute == "loading"
+                                || (currentRoute?.startsWith("day_detail") == true)
+                                || (currentRoute?.startsWith("workout_session") == true)
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
@@ -73,11 +73,11 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(paddingValues)
                     ) {
                         composable("dashboard") {
-                            val workoutPlan   by viewModel.workoutPlan.collectAsState()
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             DashboardScreen(
                                 completedDays = completedDays,
-                                workoutPlan   = workoutPlan,
+                                workoutPlan = workoutPlan,
                                 onStartWorkout = {
                                     navController.navigate("planner") {
                                         popUpTo("dashboard") { saveState = true }
@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("planner") {
-                            val workoutPlan   by viewModel.workoutPlan.collectAsState()
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             // Ngày tiếp theo cần tập = ngày workout đầu tiên chưa hoàn thành
                             val currentDay = workoutPlan
@@ -96,10 +96,10 @@ class MainActivity : ComponentActivity() {
                                 .firstOrNull { it.dayNumber !in completedDays }
                                 ?.dayNumber ?: -1
                             PlannerScreen(
-                                workoutPlan   = workoutPlan,
+                                workoutPlan = workoutPlan,
                                 completedDays = completedDays,
-                                currentDay    = currentDay,
-                                onDayClick    = { dayNumber ->
+                                currentDay = currentDay,
+                                onDayClick = { dayNumber ->
                                     navController.navigate("day_detail/$dayNumber")
                                 }
                             )
@@ -108,14 +108,16 @@ class MainActivity : ComponentActivity() {
                             route = "day_detail/{dayNumber}",
                             arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
                         ) { backStackEntry ->
-                            val dayNumber   = backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val dayNumber =
+                                backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
-                            val dayPlan     = workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
+                            val dayPlan =
+                                workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
                             WorkoutDayDetailScreen(
-                                dayPlan         = dayPlan,
-                                onBack          = { navController.popBackStack() },
-                                onDayComplete   = { viewModel.markDayComplete(dayNumber) },
-                                onStartSession  = { navController.navigate("workout_session/$dayNumber") }
+                                dayPlan = dayPlan,
+                                onBack = { navController.popBackStack() },
+                                onDayComplete = { viewModel.markDayComplete(dayNumber) },
+                                onStartSession = { navController.navigate("workout_session/$dayNumber") }
                             )
                         }
                         composable("profile") {
@@ -152,16 +154,24 @@ class MainActivity : ComponentActivity() {
                             route = "workout_session/{dayNumber}",
                             arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
                         ) { backStackEntry ->
-                            val dayNumber   = backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val dayNumber =
+                                backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
-                            val dayPlan     = workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
-                            val timedExercises = dayPlan.exercises.map { ex ->
-                                TimedExercise(name = ex.name, durationSec = ex.reps * 3)
+                            val dayPlan =
+                                workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
+                            val sessionExercises = dayPlan.exercises.map { ex ->
+                                Exercise(
+                                    category = ex.category,
+                                    name = ex.name,
+                                    sets = ex.sets,
+                                    reps = ex.reps,
+                                    kcal = ex.kcal,
+                                    durationSec = ex.reps * 3)
                             }
                             WorkoutSessionScreen(
-                                exercises = timedExercises,
-                                onBack    = { navController.popBackStack() },
-                                onFinish  = {
+                                exercises = sessionExercises,
+                                onBack = { navController.popBackStack() },
+                                onFinish = {
                                     viewModel.markDayComplete(dayNumber)
                                     navController.popBackStack()
                                 }
