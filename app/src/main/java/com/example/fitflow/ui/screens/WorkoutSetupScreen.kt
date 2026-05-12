@@ -33,161 +33,169 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp)
-            .padding(top = 40.dp)
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .padding(top = 40.dp)
         ) {
-            Text(
-                "MANIFEST GENERATION",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 3.sp
-            )
-            Row {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
-                    "WORKOUT ",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 28.sp,
+                    "MANIFEST GENERATION",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
+                    letterSpacing = 3.sp
                 )
-                Text(
-                    "SETUP",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
-                )
+                Row {
+                    Text(
+                        "WORKOUT ",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Text(
+                        "SETUP",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-        Text(
-            "EQUIPMENT LEVEL",
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            EquipmentItem(
-                "Bodyweight Only",
-                "No equipment required",
-                selectedEquipment == "bodyweight"
-            ) { selectedEquipment = "bodyweight" }
-            EquipmentItem(
-                "Minimalist",
-                "Dumbbells & Resistance bands",
-                selectedEquipment == "minimal"
-            ) { selectedEquipment = "minimal" }
-            EquipmentItem(
-                "Full Protocol",
-                "Complete high-end gym access",
-                selectedEquipment == "gym"
-            ) { selectedEquipment = "gym" }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
-        ) {
             Text(
-                "FREQUENCY",
+                "EQUIPMENT LEVEL",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp
             )
-            Text(
-                "${daysPerWeek.toInt()} DAYS / WEEK",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
-            )
-        }
-        Slider(
-            value = daysPerWeek,
-            onValueChange = { daysPerWeek = it },
-            valueRange = 1f..7f,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-            )
-        )
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                EquipmentItem(
+                    "Bodyweight Only",
+                    "No equipment required",
+                    selectedEquipment == "bodyweight"
+                ) { selectedEquipment = "bodyweight" }
+                EquipmentItem(
+                    "Minimalist",
+                    "Dumbbells & Resistance bands",
+                    selectedEquipment == "minimal"
+                ) { selectedEquipment = "minimal" }
+                EquipmentItem(
+                    "Full Protocol",
+                    "Complete high-end gym access",
+                    selectedEquipment == "gym"
+                ) { selectedEquipment = "gym" }
+            }
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Text(
-            "FITNESS GOAL",
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            EquipmentItem(
-                "Weight Loss",
-                "Cardio-focused · Burn calories",
-                selectedGoal == FitnessGoal.WEIGHT_LOSS
-            ) { selectedGoal = FitnessGoal.WEIGHT_LOSS }
-            EquipmentItem(
-                "Muscle Gain",
-                "Strength-focused · Build muscle",
-                selectedGoal == FitnessGoal.MUSCLE_GAIN
-            ) { selectedGoal = FitnessGoal.MUSCLE_GAIN }
-            EquipmentItem(
-                "Endurance",
-                "Mixed training · Increase stamina",
-                selectedGoal == FitnessGoal.ENDURANCE
-            ) { selectedGoal = FitnessGoal.ENDURANCE }
-            EquipmentItem(
-                "Maintenance",
-                "Balanced workout · Stay fit",
-                selectedGoal == FitnessGoal.MAINTENANCE
-            ) { selectedGoal = FitnessGoal.MAINTENANCE }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = { onComplete(selectedGoal) },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
                 Text(
-                    "FINALIZE PROTOCOL",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Black,
+                    "FREQUENCY",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
                     letterSpacing = 2.sp
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                Text(
+                    "${daysPerWeek.toInt()} DAYS / WEEK",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic
                 )
+            }
+            Slider(
+                value = daysPerWeek,
+                onValueChange = { daysPerWeek = it },
+                valueRange = 1f..7f,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                "FITNESS GOAL",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                EquipmentItem(
+                    "Weight Loss",
+                    "Cardio-focused · Burn calories",
+                    selectedGoal == FitnessGoal.WEIGHT_LOSS
+                ) { selectedGoal = FitnessGoal.WEIGHT_LOSS }
+                EquipmentItem(
+                    "Muscle Gain",
+                    "Strength-focused · Build muscle",
+                    selectedGoal == FitnessGoal.MUSCLE_GAIN
+                ) { selectedGoal = FitnessGoal.MUSCLE_GAIN }
+                EquipmentItem(
+                    "Endurance",
+                    "Mixed training · Increase stamina",
+                    selectedGoal == FitnessGoal.ENDURANCE
+                ) { selectedGoal = FitnessGoal.ENDURANCE }
+                EquipmentItem(
+                    "Maintenance",
+                    "Balanced workout · Stay fit",
+                    selectedGoal == FitnessGoal.MAINTENANCE
+                ) { selectedGoal = FitnessGoal.MAINTENANCE }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            Button(
+                onClick = { onComplete(selectedGoal) },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "FINALIZE PROTOCOL",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
     }
 }
 
