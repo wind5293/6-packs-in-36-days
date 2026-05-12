@@ -28,33 +28,66 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
             .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("IDENTITY", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
+                Text(
+                    "IDENTITY",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 3.sp
+                )
                 Row {
-                    Text("PROFILE", color = MaterialTheme.colorScheme.onBackground, fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
+                    Text(
+                        "PROFILE",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
                 }
             }
             IconButton(
                 onClick = {},
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
+                    .background(
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        RoundedCornerShape(16.dp)
+                    )
             ) {
-                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                )
             }
         }
 
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(32.dp),
-            modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    RoundedCornerShape(32.dp)
+                )
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 StatsItem("WEIGHT", "65", "kg", false)
@@ -64,37 +97,77 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
         }
 
         Spacer(modifier = Modifier.height(32.dp))
-        Text("OPERATIONS", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+        Text(
+            "OPERATIONS",
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 3.sp
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.onBackground.copy(
+                    alpha = 0.05f
+                )
+            ),
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    RoundedCornerShape(24.dp)
+                )
                 .clip(RoundedCornerShape(24.dp))
                 .clickable { onReCalibrate() }
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        modifier = Modifier.size(48.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                RoundedCornerShape(16.dp)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text("RE-CALIBRATE BODY STATS", color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                        Text("REVIEW YOUR ONBOARDING SETUP", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
+                        Text(
+                            "RE-CALIBRATE BODY STATS",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                        Text(
+                            "REVIEW YOUR ONBOARDING SETUP",
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 1.sp
+                        )
                     }
                 }
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                )
             }
         }
     }
@@ -103,7 +176,13 @@ fun ProfileScreen(onReCalibrate: () -> Unit = {}) {
 @Composable
 fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+        Text(
+            label,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 2.sp
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
@@ -114,7 +193,12 @@ fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) 
                 fontStyle = FontStyle.Italic
             )
             if (unit.isNotEmpty()) {
-                Text(unit, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 12.sp, modifier = Modifier.padding(bottom = 4.dp, start = 2.dp))
+                Text(
+                    unit,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(bottom = 4.dp, start = 2.dp)
+                )
             }
         }
     }

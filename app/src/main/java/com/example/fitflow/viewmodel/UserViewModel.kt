@@ -32,8 +32,8 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
         }
     }
 
-    fun saveProfile(height: Float, weight: Float, targetWeight: Float) {
-        userPreferences.saveUserProfile(height, weight, targetWeight)
+    fun saveProfile(selectedGoal: FitnessGoal, height: Float, weight: Float, birthYear: Int, targetWeight: Float) {
+        userPreferences.saveUserProfile(selectedGoal, height, weight, birthYear, targetWeight)
         userPreferences.setOnboarded(true)
         loadUserProfile()
     }

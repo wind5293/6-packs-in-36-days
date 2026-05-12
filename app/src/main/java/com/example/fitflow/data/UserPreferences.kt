@@ -6,21 +6,31 @@ import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.calculateBmi
 import com.example.fitflow.domain.getBmiCategory
 
-class UserPreferences (context: Context) {
+class UserPreferences(context: Context) {
     private val prefs = context.getSharedPreferences("fitflow_prefs", Context.MODE_PRIVATE)
+
     companion object {
-        const val KEY_HEIGHT         = "height"
-        const val KEY_WEIGHT         = "weight"
-        const val KEY_TARGET_WEIGHT  = "target_weight"
-        const val KEY_IS_ONBOARDED   = "is_onboarded"
+        const val KEY_HEIGHT = "height"
+        const val KEY_WEIGHT = "weight"
+        const val KEY_BIRTH_YEAR = "birth_year"
+        const val KEY_TARGET_WEIGHT = "target_weight"
+        const val KEY_IS_ONBOARDED = "is_onboarded"
         const val KEY_COMPLETED_DAYS = "completed_days"
-        const val KEY_GOAL           = "goal"
+        const val KEY_GOAL = "goal"
     }
 
-    fun saveUserProfile(height: Float, weight: Float, targetWeight: Float) {
+    fun saveUserProfile(
+        selectedGoal: FitnessGoal,
+        height: Float,
+        weight: Float,
+        birthYear: Int,
+        targetWeight: Float
+    ) {
         prefs.edit()
+            .putString(KEY_GOAL, selectedGoal.name)
             .putFloat(KEY_HEIGHT, height)
             .putFloat(KEY_WEIGHT, weight)
+            .putInt(KEY_BIRTH_YEAR, birthYear)
             .putFloat(KEY_TARGET_WEIGHT, targetWeight)
             .apply()
     }
@@ -32,6 +42,7 @@ class UserPreferences (context: Context) {
     fun getUserProfile(): UserProfile? {
         val height = prefs.getFloat(KEY_HEIGHT, 0f)
         val weight = prefs.getFloat(KEY_WEIGHT, 0f)
+        val birthYear = prefs.getInt(KEY_BIRTH_YEAR, 0)
         val targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, 0f)
 
         if (height == 0f || weight == 0f) {
@@ -41,12 +52,15 @@ class UserPreferences (context: Context) {
         val bmi = calculateBmi(height, weight)
         val bmiCategory = getBmiCategory(bmi)
         val goal = try {
-            FitnessGoal.valueOf(prefs.getString(KEY_GOAL, FitnessGoal.WEIGHT_LOSS.name) ?: FitnessGoal.WEIGHT_LOSS.name)
+            FitnessGoal.valueOf(
+                prefs.getString(KEY_GOAL, FitnessGoal.WEIGHT_LOSS.name)
+                    ?: FitnessGoal.WEIGHT_LOSS.name
+            )
         } catch (e: IllegalArgumentException) {
             FitnessGoal.WEIGHT_LOSS
         }
 
-        return UserProfile(height, weight, targetWeight, bmi, bmiCategory, goal)
+        return UserProfile(height, weight, birthYear, targetWeight, bmi, bmiCategory, goal)
     }
 
     fun setOnboarded(value: Boolean) {
