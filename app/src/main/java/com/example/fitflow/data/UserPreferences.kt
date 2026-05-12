@@ -5,6 +5,7 @@ import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.calculateBmi
 import com.example.fitflow.domain.getBmiCategory
+import java.time.LocalDate
 
 class UserPreferences(context: Context) {
     private val prefs = context.getSharedPreferences("fitflow_prefs", Context.MODE_PRIVATE)
@@ -16,7 +17,8 @@ class UserPreferences(context: Context) {
         const val KEY_TARGET_WEIGHT = "target_weight"
         const val KEY_IS_ONBOARDED = "is_onboarded"
         const val KEY_COMPLETED_DAYS = "completed_days"
-        const val KEY_GOAL = "goal"
+        const val KEY_GOAL           = "goal"
+        const val KEY_START_DATE     = "start_date"
     }
 
     fun saveUserProfile(
@@ -32,7 +34,13 @@ class UserPreferences(context: Context) {
             .putFloat(KEY_WEIGHT, weight)
             .putInt(KEY_BIRTH_YEAR, birthYear)
             .putFloat(KEY_TARGET_WEIGHT, targetWeight)
+            .putLong(KEY_START_DATE, LocalDate.now().toEpochDay())
             .apply()
+    }
+
+    fun getStartDate(): LocalDate? {
+        val epochDay = prefs.getLong(KEY_START_DATE, -1L)
+        return if (epochDay == -1L) null else LocalDate.ofEpochDay(epochDay)
     }
 
     fun saveGoal(goal: FitnessGoal) {
