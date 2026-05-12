@@ -82,7 +82,9 @@ fun ProfileScreen(
     ) {
         // Header
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -90,19 +92,32 @@ fun ProfileScreen(
                 Text(
                     "IDENTITY",
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 3.sp
                 )
-                Text(
-                    "PROFILE",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic
-                )
+                Row {
+                    Text(
+                        "PROFILE",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
             }
             IconButton(
                 onClick = {},
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
+                    .background(
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        RoundedCornerShape(16.dp)
+                    )
             ) {
                 Icon(
                     Icons.Default.Settings,
@@ -164,11 +179,17 @@ fun ProfileScreen(
             shape = RoundedCornerShape(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    RoundedCornerShape(32.dp)
+                )
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 StatsItem("WEIGHT", userProfile?.weight?.let { "%.1f".format(it) } ?: "-", "kg", false)
                 StatsItem("HEIGHT", userProfile?.height?.let { "%.0f".format(it) } ?: "-", "cm", false)
@@ -207,22 +228,34 @@ fun ProfileScreen(
         Text(
             "OPERATIONS",
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-            fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 3.sp
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         // Re-calibrate card
         Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.onBackground.copy(
+                    alpha = 0.05f
+                )
+            ),
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    RoundedCornerShape(24.dp)
+                )
                 .clip(RoundedCornerShape(24.dp))
                 .clickable { onReCalibrate() }
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -230,22 +263,32 @@ fun ProfileScreen(
                     Box(
                         modifier = Modifier
                             .size(48.dp)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                RoundedCornerShape(16.dp)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
                             "RE-CALIBRATE BODY STATS",
                             color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 14.sp, fontWeight = FontWeight.Black
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black
                         )
                         Text(
                             "REVIEW YOUR ONBOARDING SETUP",
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                            fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 1.sp
                         )
                     }
                 }
@@ -366,7 +409,9 @@ fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) 
         Text(
             label,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-            fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 2.sp
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.Bottom) {

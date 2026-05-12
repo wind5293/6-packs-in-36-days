@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
@@ -136,8 +135,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("onboarding") {
-                            OnboardingScreen(onComplete = { height, weight, targetWeight ->
-                                viewModel.saveProfile(height, weight, targetWeight)
+                            OnboardingScreen(onComplete = { selectedGoal, height, weight, birthYear, targetWeight ->
+                                viewModel.saveProfile(selectedGoal, height, weight, birthYear, targetWeight)
                                 navController.navigate("workout_setup")
                             })
                         }

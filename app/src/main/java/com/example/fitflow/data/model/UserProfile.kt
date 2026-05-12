@@ -6,18 +6,19 @@ enum class BmiCategory {
     OVERWEIGHT,
 }
 
-enum class FitnessGoal {
-    WEIGHT_LOSS,
-    MUSCLE_GAIN,
-    ENDURANCE,
-    MAINTENANCE
+enum class FitnessGoal(val title: String, val description: String) {
+    WEIGHT_LOSS("Weight Loss", "Burn fat and get leaner"),
+    MUSCLE_GAIN("Muscle Gain", "Build strength and volume"),
+    ENDURANCE("Endurance", "Improve stamina and cardio"),
+    MAINTENANCE("Maintenance", "Stay fit and healthy")
 }
 
 data class UserProfile(
     val height: Float,
     val weight: Float,
+    val birthYear: Int,
     val targetWeight: Float,
     val bmi: Float,
     val bmiCategory: BmiCategory,
-    val goal: FitnessGoal = FitnessGoal.WEIGHT_LOSS
+    val goal: FitnessGoal,
 )
