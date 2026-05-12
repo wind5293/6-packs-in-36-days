@@ -13,8 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fitflow.ui.theme.FitflowTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -92,5 +94,13 @@ fun LoadingScreen(onPlanReady: () -> Unit) {
             fontWeight = FontWeight.Medium,
             letterSpacing = 1.sp
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoadingScreenPreview() {
+    FitflowTheme() {
+        LoadingScreen(onPlanReady = {})
     }
 }

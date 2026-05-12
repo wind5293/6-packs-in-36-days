@@ -28,11 +28,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
 import com.composables.icons.lucide.Lucide
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.ui.theme.FitflowTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -67,14 +69,14 @@ fun DashboardScreen(
         }
         item {
             if (userProfile != null) {
-                TodaysWeightSection(userProfile = userProfile)
+                TodayWeightSection(userProfile = userProfile)
             }
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
         item {
-            StreakSummarySection()
+            CheckInRecordSection(completedCount = completedCount)
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -108,7 +110,7 @@ fun DashboardScreen(
 }
 
 @Composable
-fun TodaysWeightSection(userProfile: UserProfile) {
+fun TodayWeightSection(userProfile: UserProfile) {
     val weightLeft = userProfile.weight - userProfile.targetWeight
     val emoji = when {
         weightLeft > 5 -> "🔥"
@@ -231,86 +233,108 @@ fun HeaderSection() {
 }
 
 @Composable
-fun StreakSummarySection() {
-    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(32.dp),
-            modifier = Modifier
-                .weight(1f)
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                    RoundedCornerShape(32.dp)
-                )
+fun CheckInRecordSection(completedCount: Int) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                RoundedCornerShape(24.dp)
+            )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Default.Star,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                )
                 Column {
                     Text(
-                        stringResource(R.string.dashboard_0),
-                        fontSize = 48.sp,
-                        color = MaterialTheme.colorScheme.primary,
+                        text = "CHECK-IN RECORD",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$completedCount DAY STREAK",
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         fontStyle = FontStyle.Italic
                     )
-                    Text(
-                        stringResource(R.string.dashboard_streak_cycle),
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
-                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🔥", fontSize = 24.sp)
                 }
             }
-        }
 
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(32.dp),
-            modifier = Modifier
-                .weight(1f)
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f),
-                    RoundedCornerShape(32.dp)
-                )
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(
-                    Icons.Default.Favorite,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-                )
-                Column {
-                    Text(
-                        stringResource(R.string.dashboard_weight_loss),
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontWeight = FontWeight.Bold,
-                        fontStyle = FontStyle.Italic
+            Text(
+                "Make today 1% better than yesterday!",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            )
+
+            // Progress Bar with milestones
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                val maxDays = 7
+                val progress = (completedCount.toFloat() / maxDays).coerceIn(0f, 1f)
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(progress)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.primary)
                     )
-                    Text(
-                        stringResource(R.string.dashboard_phase_01),
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
-                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val milestones = listOf(2, 5, 7)
+                    for (i in 1..maxDays) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(24.dp)
+                        ) {
+                            Text(
+                                text = if (i in milestones) "🔥" else "",
+                                fontSize = 12.sp,
+                                modifier = Modifier.height(16.dp)
+                            )
+                            Text(
+                                text = "$i",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (i <= completedCount)
+                                    MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -383,8 +407,8 @@ fun WeeklyCalendarSection() {
                             "${date.dayOfMonth}",
                             color = when {
                                 isToday -> MaterialTheme.colorScheme.onPrimary
-                                isPast  -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
-                                else    -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                                isPast -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
+                                else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                             },
                             fontSize = 13.sp,
                             fontWeight = if (isToday) FontWeight.Black else FontWeight.Normal
@@ -595,7 +619,11 @@ fun MetricHorizontalCard(
             }
             Button(
                 onClick = onClick,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary.copy(
+                        alpha = 0.1f
+                    )
+                ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -611,5 +639,21 @@ fun MetricHorizontalCard(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DashboardScreenPreview() {
+    FitflowTheme {
+        DashboardScreen()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CheckInRecordSectionPreview() {
+    FitflowTheme {
+        CheckInRecordSection(completedCount = 2)
     }
 }
