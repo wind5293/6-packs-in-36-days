@@ -63,14 +63,18 @@ fun WorkoutSessionScreen(
         TopAppBar(
             title = {
                 Text(
-                    "WORKOUT SESSION", color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 14.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp
+                    "WORKOUT SESSION",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
                 )
             },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(
-                        Icons.Default.ArrowBack, contentDescription = "Back",
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Back",
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -92,7 +96,10 @@ fun WorkoutSessionScreen(
                 modifier = Modifier.padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(120.dp)) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(120.dp)
+                ) {
                     CircularProgressIndicator(
                         progress = { progress },
                         modifier = Modifier.fillMaxSize(),
@@ -239,5 +246,5 @@ fun sampleExercises() = listOf(
 @Preview(showBackground = true)
 @Composable
 fun WorkoutSessionScreenPreview() {
-    FitflowTheme { WorkoutSessionScreen() }
+    FitflowTheme() { WorkoutSessionScreen() }
 }

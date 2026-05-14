@@ -33,3 +33,23 @@ val Black40         = Color(0x66000000)
 val Black20         = Color(0x33000000)
 val Black10         = Color(0x1A000000)
 val Black05         = Color(0x0D000000)
+
+// Backgrounds
+val BaseBackground = Color(0xFF0D0D0D)
+val CardBackground = Color(0xFF1A1A1A)
+val CardNested = Color(0xFF222222)
+val BorderDark = Color(0xFF2A2A2A)
+
+// Text Colors
+val TextPrimary = Color(0xFFFFFFFF)
+val TextSecondary = Color(0xFF888888)
+val TextMuted = Color(0xFF444444)
+
+// Accents (Primary & Secondary)
+val OrangePrimary = Color(0xFFFF5500)
+val OrangeDark = Color(0xFFCC4400)
+val OrangeGlow = Color(0x26FF5500)
+
+val CyanAccent = Color(0xFF00E5FF)
+val CyanGlow = Color(0x1F00E5FF)
+val SuccessGreen = Color(0xFF22C55E)

@@ -4,551 +4,232 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.Exercise
-import kotlinx.coroutines.delay
+import com.example.fitflow.ui.theme.FitflowTheme
+import com.example.fitflow.ui.theme.OrangeDark
+import com.example.fitflow.ui.theme.OrangePrimary
 
 @Composable
 fun WorkoutDayDetailScreen(
     dayPlan: DayPlan,
     onBack: () -> Unit,
-    onDayComplete: () -> Unit = {},
     onStartSession: () -> Unit = {}
 ) {
-    var currentExerciseIndex by remember { mutableIntStateOf(0) }
-    var showRestTimer by remember { mutableStateOf(false) }
-    // Trạng thái riêng cho "đã bấm Finish" để tránh gọi lại onDayComplete nhiều lần
-    var dayFinished by remember { mutableStateOf(false) }
-
-    val exercises = dayPlan.exercises
-    val allDone = exercises.isNotEmpty() && currentExerciseIndex >= exercises.size
-
-    if (showRestTimer) {
-        RestTimerDialog(
-            onFinish = { showRestTimer = false },
-            onSkip   = { showRestTimer = false }
-        )
-    }
-
-    Column(
+    Box (
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp)
-            .padding(top = 16.dp)
     ) {
-        // Header
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            item {
+                HeaderAndSummarySection(1, dayPlan.exercises, onBack)
+            }
+        }
+    }
+
+}
+
+@Composable
+fun HeaderAndSummarySection(
+    dayNumber: Int,
+    exercises: List<Exercise>,
+    onBack: () -> Unit
+) {
+    val exercisesCount = exercises.size
+    val totalKcal = exercises.sumOf { it.kcal }
+    val duration = exercises.sumOf { it.durationSec }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(350.dp)
+    ) {
+        Box (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp)
+                .height(220.dp)
+                .background(Brush.verticalGradient(
+                    colors = listOf(OrangePrimary, OrangeDark)
+                    )
+                )
         ) {
-            IconButton(
-                onClick = onBack,
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            tint = Color(0xFFFFFFFF),
+                            contentDescription = "back")
+                    }
+                    IconButton(onClick = { /* Menu */ }) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            tint = Color(0xFFFFFFFF),
+                            contentDescription = "Menu")
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Day $dayNumber",
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "⚡⚡⚡ Intermediate",
+                    color = Color(0xFFFFFFFF),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            Box(
                 modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                        RoundedCornerShape(16.dp)
-                    )
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-                        RoundedCornerShape(16.dp)
-                    )
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp)
+                    .width(120.dp)
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .background(MaterialTheme.colorScheme.onBackground),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
                 Text(
-                    "DAY ${dayPlan.dayNumber}",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 3.sp
+                    "Image Space",
+                    color = MaterialTheme.colorScheme.background,
+                    fontSize = 12.sp
                 )
-                Row {
-                    Text(
-                        if (dayPlan.isRest) "REST & " else "WORKOUT ",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
-                    )
-                    Text(
-                        if (dayPlan.isRest) "RECOVERY" else "SESSION",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
-                    )
-                }
             }
         }
-
-        when {
-            dayPlan.isRest -> RestDayContent(onBack = onBack)
-            allDone        -> DayCompleteContent(
-                onFinish = {
-                    if (!dayFinished) {
-                        dayFinished = true
-                        onDayComplete()
-                    }
-                    onBack()
-                },
-                onBack = onBack
-            )
-            else           -> WorkoutContent(
-                exercises = exercises,
-                currentIndex = currentExerciseIndex,
-                onStartSession = onStartSession,
-                onExerciseDone = {
-                    currentExerciseIndex++
-                    if (currentExerciseIndex < exercises.size) {
-                        showRestTimer = true
-                    }
-                }
-            )
-        }
-    }
-}
-
-// ─── Rest Timer Dialog ────────────────────────────────────────────────────────
-
-@Composable
-private fun RestTimerDialog(
-    initialSeconds: Int = 60,
-    onFinish: () -> Unit,
-    onSkip: () -> Unit
-) {
-    var selectedDuration by remember { mutableIntStateOf(initialSeconds) }
-    var secondsLeft by remember { mutableIntStateOf(initialSeconds) }
-
-    LaunchedEffect(selectedDuration) {
-        secondsLeft = selectedDuration
-        while (secondsLeft > 0) {
-            delay(1000L)
-            secondsLeft--
-        }
-        onFinish()
-    }
-
-    val durations = listOf(30, 60, 90, 120)
-
-    Dialog(onDismissRequest = {}) {
-        Column(
+        Card (
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(32.dp))
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-                    RoundedCornerShape(32.dp)
-                )
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .align(Alignment.BottomEnd),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
         ) {
-            Text(
-                "REST",
-                color = MaterialTheme.colorScheme.secondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 3.sp
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                durations.forEach { d ->
-                    FilterChip(
-                        selected = selectedDuration == d,
-                        onClick = { selectedDuration = d },
-                        label = {
-                            Text(
-                                "${d}s",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                            containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                            labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = selectedDuration == d,
-                            borderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-                            selectedBorderColor = MaterialTheme.colorScheme.secondary
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(11.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    SummaryItem(value = "$exercisesCount", label = "Exercises")
+                    SummaryItem(value = "$duration min", label = "Time")
+                    SummaryItem(value = "$totalKcal", label = "Calories")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            "Workout Settings",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
+                        Text(
+                            "Music & Coach & Timer, etc.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = Color.Gray
                     )
                 }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "$secondsLeft",
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 80.sp,
-                fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
-            )
-            Text(
-                "seconds",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            LinearProgressIndicator(
-                progress = { secondsLeft / selectedDuration.toFloat() },
-                modifier = Modifier.fillMaxWidth().height(4.dp),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = onSkip,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
-                ),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    "SKIP REST",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.sp
-                )
             }
         }
     }
 }
 
-// ─── Workout Content ──────────────────────────────────────────────────────────
-
 @Composable
-private fun WorkoutContent(
-    exercises: List<Exercise>,
-    currentIndex: Int,
-    onStartSession: () -> Unit,
-    onExerciseDone: () -> Unit
+fun SummaryItem(
+    value: String,
+    label: String,
 ) {
-    Button(
-        onClick = onStartSession,
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 48.dp)
+    Column(
+        horizontalAlignment = Alignment.Start
     ) {
         Text(
-            "START TIMED SESSION",
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = 2.sp
+            text = value,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-    Spacer(modifier = Modifier.height(16.dp))
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        SummaryChip("EXERCISES", "${exercises.size}")
-        SummaryChip("TOTAL KCAL", "${exercises.sumOf { it.kcal }}")
-        SummaryChip("DONE", "$currentIndex / ${exercises.size}")
-    }
-
-    Text(
-        "EXERCISE LIST",
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Black,
-        letterSpacing = 2.sp,
-        modifier = Modifier.padding(bottom = 12.dp)
-    )
-
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        itemsIndexed(exercises) { index, exercise ->
-            val state = when {
-                index < currentIndex  -> ExerciseState.DONE
-                index == currentIndex -> ExerciseState.ACTIVE
-                else                  -> ExerciseState.LOCKED
-            }
-            ExerciseDetailCard(
-                index = index + 1,
-                exercise = exercise,
-                state = state,
-                onDone = onExerciseDone
-            )
-        }
-    }
 }
 
-private enum class ExerciseState { DONE, ACTIVE, LOCKED }
+ val sampleExercises = listOf(
+    Exercise(category = "Cardio", name = "Jumping Jacks", sets = 1, reps = 0, kcal = 10, durationSec = 30),
+    Exercise(category = "Strength", name = "Push Ups", sets = 1, reps = 0, kcal = 15, durationSec = 40),
+    Exercise(category = "Strength", name = "Bodyweight Squats", sets = 1, reps = 0, kcal = 20, durationSec = 45),
+    Exercise(category = "Core", name = "Plank Hold", sets = 1, reps = 0, kcal = 10, durationSec = 60),
+    Exercise(category = "Strength", name = "Lunges", sets = 1, reps = 0, kcal = 15, durationSec = 40)
+)
 
+@Preview(showBackground = true)
 @Composable
-private fun ExerciseDetailCard(
-    index: Int,
-    exercise: Exercise,
-    state: ExerciseState,
-    onDone: () -> Unit
-) {
-    val cardAlpha  = if (state == ExerciseState.LOCKED) 0.35f else 1f
-    val borderColor = when (state) {
-        ExerciseState.DONE   -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
-        ExerciseState.ACTIVE -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-        ExerciseState.LOCKED -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
-    }
-    val badgeColor = when (state) {
-        ExerciseState.DONE   -> MaterialTheme.colorScheme.secondary
-        ExerciseState.ACTIVE -> MaterialTheme.colorScheme.primary
-        ExerciseState.LOCKED -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
-    }
-
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(20.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(cardAlpha)
-            .border(1.dp, borderColor, RoundedCornerShape(20.dp))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Index circle
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(badgeColor.copy(alpha = 0.1f), CircleShape)
-                        .border(1.dp, badgeColor.copy(alpha = 0.4f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (state == ExerciseState.DONE) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    } else {
-                        Text("$index", color = badgeColor, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        exercise.name,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "${exercise.sets} sets  ×  ${exercise.reps} reps",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                            RoundedCornerShape(10.dp)
-                        )
-                        .border(
-                            1.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            RoundedCornerShape(10.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        "${exercise.kcal} kcal",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            // Nút DONE chỉ hiện ở bài tập đang active
-            if (state == ExerciseState.ACTIVE) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = onDone,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                ) {
-                    Text(
-                        "DONE",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    )
-                }
-            }
-        }
-    }
-}
-
-// ─── Supporting composables ───────────────────────────────────────────────────
-
-@Composable
-private fun SummaryChip(label: String, value: String) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.border(
-            1.dp,
-            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-            RoundedCornerShape(16.dp)
+fun WorkoutDayDetailScreenPreview() {
+    FitflowTheme {
+        WorkoutDayDetailScreen(
+            DayPlan(1, false, sampleExercises()),
+            {},
+            {}
         )
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                value,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
-            )
-            Text(
-                label,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-        }
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-private fun RestDayContent(onBack: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("💤", fontSize = 64.sp)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "RECOVERY DAY",
-                color = MaterialTheme.colorScheme.secondary,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                "Rest, hydrate, and let your muscles rebuild.",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth(0.7f).heightIn(min = 56.dp)
-            ) {
-                Text(
-                    "BACK TO PLAN",
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
-                )
-            }
-        }
+fun HeaderAndSummarySectionPreview() {
+    FitflowTheme {
+        HeaderAndSummarySection(
+            dayNumber = 1,
+            exercises = sampleExercises,
+            onBack = {  }
+        )
     }
 }
 
-@Composable
-private fun DayCompleteContent(onFinish: () -> Unit, onBack: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 24.dp)
-        ) {
-            Text("🔥", fontSize = 64.sp)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "DAY COMPLETE!",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                "Well done. Rest up for tomorrow.",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            // Nút chính: FINISH WORKOUT — đánh dấu ngày hoàn thành + quay về Planner
-            Button(
-                onClick = onFinish,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
-            ) {
-                Text(
-                    "FINISH WORKOUT",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            // Nút phụ: chỉ quay về mà không đánh dấu hoàn thành
-            TextButton(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    "BACK WITHOUT SAVING",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
-    }
-}
