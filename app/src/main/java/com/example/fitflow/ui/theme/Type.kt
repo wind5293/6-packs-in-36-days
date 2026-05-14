@@ -20,35 +20,59 @@ val BarlowCondensed = FontFamily(
     Font(R.font.barlow_condensed_black_italic, FontWeight.Black, FontStyle.Italic)
 )
 
+
 val Typography = Typography(
-    // Screen Title
+
     displayLarge = TextStyle(
-        fontFamily = BarlowCondensed,
-        fontWeight = FontWeight.Black,
-        fontStyle = FontStyle.Italic,
-        fontSize = 72.sp,
-        lineHeight = 72.sp,
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp,
+        lineHeight = 40.sp,
+        letterSpacing = 0.sp
     ),
 
-    // Card Heading
-    headlineMedium = TextStyle(
-        fontFamily = BarlowCondensed,
-        fontWeight = FontWeight.ExtraBold,
-        fontStyle = FontStyle.Italic,
-        fontSize = 28.sp,
-    ),
-
-    // Cyan Emphasis
     titleLarge = TextStyle(
-        fontFamily = BarlowCondensed,
-        fontWeight = FontWeight.Black,
-        fontStyle = FontStyle.Italic,
-        fontSize = 20.sp,
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
     ),
 
-    // Body Text
+    titleMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.15.sp
+    ),
+
+    bodyLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+
     bodyMedium = TextStyle(
-        fontFamily = Barlow,
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.25.sp
+    ),
+
+    labelLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
+    ),
+
+    labelSmall = TextStyle(
+        fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         color = TextSecondary
