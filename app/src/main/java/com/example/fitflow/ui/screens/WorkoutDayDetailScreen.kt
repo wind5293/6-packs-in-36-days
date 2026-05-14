@@ -1,9 +1,12 @@
 package com.example.fitflow.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -23,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.ui.theme.FitflowTheme
-import com.example.fitflow.ui.theme.OrangeDark
+import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
 
 @Composable
@@ -39,14 +42,53 @@ fun WorkoutDayDetailScreen(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(bottom = 120.dp)
         ) {
             item {
                 HeaderAndSummarySection(1, dayPlan.exercises, onBack)
             }
+            items(dayPlan.exercises.size) { index ->
+                ExerciseExpandableItem(dayPlan.exercises[index])
+            }
         }
-    }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.background
+                        ),
+                        startY = 0f,
+                        endY = Float.POSITIVE_INFINITY
+                    )
+                )
+                .padding(24.dp)
+        ) {
+            Button(
+                onClick = onStartSession,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = CircleShape,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(
+                    text = "START",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+                )
+            }
+        }
 
+    }
 }
 
 @Composable
@@ -68,8 +110,9 @@ fun HeaderAndSummarySection(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
-                .background(Brush.verticalGradient(
-                    colors = listOf(OrangePrimary, OrangeDark)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(OrangePrimary, OrangeGlow)
                     )
                 )
         ) {
@@ -100,6 +143,7 @@ fun HeaderAndSummarySection(
                     text = "Day $dayNumber",
                     color = Color.White,
                     style = MaterialTheme.typography.headlineMedium,
+                    fontSize = 35.sp,
                     modifier = Modifier.padding(start = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -136,7 +180,7 @@ fun HeaderAndSummarySection(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(11.dp)
+                    .padding(16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -146,9 +190,9 @@ fun HeaderAndSummarySection(
                     SummaryItem(value = "$duration min", label = "Time")
                     SummaryItem(value = "$totalKcal", label = "Calories")
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -198,6 +242,79 @@ fun SummaryItem(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+private fun ExerciseExpandableItem(exercise: Exercise) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isExpanded = !isExpanded }
+            .padding(horizontal = 24.dp, vertical = 12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("IMG", fontSize = 10.sp, color = Color.Gray)
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Thông tin chính
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = exercise.name.uppercase(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 22.sp,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                val subText = if (exercise.durationSec > 0) {
+                    val m = exercise.durationSec / 60
+                    val s = exercise.durationSec % 60
+                    String.format("%02d:%02d", m, s)
+                } else {
+                    "x ${exercise.reps}"
+                }
+                Text(
+                    text = subText,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        // Phần chi tiết xổ xuống khi bấm vào
+        AnimatedVisibility(visible = isExpanded) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp, start = 76.dp) // Canh lề cho khớp với phần text ở trên
+            ) {
+                Text(
+                    text = "Category: ${exercise.category}",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray
+                )
+                Text(text = "Sets: ${exercise.sets}", fontSize = 12.sp, color = Color.DarkGray)
+                Text(text = "Burn: ${exercise.kcal} kcal", fontSize = 12.sp, color = Color.DarkGray)
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+            }
+        }
     }
 }
 
