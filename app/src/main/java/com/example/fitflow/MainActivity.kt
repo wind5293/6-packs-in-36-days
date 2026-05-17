@@ -1,9 +1,11 @@
 package com.example.fitflow
 
-
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -32,6 +34,12 @@ import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
 
 class MainActivity : ComponentActivity() {
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        Log.d("FitFlowDebug", "Notification permission granted: $isGranted")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val app = application as FitFlowApplication
@@ -40,6 +48,9 @@ class MainActivity : ComponentActivity() {
             UserViewModelFactory(userPreferences)
         }
         val startDestination = if (userPreferences.isOnboarded()) "dashboard" else "onboarding"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         setContent {
             FitflowTheme {
@@ -52,8 +63,8 @@ class MainActivity : ComponentActivity() {
                         val hideNav = currentRoute == "onboarding"
                                 || currentRoute == "workout_setup"
                                 || currentRoute == "loading"
-                                || (currentRoute?.startsWith("day_detail") == true)
-                                || (currentRoute?.startsWith("workout_session") == true)
+                                || (currentRoute.startsWith("day_detail"))
+                                || (currentRoute.startsWith("workout_session"))
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
@@ -134,8 +145,17 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("onboarding") {
-                            OnboardingScreen(onComplete = { selectedGoal, height, weight, birthYear, targetWeight ->
-                                viewModel.saveProfile(selectedGoal, height, weight, birthYear, targetWeight)
+                            OnboardingScreen(onComplete = { selectedGoal, height, weight, birthYear, targetWeight, workoutTime ->
+                                viewModel.saveProfile(selectedGoal, height, weight, birthYear, targetWeight, workoutTime)
+
+                                val timeParts = workoutTime.split(":")
+                                val hour = timeParts.getOrNull(0)?.toIntOrNull() ?: 8
+                                val minute = timeParts.getOrNull(1)?.toIntOrNull() ?: 0
+
+                                Log.d("FitFlowDebug", "Workout Time: $workoutTime")
+                                Log.d("FitFlowDebug", "Parsed -> Hour: $hour, Minute: $minute")
+                                viewModel.scheduleWorkoutReminder(this@MainActivity, hour, minute)
+
                                 navController.navigate("workout_setup")
                             })
                         }
@@ -191,4 +211,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
 

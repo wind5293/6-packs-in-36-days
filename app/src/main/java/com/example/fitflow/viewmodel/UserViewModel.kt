@@ -1,5 +1,12 @@
 package com.example.fitflow.viewmodel
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.icu.util.Calendar
+import android.util.Log
+import androidx.core.content.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.fitflow.data.UserPreferences
@@ -7,6 +14,7 @@ import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.WorkoutPlangenerator
+import com.example.fitflow.notification.WorkoutReminderReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,8 +45,15 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
         }
     }
 
-    fun saveProfile(selectedGoal: FitnessGoal, height: Float, weight: Float, birthYear: Int, targetWeight: Float) {
-        userPreferences.saveUserProfile(selectedGoal, height, weight, birthYear, targetWeight)
+    fun saveProfile(
+        selectedGoal: FitnessGoal,
+        height: Float,
+        weight: Float,
+        birthYear: Int,
+        targetWeight: Float,
+        workoutTime: String
+    ) {
+        userPreferences.saveUserProfile(selectedGoal, height, weight, birthYear, targetWeight, workoutTime)
         userPreferences.setOnboarded(true)
         loadUserProfile()
     }
@@ -52,6 +67,34 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
         val updated = _completedDays.value + dayNumber
         _completedDays.value = updated
         userPreferences.saveCompletedDays(updated)
+    }
+
+    fun scheduleWorkoutReminder(context: Context, hour: Int, minute: Int) {
+        Log.d("FitFlowDebug", "Scheduling alarm for $hour:$minute")
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, WorkoutReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            if (before(Calendar.getInstance())) {
+                add(Calendar.DATE, 1)
+            }
+        }
+
+        // Lặp lại hàng ngày
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            AlarmManager.INTERVAL_DAY,
+            pendingIntent
+        )
     }
 
     init {
