@@ -19,6 +19,7 @@ class UserPreferences(context: Context) {
         const val KEY_COMPLETED_DAYS = "completed_days"
         const val KEY_GOAL           = "goal"
         const val KEY_START_DATE     = "start_date"
+        const val KEY_WORKOUT_TIME   = "workout_time"
     }
 
     fun saveUserProfile(
@@ -26,7 +27,8 @@ class UserPreferences(context: Context) {
         height: Float,
         weight: Float,
         birthYear: Int,
-        targetWeight: Float
+        targetWeight: Float,
+        workoutTime: String
     ) {
         prefs.edit()
             .putString(KEY_GOAL, selectedGoal.name)
@@ -35,6 +37,7 @@ class UserPreferences(context: Context) {
             .putInt(KEY_BIRTH_YEAR, birthYear)
             .putFloat(KEY_TARGET_WEIGHT, targetWeight)
             .putLong(KEY_START_DATE, LocalDate.now().toEpochDay())
+            .putString(KEY_WORKOUT_TIME, workoutTime)
             .apply()
     }
 

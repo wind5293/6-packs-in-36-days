@@ -1,5 +1,6 @@
 package com.example.fitflow.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -20,14 +22,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.fitflow.data.model.FitnessGoal
+import com.example.fitflow.notification.WorkoutReminderReceiver
 import com.example.fitflow.ui.theme.FitflowTheme
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @Composable
-fun OnboardingScreen(onComplete: (selectedGoal: FitnessGoal, height: Float, weight: Float, birthYear: Int, targetWeight: Float) -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { 5 })
+fun OnboardingScreen(
+    onComplete: (
+        selectedGoal: FitnessGoal,
+        height: Float,
+        weight: Float,
+        birthYear: Int,
+        targetWeight: Float,
+        workoutTime: String
+            ) -> Unit
+) {
+    val pagerState = rememberPagerState(pageCount = { 6 })
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current // Lấy context để gửi Broadcast
 
     // State chung
     var selectedGoal by remember { mutableStateOf(FitnessGoal.WEIGHT_LOSS) }
@@ -35,6 +48,7 @@ fun OnboardingScreen(onComplete: (selectedGoal: FitnessGoal, height: Float, weig
     var weight by remember { mutableFloatStateOf(65f) }
     var birthYear by remember { mutableIntStateOf(2000) }
     var targetWeight by remember { mutableFloatStateOf(60f) }
+    var workoutTime by remember { mutableStateOf("08:00") }
 
     Column(
         modifier = Modifier
@@ -43,7 +57,7 @@ fun OnboardingScreen(onComplete: (selectedGoal: FitnessGoal, height: Float, weig
             .padding(top = 32.dp, bottom = 24.dp)
     ) {
         // --- HEADER & PROGRESS ---
-        OnboardingHeader(currentStep = pagerState.currentPage, totalSteps = 5)
+        OnboardingHeader(currentStep = pagerState.currentPage, totalSteps = 6)
 
         // --- PAGER CONTENT ---
         HorizontalPager(
@@ -58,6 +72,7 @@ fun OnboardingScreen(onComplete: (selectedGoal: FitnessGoal, height: Float, weig
                 2 -> HeightStep(height) { height = it }
                 3 -> WeightStep(weight, height, selectedGoal, { weight = it },)
                 4 -> TargetWeightStep(targetWeight, weight) { targetWeight = it }
+                5 -> WorkoutTimeStep(workoutTime) { workoutTime = it }
             }
         }
 
@@ -65,15 +80,19 @@ fun OnboardingScreen(onComplete: (selectedGoal: FitnessGoal, height: Float, weig
         PaddingBox {
             Button(
                 onClick = {
-                    if (pagerState.currentPage < 4) {
+                    if (pagerState.currentPage < 5) {
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                     } else {
+                        val testIntent = Intent(context, WorkoutReminderReceiver::class.java)
+                        context.sendBroadcast(testIntent)
+
                         onComplete(
                             selectedGoal,
                             height,
                             weight,
                             birthYear,
-                            targetWeight
+                            targetWeight,
+                            workoutTime
                         )
                     }
                 },
@@ -83,7 +102,7 @@ fun OnboardingScreen(onComplete: (selectedGoal: FitnessGoal, height: Float, weig
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Text(
-                    if (pagerState.currentPage == 4) "ACTIVATE JOURNEY" else "CONTINUE",
+                    if (pagerState.currentPage == 5) "ACTIVATE JOURNEY" else "CONTINUE",
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp
                 )
@@ -324,6 +343,37 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WorkoutTimeStep(workoutTime: String, onTimeSelected: (String) -> Unit) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = 0,
+        initialMinute = 0,
+        is24Hour = true
+    )
+
+    StepLayout(title = "SET YOUR REMINDER", subtitle = "WORKOUT TIME") {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            TimeInput(
+                state = timePickerState,
+                modifier = Modifier,
+                colors = TimePickerDefaults.colors()
+            )
+            LaunchedEffect(timePickerState.hour, timePickerState.minute) {
+                onTimeSelected("${timePickerState.hour}:${timePickerState.minute}")
+            }
+            Text(
+                "We'll remind you to stay consistent!",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
+    }
+}
+
 @Composable
 fun StepLayout(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.padding(horizontal = 24.dp)) {
@@ -398,5 +448,13 @@ fun WeightStepPreview() {
 fun TargetWeightStepPreview() {
     FitflowTheme {
         TargetWeightStep(targetWeight = 60f, currentWeight = 47f, onTargetChange = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkoutTimeStepPreview() {
+    FitflowTheme {
+        WorkoutTimeStep(workoutTime = "08:00", onTimeSelected = {})
     }
 }
