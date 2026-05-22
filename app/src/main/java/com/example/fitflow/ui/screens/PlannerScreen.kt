@@ -33,7 +33,7 @@ fun PlannerScreen(
     currentDay: Int = -1,
     onDayClick: (Int) -> Unit = {}
 ) {
-    val groupedByWeek = workoutPlan.groupBy { (it.day - 1) / 7 }
+    val groupedByWeek = workoutPlan.groupBy { (it.dayNumber - 1) / 7 }
 
     Column(
         modifier = Modifier
@@ -178,7 +178,7 @@ fun DayPlanItem(
     isCompleted: Boolean = false,
     onClick: () -> Unit = {}
 ) {
-    val dayNum = dayPlan.day
+    val dayNum = dayPlan.dayNumber
     val isRest = dayPlan.isRest
     val cardAlpha = if (isCompleted) 0.4f else 1f
 
@@ -250,11 +250,11 @@ fun DayPlanItem(
             if (!isRest) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    dayPlan.exercises.take(3).forEach { exercise ->
+                    dayPlan.workoutExercises.take(3).forEach { exercise ->
                         ExerciseTag(exercise.name)
                     }
-                    if (dayPlan.exercises.size > 3) {
-                        ExerciseTag("+${dayPlan.exercises.size - 3}")
+                    if (dayPlan.workoutExercises.size > 3) {
+                        ExerciseTag("+${dayPlan.workoutExercises.size - 3}")
                     }
                 }
             }

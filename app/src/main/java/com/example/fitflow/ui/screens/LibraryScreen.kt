@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,40 +14,28 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fitflow.data.ExerciseRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitflow.ui.theme.FitflowTheme
+import com.example.fitflow.viewmodel.LibraryViewModel
 
 @Composable
-fun LibraryScreen() {
-    val selectedCategory = remember { mutableStateOf("ALL") }
-    val searchQuery = remember { mutableStateOf("") }
-    val selectedDifficulty = remember { mutableStateOf("ALL") }
-    val selectedMuscleGroup = remember { mutableStateOf("ALL") }
-    val minCalories = remember { mutableStateOf(25f) }
-    val maxCalories = remember { mutableStateOf(80f) }
-
-    val categories = remember { listOf("ALL") + ExerciseRepository.getCategoryList() }
-    val difficulties = remember { ExerciseRepository.getDifficultiesList() }
-    val muscleGroups = remember { listOf("ALL") + ExerciseRepository.getMuscleGroupsList() }
-
-    val filteredExercises = ExerciseRepository.filterExercises(
-        category = selectedCategory.value,
-        searchQuery = searchQuery.value,
-        minCalories = minCalories.value.toInt(),
-        maxCalories = maxCalories.value.toInt(),
-        difficulty = selectedDifficulty.value,
-        muscleGroup = selectedMuscleGroup.value
-    )
+fun LibraryScreen(
+    viewModel: LibraryViewModel = viewModel()
+) {
+    val filterState by viewModel.filterState.collectAsState()
+    val filteredExercises by viewModel.filteredExercises.collectAsState()
+    val categories by viewModel.categories.collectAsState()
+    val difficulties by viewModel.difficulties.collectAsState()
+    val muscleGroups by viewModel.muscleGroups.collectAsState()
 
     Column(
         modifier = Modifier
@@ -99,8 +86,8 @@ fun LibraryScreen() {
 
         // Search TextField
         TextField(
-            value = searchQuery.value,
-            onValueChange = { searchQuery.value = it },
+            value = filterState.searchQuery,
+            onValueChange = { viewModel.setSearchQuery(it) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -121,9 +108,9 @@ fun LibraryScreen() {
                 )
             },
             trailingIcon = {
-                if (searchQuery.value.isNotEmpty()) {
+                if (filterState.searchQuery.isNotEmpty()) {
                     IconButton(
-                        onClick = { searchQuery.value = "" },
+                        onClick = { viewModel.setSearchQuery("") },
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
@@ -143,7 +130,7 @@ fun LibraryScreen() {
             ),
             shape = RoundedCornerShape(12.dp),
             singleLine = true,
-            textStyle = androidx.compose.material3.LocalTextStyle.current.copy(fontSize = 14.sp)
+            textStyle = LocalTextStyle.current.copy(fontSize = 14.sp)
         )
 
         // Filters in LazyColumn for scrolling
@@ -155,204 +142,39 @@ fun LibraryScreen() {
         ) {
             // Category Filter
             item {
-                Column {
-                    Text(
-                        "CATEGORY",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        categories.forEach { category ->
-                            FilterChip(
-                                selected = selectedCategory.value == category,
-                                enabled = true,
-                                onClick = { selectedCategory.value = category },
-                                label = {
-                                    Text(
-                                        category,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = 1.sp
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-                                ),
-                                modifier = Modifier.height(32.dp)
-                            )
-                        }
+                FilterSection(title = "CATEGORY") {
+                    categories.forEach { category ->
+                        LibraryFilterChip(
+                            label = category,
+                            selected = filterState.category == category,
+                            onClick = { viewModel.setCategory(category) }
+                        )
                     }
                 }
             }
 
             // Difficulty Filter
             item {
-                Column {
-                    Text(
-                        "DIFFICULTY",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // ALL option
-                        FilterChip(
-                            selected = selectedDifficulty.value == "ALL",
-                            enabled = true,
-                            onClick = { selectedDifficulty.value = "ALL" },
-                            label = {
-                                Text(
-                                    "ALL",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Black,
-                                    letterSpacing = 1.sp
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-                            ),
-                            modifier = Modifier.height(32.dp)
+                FilterSection(title = "DIFFICULTY") {
+                    difficulties.forEach { difficulty ->
+                        LibraryFilterChip(
+                            label = difficulty,
+                            selected = filterState.difficulty == difficulty,
+                            onClick = { viewModel.setDifficulty(difficulty) }
                         )
-                        difficulties.forEach { difficulty ->
-                            FilterChip(
-                                selected = selectedDifficulty.value == difficulty,
-                                enabled = true,
-                                onClick = { selectedDifficulty.value = difficulty },
-                                label = {
-                                    Text(
-                                        difficulty,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = 1.sp
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-                                ),
-                                modifier = Modifier.height(32.dp)
-                            )
-                        }
                     }
-                }
-            }
-
-            // Calorie Range Slider
-            item {
-                Column {
-                    Text(
-                        "CALORIES: ${minCalories.value.toInt()} — ${maxCalories.value.toInt()} KCAL",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    RangeSlider(
-                        value = minCalories.value..maxCalories.value,
-                        onValueChange = { range ->
-                            minCalories.value = range.start
-                            maxCalories.value = range.endInclusive
-                        },
-                        valueRange = 25f..80f,
-                        steps = 5,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                            activeTrackColor = MaterialTheme.colorScheme.primary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-                        )
-                    )
                 }
             }
 
             // Muscle Group Filter
             item {
-                Column {
-                    Text(
-                        "MUSCLE GROUP",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        muscleGroups.forEach { group ->
-                            FilterChip(
-                                selected = selectedMuscleGroup.value == group,
-                                enabled = true,
-                                onClick = { selectedMuscleGroup.value = group },
-                                label = {
-                                    Text(
-                                        group,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Black,
-                                        letterSpacing = 1.sp
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-                                ),
-                                modifier = Modifier.height(32.dp)
-                            )
-                        }
+                FilterSection(title = "MUSCLE GROUP") {
+                    muscleGroups.forEach { group ->
+                        LibraryFilterChip(
+                            label = group,
+                            selected = filterState.muscleGroup == group,
+                            onClick = { viewModel.setMuscleGroup(group) }
+                        )
                     }
                 }
             }
@@ -367,48 +189,63 @@ fun LibraryScreen() {
                     modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                 )
             }
-
-            // Exercises List
-            items(filteredExercises) { exercise ->
-                ExerciseCard(
-                    category = exercise.category,
-                    name = exercise.name,
-                    description = getExerciseDescription(exercise.name, exercise.category),
-                    reps = "${exercise.reps} REPS",
-                    sets = "${exercise.sets} SETS",
-                    cals = "${exercise.kcal} KCAL",
-                    difficulty = exercise.difficulty,
-                    muscleGroups = exercise.muscleGroups.take(2) // Show max 2 muscle groups
-                )
-            }
         }
     }
 }
 
-/**
- * Generate description for exercise based on name and category
- */
-fun getExerciseDescription(name: String, category: String): String {
-    return when {
-        name.contains("Push", ignoreCase = true) -> "A fundamental strength exercise that targets your chest, shoulders, and triceps."
-        name.contains("Squat", ignoreCase = true) -> "Builds leg strength and improves lower body stability."
-        name.contains("Lunge", ignoreCase = true) -> "Enhances leg strength and balance. Great for glute and quads activation."
-        name.contains("Plank", ignoreCase = true) -> "Core strengthening exercise that improves stability and posture."
-        name.contains("Dip", ignoreCase = true) -> "Advanced upper body exercise for chest, shoulders, and triceps."
-        name.contains("Burpee", ignoreCase = true) -> "Full-body cardiovascular exercise combining cardio and strength training."
-        name.contains("Jump", ignoreCase = true) -> "Plyometric exercise that builds explosive power and cardiovascular endurance."
-        name.contains("Climbing", ignoreCase = true) -> "Dynamic core and cardio exercise that engages multiple muscle groups."
-        name.contains("Sprint", ignoreCase = true) -> "High-intensity cardio exercise for explosive speed and power."
-        name.contains("Rope", ignoreCase = true) -> "Classic cardio exercise that improves coordination and cardiovascular fitness."
-        name.contains("Skater", ignoreCase = true) -> "Lateral movement cardio exercise for agility and leg strength."
-        name.contains("Star", ignoreCase = true) -> "Full-body cardio exercise combining jumping and lateral movements."
-        name.contains("Bridge", ignoreCase = true) -> "Glute and core activation exercise that improves posterior chain strength."
-        name.contains("Sit", ignoreCase = true) -> "Isometric leg exercise targeting quadriceps endurance."
-        category == "Cardio" -> "Cardio exercise designed to improve cardiovascular endurance and burn calories."
-        category == "Strength" -> "Strength training exercise to build muscle and increase power."
-        category == "Endurance" -> "Endurance training combining strength and cardio elements."
-        else -> "Full-body exercise for overall fitness and conditioning."
+@Composable
+private fun FilterSection(
+    title: String,
+    content: @Composable RowScope.() -> Unit
+) {
+    Column {
+        Text(
+            title,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 1.sp,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.CenterVertically,
+            content = content
+        )
     }
+}
+
+@Composable
+private fun LibraryFilterChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    FilterChip(
+        selected = selected,
+        enabled = true,
+        onClick = onClick,
+        label = {
+            Text(
+                label,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
+            )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            containerColor = MaterialTheme.colorScheme.surface,
+            labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+        ),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)),
+        modifier = Modifier.height(32.dp)
+    )
 }
 
 @Composable
@@ -420,7 +257,6 @@ fun ExerciseCard(
     sets: String,
     cals: String,
     difficulty: String = "MEDIUM",
-    muscleGroups: List<String> = emptyList()
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -499,30 +335,6 @@ fun ExerciseCard(
                 fontSize = 11.sp,
                 lineHeight = 16.sp
             )
-
-            // Muscle groups
-            if (muscleGroups.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    muscleGroups.forEach { group ->
-                        Text(
-                            group,
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
-                            modifier = Modifier
-                                .background(
-                                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
-                                    RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                }
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

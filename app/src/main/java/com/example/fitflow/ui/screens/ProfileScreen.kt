@@ -40,11 +40,11 @@ fun ProfileScreen(
     val completedCount = completedDays.size
     val totalKcal = workoutPlan
         .filter { it.dayNumber in completedDays }
-        .flatMap { it.exercises }
+        .flatMap { it.workoutExercises }
         .sumOf { it.kcal }
     val totalMinutes = workoutPlan
         .filter { it.dayNumber in completedDays }
-        .flatMap { it.exercises }
+        .flatMap { it.workoutExercises }
         .sumOf { it.durationSec } / 60
 
     val today = LocalDate.now()
@@ -57,7 +57,7 @@ fun ProfileScreen(
             val date = weekStart.plusDays(offset.toLong())
             val dayNum = ChronoUnit.DAYS.between(startDate, date).toInt() + 1
             if (dayNum in completedDays)
-                workoutPlan.find { it.dayNumber == dayNum }?.exercises?.sumOf { it.durationSec }?.div(60) ?: 0
+                workoutPlan.find { it.dayNumber == dayNum }?.workoutExercises?.sumOf { it.durationSec }?.div(60) ?: 0
             else 0
         }
     }
@@ -68,7 +68,7 @@ fun ProfileScreen(
             val date = weekStart.plusDays(offset.toLong())
             val dayNum = ChronoUnit.DAYS.between(startDate, date).toInt() + 1
             if (dayNum in completedDays)
-                workoutPlan.find { it.dayNumber == dayNum }?.exercises?.sumOf { it.kcal } ?: 0
+                workoutPlan.find { it.dayNumber == dayNum }?.workoutExercises?.sumOf { it.kcal } ?: 0
             else 0
         }
     }
