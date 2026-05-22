@@ -52,7 +52,7 @@ fun DashboardScreen(
     val completedCount = completedDays.size
     val totalKcal = workoutPlan
         .filter { it.dayNumber in completedDays }
-        .flatMap { it.exercises }
+        .flatMap { it.workoutExercises }
         .sumOf { it.kcal }
 
     LazyColumn(

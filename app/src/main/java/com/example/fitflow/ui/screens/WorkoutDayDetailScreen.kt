@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.Exercise
+import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
@@ -45,10 +47,10 @@ fun WorkoutDayDetailScreen(
             contentPadding = PaddingValues(bottom = 120.dp)
         ) {
             item {
-                HeaderAndSummarySection(1, dayPlan.exercises, onBack)
+                HeaderAndSummarySection(1, dayPlan.workoutExercises, onBack)
             }
-            items(dayPlan.exercises.size) { index ->
-                ExerciseExpandableItem(dayPlan.exercises[index])
+            items(dayPlan.workoutExercises) { exercise ->
+                ExerciseExpandableItem(exercise)
             }
         }
         Box(
@@ -94,12 +96,11 @@ fun WorkoutDayDetailScreen(
 @Composable
 fun HeaderAndSummarySection(
     dayNumber: Int,
-    exercises: List<Exercise>,
+    exercises: List<WorkoutExercise>,
     onBack: () -> Unit
 ) {
-    val exercisesCount = exercises.size
     val totalKcal = exercises.sumOf { it.kcal }
-    val duration = exercises.sumOf { it.durationSec }
+    val duration = exercises.sumOf { it.durationSec } / 60
 
     Box(
         modifier = Modifier
@@ -186,7 +187,7 @@ fun HeaderAndSummarySection(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    SummaryItem(value = "$exercisesCount", label = "Exercises")
+                    SummaryItem(value = "${exercises.size}", label = "Exercises")
                     SummaryItem(value = "$duration min", label = "Time")
                     SummaryItem(value = "$totalKcal", label = "Calories")
                 }
@@ -246,7 +247,7 @@ fun SummaryItem(
 }
 
 @Composable
-private fun ExerciseExpandableItem(exercise: Exercise) {
+private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Column(
@@ -318,12 +319,12 @@ private fun ExerciseExpandableItem(exercise: Exercise) {
     }
 }
 
- val sampleExercises = listOf(
-    Exercise(category = "Cardio", name = "Jumping Jacks", sets = 1, reps = 0, kcal = 10, durationSec = 30),
-    Exercise(category = "Strength", name = "Push Ups", sets = 1, reps = 0, kcal = 15, durationSec = 40),
-    Exercise(category = "Strength", name = "Bodyweight Squats", sets = 1, reps = 0, kcal = 20, durationSec = 45),
-    Exercise(category = "Core", name = "Plank Hold", sets = 1, reps = 0, kcal = 10, durationSec = 60),
-    Exercise(category = "Strength", name = "Lunges", sets = 1, reps = 0, kcal = 15, durationSec = 40)
+ private val sampleExercises = listOf(
+    WorkoutExercise(category = "Cardio", name = "Jumping Jacks", sets = 1, reps = 0, kcal = 10, durationSec = 30),
+    WorkoutExercise(category = "Strength", name = "Push Ups", sets = 1, reps = 0, kcal = 15, durationSec = 40),
+    WorkoutExercise(category = "Strength", name = "Bodyweight Squats", sets = 1, reps = 0, kcal = 20, durationSec = 45),
+    WorkoutExercise(category = "Core", name = "Plank Hold", sets = 1, reps = 0, kcal = 10, durationSec = 60),
+    WorkoutExercise(category = "Strength", name = "Lunges", sets = 1, reps = 0, kcal = 15, durationSec = 40)
 )
 
 @Preview(showBackground = true)
@@ -331,7 +332,7 @@ private fun ExerciseExpandableItem(exercise: Exercise) {
 fun WorkoutDayDetailScreenPreview() {
     FitflowTheme {
         WorkoutDayDetailScreen(
-            DayPlan(1, false, sampleExercises()),
+            DayPlan(1, false, sampleExercises),
             {},
             {}
         )

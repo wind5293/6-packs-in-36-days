@@ -19,13 +19,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.data.model.Exercise
+import com.example.fitflow.data.model.WorkoutExercise
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutSessionScreen(
-    exercises: List<Exercise> = sampleExercises(),
+    exercises: List<WorkoutExercise> = sampleExercises(),
     onBack: () -> Unit = {},
     onFinish: () -> Unit = {}
 ) {
@@ -236,11 +237,11 @@ fun WorkoutSessionScreen(
 }
 
 fun sampleExercises() = listOf(
-    Exercise(category = "Cardio", name = "Jumping Jacks", sets = 1, reps = 0, kcal = 10, durationSec = 30),
-    Exercise(category = "Strength", name = "Push Ups", sets = 1, reps = 0, kcal = 15, durationSec = 40),
-    Exercise(category = "Strength", name = "Bodyweight Squats", sets = 1, reps = 0, kcal = 20, durationSec = 45),
-    Exercise(category = "Core", name = "Plank Hold", sets = 1, reps = 0, kcal = 10, durationSec = 60),
-    Exercise(category = "Strength", name = "Lunges", sets = 1, reps = 0, kcal = 15, durationSec = 40)
+    WorkoutExercise(category = "Cardio", name = "Jumping Jacks", sets = 1, reps = 0, kcal = 10, durationSec = 30),
+    WorkoutExercise(category = "Strength", name = "Push Ups", sets = 1, reps = 0, kcal = 15, durationSec = 40),
+    WorkoutExercise(category = "Strength", name = "Bodyweight Squats", sets = 1, reps = 0, kcal = 20, durationSec = 45),
+    WorkoutExercise(category = "Core", name = "Plank Hold", sets = 1, reps = 0, kcal = 10, durationSec = 60),
+    WorkoutExercise(category = "Strength", name = "Lunges", sets = 1, reps = 0, kcal = 15, durationSec = 40)
 )
 
 @Preview(showBackground = true)
