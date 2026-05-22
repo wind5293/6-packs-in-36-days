@@ -10,7 +10,7 @@
     <string name="dashboard_phase_01">PHASE 01</string>
     <string name="dashboard_health_metrics">HEALTH METRICS</string>
     <string name="dashboard_steps">STEPS</string>
-    <string name="dashboard_water">WATER</string>"
+    <string name="dashboard_water">WATER</string>
     <string name="dashboard_unit_steps">steps</string>
     <string name="dashboard_unit_ml">ml</string>
 

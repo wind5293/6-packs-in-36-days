@@ -9,9 +9,12 @@ import android.util.Log
 import androidx.core.content.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.fitflow.data.StepCounterManager
 import com.example.fitflow.data.UserPreferences
 import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.FitnessGoal
+import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.WorkoutPlangenerator
 import com.example.fitflow.notification.WorkoutReminderReceiver
@@ -33,11 +36,38 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
     private val _startDate = MutableStateFlow<LocalDate?>(null)
     val startDate: StateFlow<LocalDate?> = _startDate.asStateFlow()
 
+    private val _weightHistory = MutableStateFlow<List<Pair<LocalDate, Float>>>(emptyList())
+    val weightHistory: StateFlow<List<Pair<LocalDate, Float>>> = _weightHistory.asStateFlow()
+
+    private val _todayHealthMetrics = MutableStateFlow(
+        DailyHealthMetrics(
+            date = LocalDate.now(),
+            steps = 0,
+            waterIntakeMl = 0,
+            waterGoalMl = 2000,
+            stepSource = StepSource.MANUAL
+        )
+    )
+    val todayHealthMetrics: StateFlow<DailyHealthMetrics> = _todayHealthMetrics.asStateFlow()
+
+    private val _healthMetricsHistory = MutableStateFlow<List<DailyHealthMetrics>>(emptyList())
+    val healthMetricsHistory: StateFlow<List<DailyHealthMetrics>> = _healthMetricsHistory.asStateFlow()
+
+    private val _activityRecognitionGranted = MutableStateFlow(false)
+    val activityRecognitionGranted: StateFlow<Boolean> = _activityRecognitionGranted.asStateFlow()
+
+    private val _stepSensorEnabled = MutableStateFlow(false)
+    val stepSensorEnabled: StateFlow<Boolean> = _stepSensorEnabled.asStateFlow()
+
+    private var stepCounterManager: StepCounterManager? = null
+
     private fun loadUserProfile() {
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
         _startDate.value = userPreferences.getStartDate()
+        _weightHistory.value = userPreferences.getWeightHistory()
+        refreshHealthMetrics()
         _workoutPlan.value = if (profile != null) {
             WorkoutPlangenerator.generatePlan(profile.goal)
         } else {
@@ -67,6 +97,89 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
         val updated = _completedDays.value + dayNumber
         _completedDays.value = updated
         userPreferences.saveCompletedDays(updated)
+    }
+
+    fun recordWeight(weight: Float) {
+        userPreferences.recordWeight(weight)
+        loadUserProfile()
+    }
+
+    fun refreshHealthMetrics() {
+        val defaultGoal = defaultWaterGoalMl()
+        _todayHealthMetrics.value = userPreferences.getTodayHealthMetrics(defaultGoal)
+        _healthMetricsHistory.value = userPreferences.getHealthMetricsHistory()
+        _stepSensorEnabled.value = userPreferences.isStepSensorEnabled()
+    }
+
+    fun addWater(amountMl: Int) {
+        userPreferences.addWater(amountMl, defaultWaterGoalMl())
+        refreshHealthMetrics()
+    }
+
+    fun setWaterGoal(goalMl: Int) {
+        userPreferences.setWaterGoal(goalMl, defaultWaterGoalMl())
+        refreshHealthMetrics()
+    }
+
+    fun addManualSteps(delta: Int = 500) {
+        userPreferences.incrementTodaySteps(delta, defaultWaterGoalMl(), StepSource.MANUAL)
+        refreshHealthMetrics()
+    }
+
+    fun setActivityRecognitionGranted(granted: Boolean) {
+        _activityRecognitionGranted.value = granted
+        if (!granted) {
+            userPreferences.setStepSensorEnabled(false)
+            _stepSensorEnabled.value = false
+        }
+    }
+
+    fun startStepTracking(context: Context) {
+        if (!_activityRecognitionGranted.value) {
+            userPreferences.setStepSensorEnabled(false)
+            _stepSensorEnabled.value = false
+            return
+        }
+
+        if (stepCounterManager != null) return
+
+        stepCounterManager = StepCounterManager(context.applicationContext, object : StepCounterManager.Listener {
+            override fun onCounterValue(counterValue: Int) {
+                val today = LocalDate.now()
+                val baselineDay = userPreferences.getStepBaselineDay()
+                val baselineValue = userPreferences.getStepBaselineValue()
+
+                val baseline = if (baselineDay == today && baselineValue >= 0) {
+                    baselineValue
+                } else {
+                    userPreferences.setStepBaseline(today, counterValue)
+                    counterValue
+                }
+
+                val todaySteps = (counterValue - baseline).coerceAtLeast(0)
+                userPreferences.setTodaySteps(todaySteps, defaultWaterGoalMl(), StepSource.SENSOR)
+                userPreferences.setStepSensorEnabled(true)
+                refreshHealthMetrics()
+            }
+
+            override fun onStepDetected() {
+                userPreferences.incrementTodaySteps(1, defaultWaterGoalMl(), StepSource.SENSOR)
+                userPreferences.setStepSensorEnabled(true)
+                refreshHealthMetrics()
+            }
+
+            override fun onSensorUnavailable() {
+                userPreferences.setStepSensorEnabled(false)
+                refreshHealthMetrics()
+            }
+        })
+
+        stepCounterManager?.start()
+    }
+
+    fun stopStepTracking() {
+        stepCounterManager?.stop()
+        stepCounterManager = null
     }
 
     fun scheduleWorkoutReminder(context: Context, hour: Int, minute: Int) {
@@ -99,6 +212,11 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
 
     init {
         loadUserProfile()
+    }
+
+    private fun defaultWaterGoalMl(): Int {
+        val weight = _userProfile.value?.weight ?: 57f
+        return (weight * 35f).toInt().coerceIn(1200, 5000)
     }
 }
 

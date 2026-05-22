@@ -3,9 +3,15 @@ package com.example.fitflow.ui.screens
 import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
@@ -14,10 +20,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,17 +46,18 @@ fun OnboardingScreen(
         workoutTime: String
             ) -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 6 })
+    val totalSteps = 4
+    val pagerState = rememberPagerState(pageCount = { totalSteps })
     val scope = rememberCoroutineScope()
     val context = LocalContext.current // Lấy context để gửi Broadcast
 
     // State chung
-    var selectedGoal by remember { mutableStateOf(FitnessGoal.WEIGHT_LOSS) }
+    val selectedGoal = FitnessGoal.WEIGHT_LOSS
     var height by remember { mutableFloatStateOf(170f) }
     var weight by remember { mutableFloatStateOf(65f) }
     var birthYear by remember { mutableIntStateOf(2000) }
     var targetWeight by remember { mutableFloatStateOf(60f) }
-    var workoutTime by remember { mutableStateOf("08:00") }
+    val workoutTime = "08:00"
 
     Column(
         modifier = Modifier
@@ -57,7 +66,7 @@ fun OnboardingScreen(
             .padding(top = 32.dp, bottom = 24.dp)
     ) {
         // --- HEADER & PROGRESS ---
-        OnboardingHeader(currentStep = pagerState.currentPage, totalSteps = 6)
+        OnboardingHeader(currentStep = pagerState.currentPage, totalSteps = totalSteps)
 
         // --- PAGER CONTENT ---
         HorizontalPager(
@@ -67,12 +76,10 @@ fun OnboardingScreen(
             verticalAlignment = Alignment.Top
         ) { page ->
             when (page) {
-                0 -> GoalStep(selectedGoal) { selectedGoal = it }
+                0 -> HeightStep(height) { height = it }
                 1 -> BirthYearStep(birthYear) { birthYear = it }
-                2 -> HeightStep(height) { height = it }
-                3 -> WeightStep(weight, height, selectedGoal, { weight = it },)
-                4 -> TargetWeightStep(targetWeight, weight) { targetWeight = it }
-                5 -> WorkoutTimeStep(workoutTime) { workoutTime = it }
+                2 -> TargetWeightStep(targetWeight, weight) { targetWeight = it }
+                3 -> WeightStep(weight, height, selectedGoal, { weight = it })
             }
         }
 
@@ -80,7 +87,7 @@ fun OnboardingScreen(
         PaddingBox {
             Button(
                 onClick = {
-                    if (pagerState.currentPage < 5) {
+                    if (pagerState.currentPage < totalSteps - 1) {
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                     } else {
                         val testIntent = Intent(context, WorkoutReminderReceiver::class.java)
@@ -102,7 +109,7 @@ fun OnboardingScreen(
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Text(
-                    if (pagerState.currentPage == 5) "ACTIVATE JOURNEY" else "CONTINUE",
+                    if (pagerState.currentPage == totalSteps - 1) "ACTIVATE JOURNEY" else "CONTINUE",
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp
                 )
@@ -198,10 +205,10 @@ fun GoalStep(selectedGoal: FitnessGoal, onGoalSelected: (FitnessGoal) -> Unit) {
 @Composable
 fun BirthYearStep(birthYear: Int, onYearChange: (Int) -> Unit) {
     StepLayout(title = "WHEN WERE YOU BORN?", subtitle = "BIRTH YEAR") {
-        Slider(
-            value = birthYear.toFloat(),
-            onValueChange = { onYearChange(it.toInt()) },
-            valueRange = 1950f..2024f
+        YearWheelPicker(
+            selectedYear = birthYear,
+            years = (1950..2024).toList(),
+            onYearChange = onYearChange
         )
         Text(
             "$birthYear",
@@ -216,14 +223,29 @@ fun BirthYearStep(birthYear: Int, onYearChange: (Int) -> Unit) {
 // --- STEPS UI ---
 @Composable
 fun HeightStep(height: Float, onHeightChange: (Float) -> Unit) {
+    var useCm by remember { mutableStateOf(true) }
+    val cmValue = height.toInt().coerceIn(120, 220)
+    val inchValue = (cmValue / 2.54f).toInt()
+    val feet = inchValue / 12
+    val inches = inchValue % 12
+
     StepLayout(title = "HOW TALL ARE YOU?", subtitle = "HEIGHT (CM)") {
-        Slider(
-            value = height,
-            onValueChange = onHeightChange,
-            valueRange = 120f..220f
+        UnitToggle(
+            left = "CM",
+            right = "FT",
+            isLeftSelected = useCm,
+            onToggle = { useCm = it }
         )
+        Spacer(Modifier.height(20.dp))
+        RulerPicker(
+            selectedValue = cmValue,
+            values = (120..220).toList(),
+            majorTickEvery = 5,
+            onSelect = { onHeightChange(it.toFloat()) }
+        )
+        Spacer(Modifier.height(18.dp))
         Text(
-            "${height.toInt()} cm",
+            if (useCm) "${cmValue} cm" else "$feet ft $inches in",
             fontSize = 48.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
@@ -239,16 +261,27 @@ fun WeightStep(
     goal: FitnessGoal,
     onWeightChange: (Float) -> Unit,
 ) {
-    val bmi = weight / ((height / 100f) * (height / 100f))
+    var useKg by remember { mutableStateOf(true) }
+    val kgValue = weight.coerceIn(30f, 150f)
+    val lbsValue = kgValue * 2.20462f
 
     StepLayout(title = "WHAT'S YOUR WEIGHT?", subtitle = "CURRENT WEIGHT (KG)") {
-        Slider(
-            value = weight,
-            onValueChange = onWeightChange,
-            valueRange = 30f..150f
+        UnitToggle(
+            left = "KG",
+            right = "LB",
+            isLeftSelected = useKg,
+            onToggle = { useKg = it }
         )
+        Spacer(Modifier.height(20.dp))
+        RulerPicker(
+            selectedValue = kgValue.toInt(),
+            values = (30..150).toList(),
+            majorTickEvery = 5,
+            onSelect = { onWeightChange(it.toFloat()) }
+        )
+        Spacer(Modifier.height(18.dp))
         Text(
-            "${String.format("%.1f", weight)} kg",
+            if (useKg) "${String.format("%.1f", kgValue)} kg" else "${String.format("%.1f", lbsValue)} lb",
             fontSize = 48.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
@@ -288,16 +321,28 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
     val weightDiff = targetWeight - currentWeight
     val diffPercentage = (abs(weightDiff) / currentWeight) * 100
     val isLosing = weightDiff < 0
+    var useKg by remember { mutableStateOf(true) }
+    val kgValue = targetWeight.coerceIn(30f, 150f)
+    val lbsValue = kgValue * 2.20462f
 
     StepLayout(title = "GOAL WEIGHT?", subtitle = "TARGET WEIGHT (KG)") {
-        Slider(
-            value = targetWeight,
-            onValueChange = onTargetChange,
-            valueRange = 30f..150f,
-            colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.secondary)
+        UnitToggle(
+            left = "KG",
+            right = "LB",
+            isLeftSelected = useKg,
+            onToggle = { useKg = it }
         )
+        Spacer(Modifier.height(20.dp))
+        RulerPicker(
+            selectedValue = kgValue.toInt(),
+            values = (30..150).toList(),
+            majorTickEvery = 5,
+            onSelect = { onTargetChange(it.toFloat()) },
+            majorTickColor = MaterialTheme.colorScheme.secondary
+        )
+        Spacer(Modifier.height(18.dp))
         Text(
-            "${targetWeight.toInt()} kg",
+            if (useKg) "${kgValue.toInt()} kg" else "${String.format("%.1f", lbsValue)} lb",
             fontSize = 48.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
@@ -456,5 +501,156 @@ fun TargetWeightStepPreview() {
 fun WorkoutTimeStepPreview() {
     FitflowTheme {
         WorkoutTimeStep(workoutTime = "08:00", onTimeSelected = {})
+    }
+}
+
+@Composable
+fun UnitToggle(
+    left: String,
+    right: String,
+    isLeftSelected: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f), RoundedCornerShape(14.dp))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        UnitPill(
+            text = left,
+            selected = isLeftSelected,
+            modifier = Modifier.weight(1f),
+            onClick = { onToggle(true) }
+        )
+        UnitPill(
+            text = right,
+            selected = !isLeftSelected,
+            modifier = Modifier.weight(1f),
+            onClick = { onToggle(false) }
+        )
+    }
+}
+
+@Composable
+fun UnitPill(text: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(
+                if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+            )
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text,
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            fontWeight = FontWeight.Black,
+            fontSize = 11.sp,
+            letterSpacing = 1.sp
+        )
+    }
+}
+
+@Composable
+fun RulerPicker(
+    selectedValue: Int,
+    values: List<Int>,
+    majorTickEvery: Int,
+    onSelect: (Int) -> Unit,
+    majorTickColor: Color = MaterialTheme.colorScheme.primary
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(values) { value ->
+            val isSelected = value == selectedValue
+            RulerTick(
+                value = value,
+                isMajor = value % majorTickEvery == 0,
+                isSelected = isSelected,
+                majorTickColor = majorTickColor,
+                onClick = { onSelect(value) }
+            )
+        }
+    }
+}
+
+@Composable
+fun RulerTick(
+    value: Int,
+    isMajor: Boolean,
+    isSelected: Boolean,
+    majorTickColor: Color,
+    onClick: () -> Unit
+) {
+    val tickHeight: Dp = if (isMajor) 44.dp else 24.dp
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(22.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(if (isSelected) 3.dp else 2.dp)
+                .height(tickHeight)
+                .background(
+                    if (isSelected) majorTickColor else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.25f),
+                    RoundedCornerShape(2.dp)
+                )
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = if (isMajor) value.toString() else "",
+            fontSize = 10.sp,
+            color = if (isSelected) majorTickColor else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun YearWheelPicker(
+    selectedYear: Int,
+    years: List<Int>,
+    onYearChange: (Int) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(210.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f))
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            contentPadding = PaddingValues(vertical = 56.dp)
+        ) {
+            items(years) { year ->
+                val isSelected = year == selectedYear
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onYearChange(year) }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = year.toString(),
+                        fontSize = if (isSelected) 32.sp else 20.sp,
+                        fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+                        fontStyle = if (isSelected) FontStyle.Italic else FontStyle.Normal
+                    )
+                }
+            }
+        }
     }
 }

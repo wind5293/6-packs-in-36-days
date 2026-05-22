@@ -34,6 +34,8 @@ import com.composables.icons.lucide.GlassWater
 import com.composables.icons.lucide.Lucide
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.data.model.DailyHealthMetrics
+import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.ui.theme.FitflowTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -43,11 +45,14 @@ fun DashboardScreen(
     completedDays: Set<Int> = emptySet(),
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
+    healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, StepSource.MANUAL),
+    isActivityRecognitionGranted: Boolean = false,
+    isStepSensorEnabled: Boolean = false,
+    onAddManualSteps: () -> Unit = {},
+    onAddWater: (Int) -> Unit = {},
+    onSetWaterGoal: (Int) -> Unit = {},
     onStartWorkout: () -> Unit = {}
 ) {
-    var steps by remember { mutableIntStateOf(0) }
-    var water by remember { mutableIntStateOf(0) }
-
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
     val totalKcal = workoutPlan
@@ -100,10 +105,12 @@ fun DashboardScreen(
         }
         item {
             HealthMetricsSection(
-                steps = steps,
-                onAddSteps = { steps += 500 },
-                water = water,
-                onAddWater = { water += 250 }
+                metrics = healthMetrics,
+                isActivityRecognitionGranted = isActivityRecognitionGranted,
+                isStepSensorEnabled = isStepSensorEnabled,
+                onAddSteps = onAddManualSteps,
+                onAddWater = onAddWater,
+                onSetWaterGoal = onSetWaterGoal
             )
         }
     }
@@ -522,9 +529,16 @@ fun WorkoutsSummarySection(
 
 @Composable
 fun HealthMetricsSection(
-    steps: Int, onAddSteps: () -> Unit,
-    water: Int, onAddWater: () -> Unit
+    metrics: DailyHealthMetrics,
+    isActivityRecognitionGranted: Boolean,
+    isStepSensorEnabled: Boolean,
+    onAddSteps: () -> Unit,
+    onAddWater: (Int) -> Unit,
+    onSetWaterGoal: (Int) -> Unit
 ) {
+    var showGoalDialog by remember { mutableStateOf(false) }
+    var goalInput by remember { mutableStateOf(metrics.waterGoalMl.toString()) }
+
     Text(
         stringResource(R.string.dashboard_health_metrics),
         fontSize = 11.sp,
@@ -542,21 +556,77 @@ fun HealthMetricsSection(
             modifier = Modifier.weight(1f),
             icon = Lucide.Footprints,
             iconTint = MaterialTheme.colorScheme.primary,
-            value = "0",
+            value = metrics.steps.toString(),
             unit = stringResource(R.string.dashboard_steps).uppercase(),
-            buttonText = "SET A GOAL",
+            buttonText = if (metrics.stepSource == StepSource.SENSOR) "LIVE" else "ADD 500",
             onClick = onAddSteps
         )
         MetricHorizontalCard(
             modifier = Modifier.weight(1f),
             icon = Lucide.GlassWater,
             iconTint = MaterialTheme.colorScheme.secondary,
-            value = "0",
-            unit = stringResource(R.string.dashboard_water).uppercase(),
-            buttonText = "UNLOCK",
-            onClick = onAddWater
+            value = metrics.waterIntakeMl.toString(),
+            unit = "${stringResource(R.string.dashboard_water).uppercase()} / ${metrics.waterGoalMl} ML",
+            buttonText = "+250 ML",
+            onClick = { onAddWater(250) }
         )
     }
+
+    Spacer(modifier = Modifier.height(10.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        AssistChip(
+            onClick = { onAddWater(500) },
+            label = { Text("+500 ML") }
+        )
+        AssistChip(
+            onClick = {
+                goalInput = metrics.waterGoalMl.toString()
+                showGoalDialog = true
+            },
+            label = { Text("SET GOAL") }
+        )
+    }
+
+    if (showGoalDialog) {
+        AlertDialog(
+            onDismissRequest = { showGoalDialog = false },
+            title = { Text("Water Goal (ml)") },
+            text = {
+                OutlinedTextField(
+                    value = goalInput,
+                    onValueChange = { goalInput = it.filter { c -> c.isDigit() } },
+                    singleLine = true,
+                    label = { Text("Goal") }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val parsed = goalInput.toIntOrNull()
+                        if (parsed != null && parsed > 0) {
+                            onSetWaterGoal(parsed)
+                            showGoalDialog = false
+                        }
+                    }
+                ) { Text("SAVE") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showGoalDialog = false }) { Text("CANCEL") }
+            }
+        )
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = when {
+            !isActivityRecognitionGranted -> "Step sensor permission is off. Using manual mode."
+            !isStepSensorEnabled -> "Step sensor unavailable on this device. Manual mode enabled."
+            else -> "Live step tracking is active."
+        },
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Medium
+    )
 }
 
 @Composable
