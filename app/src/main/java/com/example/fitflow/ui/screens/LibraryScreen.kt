@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.LibraryViewModel
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import com.example.fitflow.data.model.Exercise
 
 @Composable
 fun LibraryScreen(
@@ -189,6 +192,10 @@ fun LibraryScreen(
                     modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                 )
             }
+
+            items(filteredExercises) { exercise ->
+                ExerciseListItem(exercise = exercise)
+            }
         }
     }
 }
@@ -246,6 +253,80 @@ private fun LibraryFilterChip(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)),
         modifier = Modifier.height(32.dp)
     )
+}
+
+@Composable
+fun ExerciseListItem(
+    exercise: Exercise,
+    onClick: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Thumbnail placeholder (sau này thay bằng GIF)
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    RoundedCornerShape(12.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                exercise.exercise_type.take(3).uppercase(),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // Thông tin chính
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                exercise.name,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            val muscles = exercise.target_muscles
+                .filter { it != "Main" }
+                .take(2)
+                .joinToString(" · ")
+            Text(
+                muscles,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+                maxLines = 1
+            )
+        }
+
+        // Difficulty badge
+        val badgeColor = when (exercise.difficulty) {
+            "beginner" -> MaterialTheme.colorScheme.secondary
+            "advanced" -> MaterialTheme.colorScheme.error
+            else -> MaterialTheme.colorScheme.primary
+        }
+        Text(
+            exercise.difficulty.replaceFirstChar { it.uppercase() },
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Black,
+            color = badgeColor,
+            modifier = Modifier
+                .background(badgeColor.copy(alpha = 0.1f), RoundedCornerShape(50))
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+
+    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
 }
 
 @Composable
@@ -377,5 +458,7 @@ fun Chip(text: String) {
 @Preview(showBackground = true)
 @Composable
 fun LibraryScreenPreview() {
-    FitflowTheme { LibraryScreen() }
+    FitflowTheme {
+        LibraryScreen()
+    }
 }

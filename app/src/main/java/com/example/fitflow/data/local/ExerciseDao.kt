@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.fitflow.data.model.Exercise
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -29,4 +30,7 @@ interface ExerciseDao {
 
     @Query("SELECT COUNT(*) FROM exercises")
     suspend fun count(): Int
+
+    @Query("SELECT * FROM exercises WHERE name = :name LIMIT 1")
+    suspend fun getByName(name: String): ExerciseEntity?
 }

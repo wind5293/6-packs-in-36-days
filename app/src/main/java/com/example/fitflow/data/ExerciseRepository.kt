@@ -25,6 +25,14 @@ class ExerciseRepository(context: Context) {
                 .fromJson(json, Array<Exercise>::class.java)
                 .map { ExerciseEntity.fromExercise(it) }
 
+            val exercises = Gson().fromJson(json, Array<Exercise>::class.java)
+
+            // Log tạm để kiểm tra
+            val noGif = exercises.filter { it.local_gifs.isEmpty() }
+            android.util.Log.d("DB_CHECK", "Total: ${exercises.size}")
+            android.util.Log.d("DB_CHECK", "No GIF: ${noGif.size}")
+            noGif.forEach { android.util.Log.d("DB_CHECK", "Missing GIF: ${it.name}") }
+
             dao.insertAll(entities)
         }
     }
@@ -40,4 +48,7 @@ class ExerciseRepository(context: Context) {
 
     fun getByType(type: String): Flow<List<Exercise>> =
         dao.getByType(type).map { list -> list.map { it.toExercise() } }
+
+    suspend fun getByName(name: String): Exercise? =
+        dao.getByName(name)?.toExercise()
 }
