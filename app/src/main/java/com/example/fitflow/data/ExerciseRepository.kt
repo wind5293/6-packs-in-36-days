@@ -53,6 +53,9 @@ class ExerciseRepository(context: Context) {
     suspend fun getByName(name: String): Exercise? =
         dao.getByName(name)?.toExercise()
 
+    suspend fun getGifFileName(name: String): String? =
+        dao.getByName(name)?.local_gifs?.firstOrNull()
+        
     suspend fun findBestMatchByName(name: String): Exercise? {
         dao.getByName(name)?.let { return it.toExercise() }
         dao.getByNameIgnoreCase(name)?.let { return it.toExercise() }

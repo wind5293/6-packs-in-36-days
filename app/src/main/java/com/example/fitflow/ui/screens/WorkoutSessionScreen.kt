@@ -16,12 +16,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
@@ -29,12 +32,14 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
+import com.example.fitflow.utils.GifUrlHelper
+import com.example.fitflow.viewmodel.WorkoutSessionViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 // ─── Thay đổi thời gian tại đây ───────────────────────────
 private const val PREPARE_SECONDS = 5   // Đếm ngược trước mỗi bài
-private const val REST_SECONDS    = 25  // Nghỉ ngơi giữa các bài
+private const val REST_SECONDS = 25  // Nghỉ ngơi giữa các bài
 // ──────────────────────────────────────────────────────────
 
 enum class SessionPhase { PREPARING, EXERCISING, RESTING }
@@ -44,17 +49,24 @@ enum class SessionPhase { PREPARING, EXERCISING, RESTING }
 fun WorkoutSessionScreen(
     exercises: List<WorkoutExercise> = sampleExercises(),
     onBack: () -> Unit = {},
-    onFinish: () -> Unit = {}
+    onFinish: () -> Unit = {},
+    viewModel: WorkoutSessionViewModel = viewModel()
 ) {
+  
     var showInstructionScreen by remember { mutableStateOf(false) }
-    var index       by remember { mutableStateOf(0) }
-    var remaining   by remember { mutableStateOf(exercises.getOrNull(0)?.durationSec ?: 0) }
-    var isRunning   by remember { mutableStateOf(false) }
-    var phase       by remember { mutableStateOf(SessionPhase.PREPARING) }
-    var phaseTimer  by remember { mutableStateOf(PREPARE_SECONDS) }
+    var index by remember { mutableStateOf(0) }
+    var remaining by remember { mutableStateOf(exercises.getOrNull(0)?.durationSec ?: 0) }
+    var isRunning by remember { mutableStateOf(false) }
+    var phase by remember { mutableStateOf(SessionPhase.PREPARING) }
+    var phaseTimer by remember { mutableStateOf(PREPARE_SECONDS) }
 
-    val current  = exercises.getOrNull(index)
-    val next     = exercises.getOrNull(index + 1)
+    val gifUrls by viewModel.gifUrls.collectAsState()
+    LaunchedEffect(exercises) {
+        viewModel.loadGifs(exercises)
+    }
+
+    val current = exercises.getOrNull(index)
+    val next = exercises.getOrNull(index + 1)
 
     if (showInstructionScreen && current != null) {
         ExerciseInstructionOverlayScreen(
@@ -66,17 +78,17 @@ fun WorkoutSessionScreen(
 
     val primaryColor  = MaterialTheme.colorScheme.primary
     val buttonBgColor = MaterialTheme.colorScheme.surfaceVariant
-    val iconColor     = MaterialTheme.colorScheme.onSurfaceVariant
-    val textColor     = MaterialTheme.colorScheme.onBackground
-    val bgColor       = MaterialTheme.colorScheme.background
+    val iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val textColor = MaterialTheme.colorScheme.onBackground
+    val bgColor = MaterialTheme.colorScheme.background
 
     // ── Hàm chuyển bài / kết thúc ──────────────────────────
     fun skipToNext() {
         if (index < exercises.lastIndex) {
             index++
-            remaining  = exercises[index].durationSec
-            isRunning  = false
-            phase      = SessionPhase.PREPARING
+            remaining = exercises[index].durationSec
+            isRunning = false
+            phase = SessionPhase.PREPARING
             phaseTimer = PREPARE_SECONDS
         } else {
             onFinish()
@@ -86,9 +98,9 @@ fun WorkoutSessionScreen(
     fun goToPrev() {
         if (index > 0) {
             index--
-            remaining  = exercises[index].durationSec
-            isRunning  = false
-            phase      = SessionPhase.PREPARING
+            remaining = exercises[index].durationSec
+            isRunning = false
+            phase = SessionPhase.PREPARING
             phaseTimer = PREPARE_SECONDS
         }
     }
@@ -101,11 +113,12 @@ fun WorkoutSessionScreen(
                 while (isActive && phaseTimer > 0) {
                     delay(1000L); phaseTimer--
                 }
-                phase     = SessionPhase.EXERCISING
+                phase = SessionPhase.EXERCISING
                 isRunning = current?.reps == 0
             }
 
-            SessionPhase.EXERCISING -> { /* Timer xử lý riêng bên dưới */ }
+            SessionPhase.EXERCISING -> { /* Timer xử lý riêng bên dưới */
+            }
 
             SessionPhase.RESTING -> {
                 phaseTimer = REST_SECONDS
@@ -171,16 +184,17 @@ fun WorkoutSessionScreen(
             // ─── Màn hình CHUẨN BỊ ─────────────────────────
             SessionPhase.PREPARING -> {
                 ExerciseMediaArea(
-                    current         = current,
-                    bgColor         = bgColor,
-                    buttonBgColor   = buttonBgColor,
-                    textColor       = textColor,
-                    iconColor       = iconColor,
-                    primaryColor    = primaryColor,
-                    prepareOverlay  = true,
+                    current = current,
+                    gifUrl = gifUrls[current?.name],
+                    bgColor = bgColor,
+                    buttonBgColor = buttonBgColor,
+                    textColor = textColor,
+                    iconColor = iconColor,
+                    primaryColor = primaryColor,
+                    prepareOverlay = true,
                     prepareCountdown = phaseTimer,
-                    onBack          = onBack,
-                    modifier        = Modifier.weight(1f)
+                    onBack = onBack,
+                    modifier = Modifier.weight(1f)
                 )
 
                 Column(
@@ -219,10 +233,12 @@ fun WorkoutSessionScreen(
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = {
-                            phase     = SessionPhase.EXERCISING
+                            phase = SessionPhase.EXERCISING
                             isRunning = current?.reps == 0
                         },
-                        modifier = Modifier.fillMaxWidth(0.5f).height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = buttonBgColor, contentColor = textColor
                         ),
@@ -237,20 +253,23 @@ fun WorkoutSessionScreen(
             // ─── Màn hình TẬP LUYỆN ─────────────────────────
             SessionPhase.EXERCISING -> {
                 ExerciseMediaArea(
-                    current         = current,
-                    bgColor         = bgColor,
-                    buttonBgColor   = buttonBgColor,
-                    textColor       = textColor,
-                    iconColor       = iconColor,
-                    primaryColor    = primaryColor,
-                    prepareOverlay  = false,
+                    current = current,
+                    gifUrl = gifUrls[current?.name],
+                    bgColor = bgColor,
+                    buttonBgColor = buttonBgColor,
+                    textColor = textColor,
+                    iconColor = iconColor,
+                    primaryColor = primaryColor,
+                    prepareOverlay = false,
                     prepareCountdown = 0,
-                    onBack          = onBack,
-                    modifier        = Modifier.weight(1f)
+                    onBack = onBack,
+                    modifier = Modifier.weight(1f)
                 )
 
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -265,26 +284,44 @@ fun WorkoutSessionScreen(
                             ),
                             color = textColor
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.padding(bottom = 8.dp)) {
-                            IconButton(onClick = {},
-                                modifier = Modifier.size(36.dp).clip(CircleShape).background(buttonBgColor)) {
-                                Icon(Icons.Outlined.ThumbDown, contentDescription = "Too Hard",
-                                    tint = textColor, modifier = Modifier.size(20.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            IconButton(
+                                onClick = {},
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(buttonBgColor)
+                            ) {
+                                Icon(
+                                    Icons.Outlined.ThumbDown, contentDescription = "Too Hard",
+                                    tint = textColor, modifier = Modifier.size(20.dp)
+                                )
                             }
-                            IconButton(onClick = {},
-                                modifier = Modifier.size(36.dp).clip(CircleShape).background(buttonBgColor)) {
-                                Icon(Icons.Outlined.ThumbUp, contentDescription = "Too Easy",
-                                    tint = textColor, modifier = Modifier.size(20.dp))
+                            IconButton(
+                                onClick = {},
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(buttonBgColor)
+                            ) {
+                                Icon(
+                                    Icons.Outlined.ThumbUp, contentDescription = "Too Easy",
+                                    tint = textColor, modifier = Modifier.size(20.dp)
+                                )
                             }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = current?.name ?: "Rest",
+                        Text(
+                            text = current?.name ?: "Rest",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = textColor)
+                            color = textColor
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
                             onClick = { showInstructionScreen = true },
@@ -307,9 +344,15 @@ fun WorkoutSessionScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedIconButton(onClick = { goToPrev() },
-                        modifier = Modifier.size(64.dp), shape = CircleShape) {
-                        Icon(Icons.Default.SkipPrevious, contentDescription = "Previous", tint = textColor)
+                    OutlinedIconButton(
+                        onClick = { goToPrev() },
+                        modifier = Modifier.size(64.dp), shape = CircleShape
+                    ) {
+                        Icon(
+                            Icons.Default.SkipPrevious,
+                            contentDescription = "Previous",
+                            tint = textColor
+                        )
                     }
 
                     Button(
@@ -330,10 +373,13 @@ fun WorkoutSessionScreen(
                                 }
                             }
                         },
-                        modifier = Modifier.height(64.dp).weight(1f).padding(horizontal = 16.dp),
+                        modifier = Modifier
+                            .height(64.dp)
+                            .weight(1f)
+                            .padding(horizontal = 16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = primaryColor,
-                            contentColor   = MaterialTheme.colorScheme.onPrimary
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         shape = RoundedCornerShape(32.dp)
                     ) {
@@ -360,14 +406,15 @@ fun WorkoutSessionScreen(
             // ─── Màn hình NGHỈ NGƠI ─────────────────────────
             SessionPhase.RESTING -> {
                 RestScreen(
-                    restSeconds    = phaseTimer,
-                    nextExercise   = next,
-                    nextIndex      = index + 1,
+                    restSeconds = phaseTimer,
+                    nextExercise = next,
+                    nextGifUrl = gifUrls[next?.name],
+                    nextIndex = index + 1,
                     totalExercises = exercises.size,
-                    onAddTime      = { phaseTimer += 20 },
-                    onSkip         = { skipToNext() },
-                    onBack         = onBack,
-                    primaryColor   = primaryColor
+                    onAddTime = { phaseTimer += 20 },
+                    onSkip = { skipToNext() },
+                    onBack = onBack,
+                    primaryColor = primaryColor
                 )
             }
         }
@@ -378,11 +425,12 @@ fun WorkoutSessionScreen(
 @Composable
 private fun ExerciseMediaArea(
     current: WorkoutExercise?,
-    bgColor: androidx.compose.ui.graphics.Color,
-    buttonBgColor: androidx.compose.ui.graphics.Color,
-    textColor: androidx.compose.ui.graphics.Color,
-    iconColor: androidx.compose.ui.graphics.Color,
-    primaryColor: androidx.compose.ui.graphics.Color,
+    gifUrl: String?,
+    bgColor: Color,
+    buttonBgColor: Color,
+    textColor: Color,
+    iconColor: Color,
+    primaryColor: Color,
     prepareOverlay: Boolean,
     prepareCountdown: Int,
     onBack: () -> Unit,
@@ -390,29 +438,20 @@ private fun ExerciseMediaArea(
 ) {
     val context = LocalContext.current
     val exerciseName = current?.name ?: ""
-    val gifPath = run {
-        val f = current?.localGifs?.firstOrNull()
-        if (!f.isNullOrEmpty()) "gifs/$f" else "gifs/$exerciseName.gif"
-    }
-    var hasGif by remember(exerciseName) { mutableStateOf(false) }
-    LaunchedEffect(exerciseName) {
-        hasGif = try { context.assets.open(gifPath).use { true } } catch (e: Exception) { false }
-    }
 
     Box(modifier = modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxSize().padding(top = 40.dp, bottom = 40.dp),
-            contentAlignment = Alignment.Center) {
-            if (hasGif) {
-                val imageLoader = remember {
-                    ImageLoader.Builder(context).components {
-                        if (Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory())
-                        else add(GifDecoder.Factory())
-                    }.build()
-                }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 40.dp, bottom = 40.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (gifUrl != null) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data("file:///android_asset/$gifPath").build(),
-                    imageLoader = imageLoader,
+                        .data(gifUrl)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "Exercise GIF",
                     modifier = Modifier.fillMaxSize()
                 )
@@ -420,20 +459,30 @@ private fun ExerciseMediaArea(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp))
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(16.dp))
                         .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Icon(Icons.Default.Image, contentDescription = "Placeholder",
-                        modifier = Modifier.size(64.dp), tint = iconColor)
+                    Icon(
+                        Icons.Default.Image, contentDescription = "Placeholder",
+                        modifier = Modifier.size(64.dp), tint = iconColor
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("GIF OR IMG SPACE", color = iconColor,
-                        style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        "GIF OR IMG SPACE", color = iconColor,
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
 
             if (prepareOverlay) {
-                Box(modifier = Modifier.fillMaxSize().background(bgColor.copy(alpha = 0.75f)),
-                    contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(bgColor.copy(alpha = 0.75f)),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
                         text = "$prepareCountdown",
                         style = MaterialTheme.typography.displayLarge.copy(
@@ -446,13 +495,24 @@ private fun ExerciseMediaArea(
 
         // Top Action Buttons Overlay
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top
         ) {
-            IconButton(onClick = onBack,
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(buttonBgColor)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = textColor)
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(buttonBgColor)
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = textColor
+                )
             }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 listOf(
@@ -461,8 +521,13 @@ private fun ExerciseMediaArea(
                     Icons.Default.MusicNote to "Music",
                     Icons.Default.Videocam to "Video"
                 ).forEach { (icon, desc) ->
-                    IconButton(onClick = {},
-                        modifier = Modifier.size(40.dp).clip(CircleShape).background(buttonBgColor)) {
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(buttonBgColor)
+                    ) {
                         Icon(icon, contentDescription = desc, tint = textColor)
                     }
                 }
@@ -476,33 +541,23 @@ private fun ExerciseMediaArea(
 private fun RestScreen(
     restSeconds: Int,
     nextExercise: WorkoutExercise?,
+    nextGifUrl: String?,
     nextIndex: Int,
     totalExercises: Int,
     onAddTime: () -> Unit,
     onSkip: () -> Unit,
     onBack: () -> Unit,
-    primaryColor: androidx.compose.ui.graphics.Color
+    primaryColor: Color
 ) {
-    val bgColor     = MaterialTheme.colorScheme.background
-    val textColor   = MaterialTheme.colorScheme.onBackground
-    val surface     = MaterialTheme.colorScheme.surface
-    val surfaceVar  = MaterialTheme.colorScheme.surfaceVariant
-    val iconColor   = MaterialTheme.colorScheme.onSurfaceVariant
-    val context     = LocalContext.current
-
-    val gifPath = nextExercise?.let { ex ->
-        val f = ex.localGifs.firstOrNull()
-        if (!f.isNullOrEmpty()) "gifs/$f" else "gifs/${ex.name}.gif"
-    }
-    var hasGif by remember(nextExercise?.name) { mutableStateOf(false) }
-    LaunchedEffect(nextExercise?.name) {
-        hasGif = try {
-            if (gifPath != null) context.assets.open(gifPath).use { true } else false
-        } catch (e: Exception) { false }
-    }
+    val bgColor = MaterialTheme.colorScheme.background
+    val textColor = MaterialTheme.colorScheme.onBackground
+    val surface = MaterialTheme.colorScheme.surface
+    val surfaceVar = MaterialTheme.colorScheme.surfaceVariant
+    val iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val context = LocalContext.current
 
     val minutes = restSeconds / 60
-    val secs    = restSeconds % 60
+    val secs = restSeconds % 60
     val timeStr = "%02d:%02d".format(minutes, secs)
 
     Column(
@@ -512,10 +567,21 @@ private fun RestScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Back button
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-            IconButton(onClick = onBack,
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(surfaceVar)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = textColor)
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(surfaceVar)
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = textColor
+                )
             }
         }
 
@@ -537,14 +603,18 @@ private fun RestScreen(
                         Text(
                             text = "UP NEXT ${nextIndex}/${totalExercises}",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = primaryColor, letterSpacing = 0.08.sp, fontWeight = FontWeight.Bold
+                                color = primaryColor,
+                                letterSpacing = 0.08.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = nextExercise.name,
                             style = MaterialTheme.typography.titleLarge.copy(
-                                color = textColor, fontWeight = FontWeight.Bold, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                color = textColor,
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Italic
                             ),
                         )
                     }
@@ -552,14 +622,18 @@ private fun RestScreen(
                         Text(
                             text = "x ${nextExercise.reps}",
                             style = MaterialTheme.typography.headlineMedium.copy(
-                                color = primaryColor, fontWeight = FontWeight.Bold, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                color = primaryColor,
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Italic
                             ),
                         )
                     } else if (nextExercise.durationSec > 0) {
                         Text(
                             text = "${nextExercise.durationSec}s",
                             style = MaterialTheme.typography.headlineMedium.copy(
-                                color = primaryColor, fontWeight = FontWeight.Bold, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                color = primaryColor,
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Italic
                             ),
                         )
                     }
@@ -576,27 +650,28 @@ private fun RestScreen(
                         .background(surface),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (hasGif && gifPath != null) {
-                        val imageLoader = remember {
-                            ImageLoader.Builder(context).components {
-                                if (Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory())
-                                else add(GifDecoder.Factory())
-                            }.build()
-                        }
+                    if (nextGifUrl != null) {
                         AsyncImage(
                             model = ImageRequest.Builder(context)
-                                .data("file:///android_asset/$gifPath").build(),
-                            imageLoader = imageLoader,
+                                .data(nextGifUrl)
+                                .crossfade(true)
+                                .build(),
                             contentDescription = "Next Exercise GIF",
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.FitnessCenter, contentDescription = null,
-                                modifier = Modifier.size(48.dp), tint = iconColor)
+                            Icon(
+                                Icons.Default.FitnessCenter, contentDescription = null,
+                                modifier = Modifier.size(48.dp), tint = iconColor
+                            )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("No image available", color = iconColor,
-                                style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                            Text(
+                                "No image available",
+                                color = iconColor,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
@@ -613,10 +688,16 @@ private fun RestScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Default.EmojiEvents, contentDescription = null,
-                    modifier = Modifier.size(64.dp), tint = primaryColor)
+                Icon(
+                    Icons.Default.EmojiEvents, contentDescription = null,
+                    modifier = Modifier.size(64.dp), tint = primaryColor
+                )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Almost done!", color = textColor, style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    "Almost done!",
+                    color = textColor,
+                    style = MaterialTheme.typography.headlineMedium
+                )
             }
         }
 
@@ -627,7 +708,10 @@ private fun RestScreen(
             Text(
                 text = "REST",
                 style = MaterialTheme.typography.headlineMedium.copy(
-                    color = primaryColor, fontSize = 28.sp, fontWeight = FontWeight.Bold, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    color = primaryColor,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic
                 )
             )
 
@@ -640,7 +724,7 @@ private fun RestScreen(
                     fontSize = 80.sp,
                     lineHeight = 80.sp,
                     fontWeight = FontWeight.Bold,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    fontStyle = FontStyle.Italic
                 )
             )
         }
@@ -649,15 +733,19 @@ private fun RestScreen(
 
         // Nút +20s và Bỏ qua
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Button(
                 onClick = onAddTime,
-                modifier = Modifier.weight(1f).height(64.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(64.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = surfaceVar,
-                    contentColor   = textColor
+                    contentColor = textColor
                 ),
                 shape = RoundedCornerShape(32.dp)
             ) {
@@ -665,10 +753,12 @@ private fun RestScreen(
             }
             Button(
                 onClick = onSkip,
-                modifier = Modifier.weight(1f).height(64.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(64.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = primaryColor,
-                    contentColor   = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 shape = RoundedCornerShape(32.dp)
             ) {
@@ -681,11 +771,31 @@ private fun RestScreen(
 }
 
 fun sampleExercises() = listOf(
-    WorkoutExercise(category = "Core",     name = "Cross Body Crunches", sets = 1, reps = 12, kcal = 10, durationSec = 0),
-    WorkoutExercise(category = "Cardio",   name = "Jumping Jacks",       sets = 1, reps = 0,  kcal = 10, durationSec = 30),
-    WorkoutExercise(category = "Strength", name = "Push Ups",          sets = 1, reps = 15, kcal = 15, durationSec = 0),
-    WorkoutExercise(category = "Strength", name = "Bodyweight Squats", sets = 1, reps = 0,  kcal = 20, durationSec = 45),
-    WorkoutExercise(category = "Core",     name = "Plank Hold",        sets = 1, reps = 0,  kcal = 10, durationSec = 60)
+    WorkoutExercise(
+        category = "Strength", name = "Cable Seated Bicep Curl",
+        sets = 3, reps = 12, kcal = 10, durationSec = 0,
+        gifFileName = "cable_seated_bicep_curl_1.gif"
+    ),
+    WorkoutExercise(
+        category = "Strength", name = "Cable Drag Curl",
+        sets = 3, reps = 12, kcal = 10, durationSec = 0,
+        gifFileName = "cable_drag_curl_1.gif"
+    ),
+    WorkoutExercise(
+        category = "Strength", name = "Cable Bicep Curl (Close Grip)",
+        sets = 3, reps = 12, kcal = 10, durationSec = 0,
+        gifFileName = "cable_bicep_curl_(close_grip)_1.gif"
+    ),
+    WorkoutExercise(
+        category = "Strength", name = "Dumbbell One-Arm Preacher Hammer Curl",
+        sets = 3, reps = 12, kcal = 15, durationSec = 0,
+        gifFileName = "dumbbell_one-arm_preacher_hammer_curl_1.gif"
+    ),
+    WorkoutExercise(
+        category = "Strength", name = "Dumbbell Bicep Curl (Supine Wide Grip)",
+        sets = 3, reps = 12, kcal = 15, durationSec = 0,
+        gifFileName = "dumbbell_bicep_curl_(supine_wide_grip)_1.gif"
+    ),
 )
 
 @Preview(showBackground = true)
