@@ -15,15 +15,22 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
 import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.UserProfile
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -35,6 +42,9 @@ fun ProfileScreen(
     completedDays: Set<Int> = emptySet(),
     workoutPlan: List<DayPlan> = emptyList(),
     startDate: LocalDate? = null,
+    weightHistory: List<Pair<LocalDate, Float>> = emptyList(),
+    healthMetricsHistory: List<DailyHealthMetrics> = emptyList(),
+    onRecordWeight: (Float) -> Unit = {},
     onReCalibrate: () -> Unit = {}
 ) {
     val completedCount = completedDays.size
@@ -50,6 +60,8 @@ fun ProfileScreen(
     val today = LocalDate.now()
     val weekStart = today.with(DayOfWeek.MONDAY)
     val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
+    var recordInput by remember { mutableStateOf(userProfile?.weight?.toString() ?: "") }
+    var inputError by remember { mutableStateOf<String?>(null) }
 
     val weeklyMinutes = (0..6).map { offset ->
         if (startDate == null) 0
@@ -71,6 +83,17 @@ fun ProfileScreen(
                 workoutPlan.find { it.dayNumber == dayNum }?.workoutExercises?.sumOf { it.kcal } ?: 0
             else 0
         }
+    }
+
+    val healthByDay = healthMetricsHistory.associateBy { it.date }
+    val weeklySteps = (0..6).map { offset ->
+        val date = weekStart.plusDays(offset.toLong())
+        healthByDay[date]?.steps ?: 0
+    }
+    val weeklyWaterPct = (0..6).map { offset ->
+        val date = weekStart.plusDays(offset.toLong())
+        val metric = healthByDay[date] ?: return@map 0
+        if (metric.waterGoalMl <= 0) 0 else ((metric.waterIntakeMl * 100f / metric.waterGoalMl).toInt()).coerceIn(0, 100)
     }
 
     Column(
@@ -223,6 +246,56 @@ fun ProfileScreen(
                 modifier = Modifier.weight(1f)
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            WeeklyChartCard(
+                title = "STEPS",
+                totalValue = weeklySteps.sum().toString(),
+                unit = "steps",
+                color = MaterialTheme.colorScheme.primary,
+                values = weeklySteps,
+                labels = dayLabels,
+                modifier = Modifier.weight(1f)
+            )
+            WeeklyChartCard(
+                title = "WATER",
+                totalValue = "${weeklyWaterPct.average().toInt()}%",
+                unit = "goal",
+                color = MaterialTheme.colorScheme.secondary,
+                values = weeklyWaterPct,
+                labels = dayLabels,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        WeightTrackingSection(
+            currentWeight = userProfile?.weight,
+            targetWeight = userProfile?.targetWeight,
+            weightHistory = weightHistory,
+            recordInput = recordInput,
+            inputError = inputError,
+            onRecordInputChange = {
+                recordInput = it
+                inputError = null
+            },
+            onRecord = {
+                val parsed = recordInput.toFloatOrNull()
+                if (parsed == null || parsed <= 0f) {
+                    inputError = "Please enter a valid weight"
+                } else {
+                    onRecordWeight(parsed)
+                    recordInput = String.format("%.1f", parsed)
+                    inputError = null
+                }
+            }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
         Text(
@@ -429,6 +502,164 @@ fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) 
                     fontSize = 12.sp,
                     modifier = Modifier.padding(bottom = 4.dp, start = 2.dp)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun WeightTrackingSection(
+    currentWeight: Float?,
+    targetWeight: Float?,
+    weightHistory: List<Pair<LocalDate, Float>>,
+    recordInput: String,
+    inputError: String?,
+    onRecordInputChange: (String) -> Unit,
+    onRecord: () -> Unit
+) {
+    val latest = weightHistory.lastOrNull()?.second ?: currentWeight
+    val progressText = if (latest != null && targetWeight != null) {
+        val diff = latest - targetWeight
+        "${String.format("%.1f", diff)} kg to goal"
+    } else {
+        "No target set"
+    }
+
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                RoundedCornerShape(24.dp)
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "WEIGHT TRACKING",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    Text(
+                        latest?.let { "${String.format("%.1f", it)} kg" } ?: "-",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Text(
+                        progressText,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                        fontSize = 11.sp
+                    )
+                }
+                Text(
+                    "RECORD",
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
+                )
+            }
+
+            WeightHistoryMiniChart(
+                history = weightHistory,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                OutlinedTextField(
+                    value = recordInput,
+                    onValueChange = onRecordInputChange,
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    label = { Text("Current weight") },
+                    isError = inputError != null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                )
+                Button(
+                    onClick = onRecord,
+                    modifier = Modifier.height(56.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("SAVE", fontWeight = FontWeight.Black)
+                }
+            }
+
+            if (inputError != null) {
+                Text(
+                    inputError,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 11.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun WeightHistoryMiniChart(
+    history: List<Pair<LocalDate, Float>>,
+    color: Color
+) {
+    val points = history.takeLast(7)
+    val maxValue = points.maxOfOrNull { it.second } ?: 1f
+    val minValue = points.minOfOrNull { it.second } ?: 0f
+    val range = (maxValue - minValue).coerceAtLeast(0.5f)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(96.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        if (points.isEmpty()) {
+            Text(
+                "No weight records yet",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 12.sp
+            )
+        } else {
+            points.forEach { (date, value) ->
+                val ratio = ((value - minValue) / range).coerceIn(0f, 1f)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(12.dp)
+                            .height((22.dp + 54.dp * ratio))
+                            .background(color.copy(alpha = 0.75f), RoundedCornerShape(5.dp))
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "${date.dayOfMonth}",
+                        fontSize = 9.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

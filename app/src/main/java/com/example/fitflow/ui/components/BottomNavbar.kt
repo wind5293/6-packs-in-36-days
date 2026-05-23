@@ -5,12 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.House
+import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.Plus
+import com.composables.icons.lucide.List
+import com.composables.icons.lucide.User
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,8 +31,8 @@ fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        NavItem("Home",    Icons.Default.Home,      currentRoute == "dashboard") { onNavigate("dashboard") }
-        NavItem("Plan",    Icons.Default.DateRange,  currentRoute == "planner")  { onNavigate("planner") }
+        NavItem("Home",    Lucide.House,      currentRoute == "dashboard") { onNavigate("dashboard") }
+        NavItem("Plan",    Lucide.Calendar,  currentRoute == "planner")  { onNavigate("planner") }
 
         Box(
             modifier = Modifier
@@ -44,11 +44,11 @@ fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
                 .padding(8.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
+            Icon(Lucide.Plus, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
         }
 
-        NavItem("Library", Icons.Default.List,   currentRoute == "library") { onNavigate("library") }
-        NavItem("Me",      Icons.Default.Person, currentRoute == "profile") { onNavigate("profile") }
+        NavItem("Library", Lucide.List,   currentRoute == "library") { onNavigate("library") }
+        NavItem("Me",      Lucide.User, currentRoute == "profile") { onNavigate("profile") }
     }
 }
 

@@ -1,7 +1,9 @@
 package com.example.fitflow.data
 
 import android.content.Context
+import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.FitnessGoal
+import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.calculateBmi
 import com.example.fitflow.domain.getBmiCategory
@@ -20,6 +22,13 @@ class UserPreferences(context: Context) {
         const val KEY_GOAL           = "goal"
         const val KEY_START_DATE     = "start_date"
         const val KEY_WORKOUT_TIME   = "workout_time"
+        const val KEY_WEIGHT_HISTORY = "weight_history"
+        const val KEY_HEALTH_HISTORY = "health_history"
+        const val KEY_STEP_BASELINE_DAY = "step_baseline_day"
+        const val KEY_STEP_BASELINE_VALUE = "step_baseline_value"
+        const val KEY_STEP_SENSOR_ENABLED = "step_sensor_enabled"
+
+        const val HISTORY_MAX_DAYS = 90
     }
 
     fun saveUserProfile(
@@ -39,6 +48,8 @@ class UserPreferences(context: Context) {
             .putLong(KEY_START_DATE, LocalDate.now().toEpochDay())
             .putString(KEY_WORKOUT_TIME, workoutTime)
             .apply()
+
+            upsertWeightRecord(LocalDate.now(), weight)
     }
 
     fun getStartDate(): LocalDate? {
@@ -88,5 +99,170 @@ class UserPreferences(context: Context) {
         val raw = prefs.getString(KEY_COMPLETED_DAYS, "") ?: return emptySet()
         if (raw.isEmpty()) return emptySet()
         return raw.split(",").mapNotNull { it.toIntOrNull() }.toSet()
+    }
+
+    fun recordWeight(weight: Float, date: LocalDate = LocalDate.now()) {
+        prefs.edit().putFloat(KEY_WEIGHT, weight).apply()
+        upsertWeightRecord(date, weight)
+    }
+
+    fun getWeightHistory(): List<Pair<LocalDate, Float>> {
+        val raw = prefs.getString(KEY_WEIGHT_HISTORY, "") ?: return emptyList()
+        if (raw.isBlank()) return emptyList()
+
+        return raw.split(";")
+            .mapNotNull { token ->
+                val parts = token.split(":")
+                if (parts.size != 2) return@mapNotNull null
+                val epochDay = parts[0].toLongOrNull() ?: return@mapNotNull null
+                val weight = parts[1].toFloatOrNull() ?: return@mapNotNull null
+                LocalDate.ofEpochDay(epochDay) to weight
+            }
+            .sortedBy { it.first }
+    }
+
+    private fun upsertWeightRecord(date: LocalDate, weight: Float) {
+        val mutable = getWeightHistory().toMutableList()
+        val idx = mutable.indexOfFirst { it.first == date }
+        if (idx >= 0) {
+            mutable[idx] = date to weight
+        } else {
+            mutable.add(date to weight)
+        }
+
+        val encoded = mutable
+            .sortedBy { it.first }
+            .joinToString(";") { "${it.first.toEpochDay()}:${it.second}" }
+
+        prefs.edit().putString(KEY_WEIGHT_HISTORY, encoded).apply()
+    }
+
+    fun getTodayHealthMetrics(defaultWaterGoalMl: Int): DailyHealthMetrics {
+        trimHealthHistory(HISTORY_MAX_DAYS)
+        val today = LocalDate.now()
+        val history = getHealthHistoryMap()
+        return history[today] ?: DailyHealthMetrics(
+            date = today,
+            steps = 0,
+            waterIntakeMl = 0,
+            waterGoalMl = defaultWaterGoalMl,
+            stepSource = StepSource.MANUAL
+        )
+    }
+
+    fun getHealthMetricsHistory(days: Int = HISTORY_MAX_DAYS): List<DailyHealthMetrics> {
+        trimHealthHistory(days)
+        return getHealthHistoryMap().values.sortedBy { it.date }
+    }
+
+    fun addWater(amountMl: Int, defaultWaterGoalMl: Int) {
+        if (amountMl <= 0) return
+        val today = LocalDate.now()
+        val current = getTodayHealthMetrics(defaultWaterGoalMl)
+        val updated = current.copy(waterIntakeMl = (current.waterIntakeMl + amountMl).coerceAtLeast(0))
+        upsertHealthMetrics(today, updated)
+    }
+
+    fun setWaterGoal(goalMl: Int, defaultWaterGoalMl: Int) {
+        if (goalMl <= 0) return
+        val today = LocalDate.now()
+        val current = getTodayHealthMetrics(defaultWaterGoalMl)
+        val updated = current.copy(waterGoalMl = goalMl)
+        upsertHealthMetrics(today, updated)
+    }
+
+    fun setTodaySteps(steps: Int, defaultWaterGoalMl: Int, source: StepSource) {
+        val today = LocalDate.now()
+        val current = getTodayHealthMetrics(defaultWaterGoalMl)
+        val updated = current.copy(steps = steps.coerceAtLeast(0), stepSource = source)
+        upsertHealthMetrics(today, updated)
+    }
+
+    fun incrementTodaySteps(delta: Int, defaultWaterGoalMl: Int, source: StepSource) {
+        if (delta <= 0) return
+        val today = LocalDate.now()
+        val current = getTodayHealthMetrics(defaultWaterGoalMl)
+        val updated = current.copy(
+            steps = (current.steps + delta).coerceAtLeast(0),
+            stepSource = source
+        )
+        upsertHealthMetrics(today, updated)
+    }
+
+    fun getStepBaselineDay(): LocalDate? {
+        val epoch = prefs.getLong(KEY_STEP_BASELINE_DAY, -1L)
+        return if (epoch == -1L) null else LocalDate.ofEpochDay(epoch)
+    }
+
+    fun getStepBaselineValue(): Int = prefs.getInt(KEY_STEP_BASELINE_VALUE, -1)
+
+    fun setStepBaseline(day: LocalDate, baseline: Int) {
+        prefs.edit()
+            .putLong(KEY_STEP_BASELINE_DAY, day.toEpochDay())
+            .putInt(KEY_STEP_BASELINE_VALUE, baseline)
+            .apply()
+    }
+
+    fun setStepSensorEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_STEP_SENSOR_ENABLED, enabled).apply()
+    }
+
+    fun isStepSensorEnabled(): Boolean = prefs.getBoolean(KEY_STEP_SENSOR_ENABLED, false)
+
+    private fun upsertHealthMetrics(day: LocalDate, metrics: DailyHealthMetrics) {
+        val map = getHealthHistoryMap().toMutableMap()
+        map[day] = metrics.copy(date = day)
+        saveHealthHistoryMap(map)
+    }
+
+    private fun trimHealthHistory(maxDays: Int) {
+        val map = getHealthHistoryMap()
+        if (map.size <= maxDays) return
+        val trimmed = map.entries
+            .sortedBy { it.key }
+            .takeLast(maxDays)
+            .associate { it.key to it.value }
+        saveHealthHistoryMap(trimmed)
+    }
+
+    private fun getHealthHistoryMap(): Map<LocalDate, DailyHealthMetrics> {
+        val raw = prefs.getString(KEY_HEALTH_HISTORY, "") ?: return emptyMap()
+        if (raw.isBlank()) return emptyMap()
+
+        return raw.split(";")
+            .mapNotNull { token ->
+                // format: epochDay,steps,waterIntake,waterGoal,source
+                val parts = token.split(",")
+                if (parts.size < 5) return@mapNotNull null
+
+                val epochDay = parts[0].toLongOrNull() ?: return@mapNotNull null
+                val steps = parts[1].toIntOrNull() ?: return@mapNotNull null
+                val waterIntake = parts[2].toIntOrNull() ?: return@mapNotNull null
+                val waterGoal = parts[3].toIntOrNull() ?: return@mapNotNull null
+                val source = try {
+                    StepSource.valueOf(parts[4])
+                } catch (_: IllegalArgumentException) {
+                    StepSource.MANUAL
+                }
+
+                val date = LocalDate.ofEpochDay(epochDay)
+                date to DailyHealthMetrics(
+                    date = date,
+                    steps = steps,
+                    waterIntakeMl = waterIntake,
+                    waterGoalMl = waterGoal,
+                    stepSource = source
+                )
+            }
+            .toMap()
+    }
+
+    private fun saveHealthHistoryMap(map: Map<LocalDate, DailyHealthMetrics>) {
+        val encoded = map.values
+            .sortedBy { it.date }
+            .joinToString(";") {
+                "${it.date.toEpochDay()},${it.steps},${it.waterIntakeMl},${it.waterGoalMl},${it.stepSource.name}"
+            }
+        prefs.edit().putString(KEY_HEALTH_HISTORY, encoded).apply()
     }
 }

@@ -2,11 +2,13 @@ package com.example.fitflow
 
 import android.os.Build
 import android.os.Bundle
+import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
@@ -18,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
 import com.example.fitflow.ui.screens.LibraryScreen
@@ -40,6 +41,18 @@ class MainActivity : ComponentActivity() {
         Log.d("FitFlowDebug", "Notification permission granted: $isGranted")
     }
 
+    private val requestActivityRecognitionPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        Log.d("FitFlowDebug", "Activity recognition permission granted: $isGranted")
+        uiViewModel?.setActivityRecognitionGranted(isGranted)
+        if (isGranted) {
+            uiViewModel?.startStepTracking(applicationContext)
+        }
+    }
+
+    private var uiViewModel: UserViewModel? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val app = application as FitFlowApplication
@@ -47,9 +60,27 @@ class MainActivity : ComponentActivity() {
         val viewModel: UserViewModel by viewModels {
             UserViewModelFactory(userPreferences)
         }
+        uiViewModel = viewModel
         val startDestination = if (userPreferences.isOnboarded()) "dashboard" else "onboarding"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val granted = ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            viewModel.setActivityRecognitionGranted(granted)
+            if (!granted) {
+                requestActivityRecognitionPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
+            } else {
+                viewModel.startStepTracking(applicationContext)
+            }
+        } else {
+            viewModel.setActivityRecognitionGranted(true)
+            viewModel.startStepTracking(applicationContext)
         }
 
         setContent {
@@ -86,10 +117,19 @@ class MainActivity : ComponentActivity() {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             val userProfile by viewModel.userProfile.collectAsState()
+                            val todayHealthMetrics by viewModel.todayHealthMetrics.collectAsState()
+                            val activityGranted by viewModel.activityRecognitionGranted.collectAsState()
+                            val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             DashboardScreen(
                                 completedDays = completedDays,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
+                                healthMetrics = todayHealthMetrics,
+                                isActivityRecognitionGranted = activityGranted,
+                                isStepSensorEnabled = stepSensorEnabled,
+                                onAddManualSteps = { viewModel.addManualSteps() },
+                                onAddWater = { amount -> viewModel.addWater(amount) },
+                                onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
                                 onStartWorkout = {
                                     navController.navigate("planner") {
                                         popUpTo("dashboard") { saveState = true }
@@ -136,11 +176,16 @@ class MainActivity : ComponentActivity() {
                             val completedDays by viewModel.completedDays.collectAsState()
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val startDate by viewModel.startDate.collectAsState()
+                            val weightHistory by viewModel.weightHistory.collectAsState()
+                            val healthHistory by viewModel.healthMetricsHistory.collectAsState()
                             ProfileScreen(
                                 userProfile = userProfile,
                                 completedDays = completedDays,
                                 workoutPlan = workoutPlan,
                                 startDate = startDate,
+                                weightHistory = weightHistory,
+                                healthMetricsHistory = healthHistory,
+                                onRecordWeight = { viewModel.recordWeight(it) },
                                 onReCalibrate = { navController.navigate("onboarding") }
                             )
                         }
@@ -178,37 +223,47 @@ class MainActivity : ComponentActivity() {
                                 }
                             })
                         }
-//                        composable(
-//                            route = "workout_session/{dayNumber}",
-//                            arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
-//                        ) { backStackEntry ->
-//                            val dayNumber =
-//                                backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
-//                            val workoutPlan by viewModel.workoutPlan.collectAsState()
-//                            val dayPlan =
-//                                workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
-//                            val sessionExercises = dayPlan.exercises.map { ex ->
-//                                Exercise(
-//                                    category = ex.category,
-//                                    name = ex.name,
-//                                    sets = ex.sets,
-//                                    reps = ex.reps,
-//                                    kcal = ex.kcal,
-//                                    durationSec = ex.reps * 3)
-//                            }
-//                            WorkoutSessionScreen(
-//                                exercises = sessionExercises,
-//                                onBack = { navController.popBackStack() },
-//                                onFinish = {
-//                                    viewModel.markDayComplete(dayNumber)
-//                                    navController.popBackStack()
-//                                }
-//                            )
-//                        }
+                        composable(
+                            route = "workout_session/{dayNumber}",
+                            arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            val dayNumber =
+                                backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val dayPlan =
+                                workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
+                            
+                            WorkoutSessionScreen(
+                                exercises = dayPlan.workoutExercises,
+                                onBack = { navController.popBackStack() },
+                                onFinish = {
+                                    viewModel.markDayComplete(dayNumber)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        uiViewModel?.stopStepTracking()
+        super.onDestroy()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        uiViewModel?.refreshHealthMetrics()
+        if (uiViewModel?.activityRecognitionGranted?.value == true) {
+            uiViewModel?.startStepTracking(applicationContext)
+        }
+    }
+
+    override fun onStop() {
+        uiViewModel?.stopStepTracking()
+        super.onStop()
     }
 }
 
