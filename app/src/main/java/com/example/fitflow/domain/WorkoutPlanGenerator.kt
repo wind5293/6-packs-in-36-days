@@ -20,7 +20,7 @@ data class ExercisePool(
 private fun ex(
     category: String, name: String,
     sets: Int = 3, reps: Int = 0, kcal: Int = 0, durationSec: Int = 60,
-    gifs: List<String> = emptyList()
+    gifs: String = ""
 ) = WorkoutExercise(category, name, sets, reps, kcal, durationSec, gifs)
 
 // ─────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ private val planRegistry: Map<FitnessGoal, ExercisePool> = mapOf(
 // 4. ENGINE TẠO LỊCH TẬP — Không cần chỉnh sửa phần này.
 // ─────────────────────────────────────────────────────────────
 
-object WorkoutPlangenerator {
+object WorkoutPlanGenerator {
 
     fun generatePlan(goal: FitnessGoal): List<DayPlan> {
         val pool = planRegistry[goal] ?: planRegistry[FitnessGoal.MAINTENANCE]!!
@@ -116,8 +116,8 @@ object WorkoutPlangenerator {
                     dayNumber = 1,
                     isRest = false,
                     workoutExercises = listOf(
-                        ex("Chest",     "Band Cross-Over",        sets = 1, reps = 12, kcal = 10, durationSec = 0, gifs = listOf("band_cross-over_1.gif")),
-                        ex("Shoulders", "Barbell Shoulder Press", sets = 1, reps = 10, kcal = 15, durationSec = 0, gifs = listOf("barbell_shoulder_press_1.gif")),
+                        ex("Chest",     "Band Cross-Over",        sets = 1, reps = 12, kcal = 10, durationSec = 0, gifs = "band_cross-over_1.gif"),
+                        ex("Shoulders", "Barbell Shoulder Press", sets = 1, reps = 10, kcal = 15, durationSec = 0, gifs = "barbell_shoulder_press_1.gif"),
                     )
                 )
                 day in pool.restDays -> DayPlan(

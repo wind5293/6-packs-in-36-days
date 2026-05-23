@@ -51,4 +51,7 @@ class ExerciseRepository(context: Context) {
 
     suspend fun getByName(name: String): Exercise? =
         dao.getByName(name)?.toExercise()
+
+    suspend fun getGifFileName(name: String): String? =
+        dao.getByName(name)?.local_gifs?.firstOrNull()
 }

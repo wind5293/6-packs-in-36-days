@@ -7,5 +7,5 @@ data class WorkoutExercise(
     val reps: Int,
     val kcal: Int,
     val durationSec: Int,
-    val localGifs: List<String> = emptyList()
+    val gifFileName: String = ""
 )

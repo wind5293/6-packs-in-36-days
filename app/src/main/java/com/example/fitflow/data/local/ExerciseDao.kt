@@ -33,4 +33,7 @@ interface ExerciseDao {
 
     @Query("SELECT * FROM exercises WHERE name = :name LIMIT 1")
     suspend fun getByName(name: String): ExerciseEntity?
+
+    @Query("SELECT local_gifs FROM exercises WHERE name = :name LIMIT 1")
+    suspend fun getGifsByName(name: String): String?
 }
