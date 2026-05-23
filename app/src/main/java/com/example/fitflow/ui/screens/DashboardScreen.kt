@@ -48,7 +48,7 @@ fun DashboardScreen(
     healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, StepSource.MANUAL),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
-    onAddManualSteps: () -> Unit = {},
+    onUnlockStepSensor: () -> Unit = {},
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
     onStartWorkout: () -> Unit = {}
@@ -108,7 +108,7 @@ fun DashboardScreen(
                 metrics = healthMetrics,
                 isActivityRecognitionGranted = isActivityRecognitionGranted,
                 isStepSensorEnabled = isStepSensorEnabled,
-                onAddSteps = onAddManualSteps,
+                onUnlockStepSensor = onUnlockStepSensor,
                 onAddWater = onAddWater,
                 onSetWaterGoal = onSetWaterGoal
             )
@@ -532,7 +532,7 @@ fun HealthMetricsSection(
     metrics: DailyHealthMetrics,
     isActivityRecognitionGranted: Boolean,
     isStepSensorEnabled: Boolean,
-    onAddSteps: () -> Unit,
+    onUnlockStepSensor: () -> Unit,
     onAddWater: (Int) -> Unit,
     onSetWaterGoal: (Int) -> Unit
 ) {
@@ -558,8 +558,12 @@ fun HealthMetricsSection(
             iconTint = MaterialTheme.colorScheme.primary,
             value = metrics.steps.toString(),
             unit = stringResource(R.string.dashboard_steps).uppercase(),
-            buttonText = if (metrics.stepSource == StepSource.SENSOR) "LIVE" else "ADD 500",
-            onClick = onAddSteps
+            buttonText = when {
+                !isActivityRecognitionGranted -> "UNLOCK"
+                metrics.stepSource == StepSource.SENSOR -> "LIVE SENSOR"
+                else -> "MANUAL MODE"
+            },
+            onClick = if (!isActivityRecognitionGranted) onUnlockStepSensor else null
         )
         MetricHorizontalCard(
             modifier = Modifier.weight(1f),
@@ -637,7 +641,7 @@ fun MetricHorizontalCard(
     value: String,
     unit: String,
     buttonText: String,
-    onClick: () -> Unit
+    onClick: (() -> Unit)?
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -687,26 +691,45 @@ fun MetricHorizontalCard(
                     letterSpacing = 2.sp
                 )
             }
-            Button(
-                onClick = onClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary.copy(
-                        alpha = 0.1f
+            if (onClick != null) {
+                Button(
+                    onClick = onClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(
+                            alpha = 0.1f
+                        )
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        buttonText,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 1.sp
                     )
-                ),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(36.dp),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    buttonText,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 1.sp
-                )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        buttonText,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 1.sp
+                    )
+                }
             }
         }
     }

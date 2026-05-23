@@ -33,4 +33,7 @@ interface ExerciseDao {
 
     @Query("SELECT * FROM exercises WHERE name = :name LIMIT 1")
     suspend fun getByName(name: String): ExerciseEntity?
+
+    @Query("SELECT * FROM exercises WHERE name = :name COLLATE NOCASE LIMIT 1")
+    suspend fun getByNameIgnoreCase(name: String): ExerciseEntity?
 }

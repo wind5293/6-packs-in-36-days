@@ -7,6 +7,7 @@ import com.example.fitflow.data.model.Exercise
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -51,4 +52,21 @@ class ExerciseRepository(context: Context) {
 
     suspend fun getByName(name: String): Exercise? =
         dao.getByName(name)?.toExercise()
+
+    suspend fun findBestMatchByName(name: String): Exercise? {
+        dao.getByName(name)?.let { return it.toExercise() }
+        dao.getByNameIgnoreCase(name)?.let { return it.toExercise() }
+
+        val normalizedTarget = normalizeName(name)
+        return getAll().first().firstOrNull { exercise ->
+            normalizeName(exercise.name) == normalizedTarget
+        }
+    }
+
+    private fun normalizeName(value: String): String {
+        return value
+            .lowercase()
+            .replace("&", "and")
+            .replace(Regex("[^a-z0-9]+"), "")
+    }
 }

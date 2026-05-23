@@ -73,9 +73,7 @@ class MainActivity : ComponentActivity() {
             ) == PackageManager.PERMISSION_GRANTED
 
             viewModel.setActivityRecognitionGranted(granted)
-            if (!granted) {
-                requestActivityRecognitionPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
-            } else {
+            if (granted) {
                 viewModel.startStepTracking(applicationContext)
             }
         } else {
@@ -127,7 +125,11 @@ class MainActivity : ComponentActivity() {
                                 healthMetrics = todayHealthMetrics,
                                 isActivityRecognitionGranted = activityGranted,
                                 isStepSensorEnabled = stepSensorEnabled,
-                                onAddManualSteps = { viewModel.addManualSteps() },
+                                onUnlockStepSensor = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        requestActivityRecognitionPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
+                                    }
+                                },
                                 onAddWater = { amount -> viewModel.addWater(amount) },
                                 onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
                                 onStartWorkout = {
@@ -255,6 +257,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        syncActivityRecognitionPermission()
         uiViewModel?.refreshHealthMetrics()
         if (uiViewModel?.activityRecognitionGranted?.value == true) {
             uiViewModel?.startStepTracking(applicationContext)
@@ -264,6 +267,18 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         uiViewModel?.stopStepTracking()
         super.onStop()
+    }
+
+    private fun syncActivityRecognitionPermission() {
+        val granted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+        uiViewModel?.setActivityRecognitionGranted(granted)
     }
 }
 

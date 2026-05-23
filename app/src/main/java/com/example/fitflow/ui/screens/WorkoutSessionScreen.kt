@@ -46,6 +46,7 @@ fun WorkoutSessionScreen(
     onBack: () -> Unit = {},
     onFinish: () -> Unit = {}
 ) {
+    var showInstructionScreen by remember { mutableStateOf(false) }
     var index       by remember { mutableStateOf(0) }
     var remaining   by remember { mutableStateOf(exercises.getOrNull(0)?.durationSec ?: 0) }
     var isRunning   by remember { mutableStateOf(false) }
@@ -54,6 +55,14 @@ fun WorkoutSessionScreen(
 
     val current  = exercises.getOrNull(index)
     val next     = exercises.getOrNull(index + 1)
+
+    if (showInstructionScreen && current != null) {
+        ExerciseInstructionOverlayScreen(
+            exercise = current,
+            onClose = { showInstructionScreen = false }
+        )
+        return
+    }
 
     val primaryColor  = MaterialTheme.colorScheme.primary
     val buttonBgColor = MaterialTheme.colorScheme.surfaceVariant
@@ -195,8 +204,17 @@ fun WorkoutSessionScreen(
                             color = textColor
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = "Help",
-                            modifier = Modifier.size(20.dp), tint = iconColor)
+                        IconButton(
+                            onClick = { showInstructionScreen = true },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Outlined.HelpOutline,
+                                contentDescription = "Help",
+                                modifier = Modifier.size(20.dp),
+                                tint = iconColor
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
@@ -268,8 +286,17 @@ fun WorkoutSessionScreen(
                             style = MaterialTheme.typography.headlineMedium,
                             color = textColor)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = "Help",
-                            modifier = Modifier.size(20.dp), tint = iconColor)
+                        IconButton(
+                            onClick = { showInstructionScreen = true },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Outlined.HelpOutline,
+                                contentDescription = "Help",
+                                modifier = Modifier.size(20.dp),
+                                tint = iconColor
+                            )
+                        }
                     }
                 }
 
