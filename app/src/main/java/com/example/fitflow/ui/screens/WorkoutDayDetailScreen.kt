@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.request.CachePolicy
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.fitflow.FitFlowApplication
@@ -42,6 +43,31 @@ fun WorkoutDayDetailScreen(
     onStartSession: () -> Unit = {},
     onEditPlan: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+    val gifUrls = remember(dayPlan.workoutExercises) {
+        dayPlan.workoutExercises.mapNotNull { exercise ->
+            exercise.gifFileName
+                .takeIf { it.isNotEmpty() }
+                ?.let { GifUrlHelper.getUrl(it) }
+        }
+    }
+
+    LaunchedEffect(dayPlan.dayNumber, gifUrls) {
+        // Warm up memory/disk cache before list items are visible.
+        gifUrls.take(8).forEach { url ->
+            imageLoader.enqueue(
+                ImageRequest.Builder(context)
+                    .data(url)
+                    .memoryCacheKey(url)
+                    .diskCacheKey(url)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .build()
+            )
+        }
+    }
+
     Box (
         modifier = Modifier
             .fillMaxSize()
@@ -133,7 +159,9 @@ fun HeaderAndSummarySection(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Row (
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset(y = (-8).dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -281,7 +309,11 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
                             .data(gifUrl)
-                            .crossfade(true)
+                            .crossfade(false)
+                            .memoryCacheKey(gifUrl)
+                            .diskCacheKey(gifUrl)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
                             .build(),
                         imageLoader = imageLoader,
                         contentDescription = exercise.name,

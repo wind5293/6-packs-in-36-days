@@ -41,6 +41,8 @@ class UserPreferences(context: Context) {
         const val KEY_SETTING_AUTO_COUNTING = "setting_auto_counting"
         const val KEY_SETTING_REST_TIMER = "setting_rest_timer"
         const val KEY_SETTING_COUNTDOWN = "setting_countdown"
+        const val KEY_HYBRID_GIF_CACHE_READY = "hybrid_gif_cache_ready"
+        const val KEY_HYBRID_GIF_CACHE_SIGNATURE = "hybrid_gif_cache_signature"
 
         const val HISTORY_MAX_DAYS = 90
     }
@@ -321,4 +323,22 @@ class UserPreferences(context: Context) {
 
     fun getCountdown(): String = prefs.getString(KEY_SETTING_COUNTDOWN, "5s") ?: "5s"
     fun setCountdown(value: String) = prefs.edit().putString(KEY_SETTING_COUNTDOWN, value).apply()
+
+    fun markHybridGifCachePending(signature: String) {
+        prefs.edit()
+            .putBoolean(KEY_HYBRID_GIF_CACHE_READY, false)
+            .putString(KEY_HYBRID_GIF_CACHE_SIGNATURE, signature)
+            .apply()
+    }
+
+    fun markHybridGifCacheReady(signature: String) {
+        prefs.edit()
+            .putBoolean(KEY_HYBRID_GIF_CACHE_READY, true)
+            .putString(KEY_HYBRID_GIF_CACHE_SIGNATURE, signature)
+            .apply()
+    }
+
+    fun isHybridGifCacheReady(): Boolean = prefs.getBoolean(KEY_HYBRID_GIF_CACHE_READY, false)
+
+    fun getHybridGifCacheSignature(): String? = prefs.getString(KEY_HYBRID_GIF_CACHE_SIGNATURE, null)
 }

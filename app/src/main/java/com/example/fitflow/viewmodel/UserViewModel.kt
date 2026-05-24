@@ -3,6 +3,8 @@ package com.example.fitflow.viewmodel
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import android.content.Intent
 import android.icu.util.Calendar
 import android.util.Log
@@ -28,8 +30,24 @@ import java.time.LocalDate
 
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.WorkoutExercise
+import com.example.fitflow.utils.GifUrlHelper
+import com.example.fitflow.utils.NetworkStateHelper
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+data class PlanProvisioningState(
+    val firstSegmentProgress: Float = 0f,
+    val secondSegmentProgress: Float = 0f,
+    val isCompleted: Boolean = false,
+    val requiresMobileDataConsent: Boolean = false,
+    val isNoNetwork: Boolean = false,
+    val isInProgress: Boolean = false,
+    val hasError: Boolean = false,
+    val statusMessage: String = "Creating your plan..."
+)
 
 class UserViewModel(
     private val userPreferences: UserPreferences,
@@ -77,7 +95,14 @@ class UserViewModel(
     private val _stepSensorEnabled = MutableStateFlow(false)
     val stepSensorEnabled: StateFlow<Boolean> = _stepSensorEnabled.asStateFlow()
 
+    private val _planProvisioningState = MutableStateFlow(PlanProvisioningState())
+    val planProvisioningState: StateFlow<PlanProvisioningState> = _planProvisioningState.asStateFlow()
+
     private var stepCounterManager: StepCounterManager? = null
+    private var planProvisioningJob: Job? = null
+    private var pendingHybridUrls: List<String> = emptyList()
+    private var pendingGoal: FitnessGoal? = null
+    private var mobileDataConsentGranted = false
 
     private val workoutPlanGenerator = WorkoutPlanGenerator(exerciseRepository)
 
@@ -130,6 +155,84 @@ class UserViewModel(
     fun saveGoal(goal: FitnessGoal) {
         userPreferences.saveGoal(goal)
         loadUserProfile()
+    }
+
+    fun startPlanProvisioning(context: Context, goal: FitnessGoal) {
+        if (planProvisioningJob?.isActive == true) return
+
+        pendingGoal = goal
+        mobileDataConsentGranted = false
+        pendingHybridUrls = emptyList()
+        userPreferences.markHybridGifCachePending(goal.name)
+
+        _planProvisioningState.value = PlanProvisioningState(
+            firstSegmentProgress = 0f,
+            secondSegmentProgress = 0f,
+            isCompleted = false,
+            isInProgress = true,
+            statusMessage = "Creating your plan..."
+        )
+
+        planProvisioningJob = viewModelScope.launch {
+            try {
+                userPreferences.saveGoal(goal)
+                _userProfile.value = userPreferences.getUserProfile()
+
+                val generatedPlan = workoutPlanGenerator.generatePlan(goal)
+                val mergedPlan = generatedPlan.map { day ->
+                    val custom = userPreferences.getCustomDayPlan(day.dayNumber)
+                    if (custom != null) day.copy(workoutExercises = custom) else day
+                }
+                _workoutPlan.value = mergedPlan
+
+                _planProvisioningState.value = _planProvisioningState.value.copy(
+                    firstSegmentProgress = 1f,
+                    statusMessage = "Preparing resources..."
+                )
+
+                val hybridUrls = collectHybridGifUrls(mergedPlan)
+                pendingHybridUrls = hybridUrls
+
+                if (hybridUrls.isEmpty()) {
+                    completePlanProvisioning(goal.name)
+                    return@launch
+                }
+
+                handlePrefetchGate(context.applicationContext, goal, hybridUrls)
+            } catch (_: Exception) {
+                _planProvisioningState.value = _planProvisioningState.value.copy(
+                    isInProgress = false,
+                    hasError = true,
+                    statusMessage = "Unable to finish setup. Please retry."
+                )
+            }
+        }
+    }
+
+    fun confirmUseMobileDataForProvisioning(context: Context) {
+        if (pendingHybridUrls.isEmpty()) return
+
+        mobileDataConsentGranted = true
+        continuePrefetch(context.applicationContext, pendingHybridUrls)
+    }
+
+    fun retryPlanProvisioning(context: Context) {
+        if (planProvisioningJob?.isActive == true) return
+
+        _planProvisioningState.value = _planProvisioningState.value.copy(
+            hasError = false,
+            isInProgress = true,
+            statusMessage = "Retrying setup..."
+        )
+
+        val urls = pendingHybridUrls
+        if (urls.isNotEmpty()) {
+            continuePrefetch(context.applicationContext, urls)
+            return
+        }
+
+        val goal = pendingGoal ?: _userProfile.value?.goal ?: FitnessGoal.WEIGHT_LOSS
+        startPlanProvisioning(context.applicationContext, goal)
     }
 
     fun markDayComplete(dayNumber: Int) {
@@ -256,6 +359,128 @@ class UserViewModel(
     private fun defaultWaterGoalMl(): Int {
         val weight = _userProfile.value?.weight ?: 57f
         return (weight * 35f).toInt().coerceIn(1200, 5000)
+    }
+
+    private suspend fun handlePrefetchGate(
+        context: Context,
+        goal: FitnessGoal,
+        hybridUrls: List<String>
+    ) {
+        val network = NetworkStateHelper.getNetworkState(context)
+
+        when {
+            !network.isConnected -> {
+                _planProvisioningState.value = _planProvisioningState.value.copy(
+                    isInProgress = false,
+                    isNoNetwork = true,
+                    requiresMobileDataConsent = false,
+                    statusMessage = "Connect to Wi-Fi or mobile data to continue setup."
+                )
+            }
+
+            network.isCellular && !mobileDataConsentGranted -> {
+                _planProvisioningState.value = _planProvisioningState.value.copy(
+                    isInProgress = false,
+                    isNoNetwork = false,
+                    requiresMobileDataConsent = true,
+                    statusMessage = "Using mobile data may consume data. Continue?"
+                )
+            }
+
+            else -> {
+                runPrefetch(context, goal.name, hybridUrls)
+            }
+        }
+    }
+
+    private fun continuePrefetch(context: Context, urls: List<String>) {
+        val goal = pendingGoal ?: _userProfile.value?.goal ?: FitnessGoal.WEIGHT_LOSS
+
+        planProvisioningJob = viewModelScope.launch {
+            try {
+                handlePrefetchGate(context, goal, urls)
+            } catch (error: Exception) {
+                Log.e("PlanProvisioning", "continuePrefetch failed", error)
+                _planProvisioningState.value = _planProvisioningState.value.copy(
+                    isInProgress = false,
+                    hasError = true,
+                    statusMessage = "Unable to finish setup. Please retry."
+                )
+            }
+        }
+    }
+
+    private suspend fun runPrefetch(
+        context: Context,
+        goalSignature: String,
+        urls: List<String>
+    ) {
+        _planProvisioningState.value = _planProvisioningState.value.copy(
+            isInProgress = true,
+            isNoNetwork = false,
+            requiresMobileDataConsent = false,
+            hasError = false,
+            secondSegmentProgress = 0f,
+            statusMessage = "Finalizing setup..."
+        )
+
+        val imageLoader = (context.applicationContext as com.example.fitflow.FitFlowApplication).imageLoader
+        val total = urls.size.coerceAtLeast(1)
+
+        withContext(Dispatchers.IO) {
+            urls.forEachIndexed { index, url ->
+                try {
+                    imageLoader.execute(
+                        ImageRequest.Builder(context)
+                            .data(url)
+                            .memoryCacheKey(url)
+                            .diskCacheKey(url)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .build()
+                    )
+                } catch (error: Exception) {
+                    Log.w("PlanProvisioning", "Prefetch failed for $url", error)
+                    // Skip failed URL and continue completion accounting.
+                }
+
+                val progress = (index + 1) / total.toFloat()
+                _planProvisioningState.value = _planProvisioningState.value.copy(secondSegmentProgress = progress)
+            }
+        }
+
+        completePlanProvisioning(goalSignature)
+    }
+
+    private fun completePlanProvisioning(goalSignature: String) {
+        userPreferences.markHybridGifCacheReady(goalSignature)
+        pendingHybridUrls = emptyList()
+
+        _planProvisioningState.value = _planProvisioningState.value.copy(
+            firstSegmentProgress = 1f,
+            secondSegmentProgress = 1f,
+            isInProgress = false,
+            isCompleted = true,
+            isNoNetwork = false,
+            requiresMobileDataConsent = false,
+            hasError = false,
+            statusMessage = "Setup complete"
+        )
+    }
+
+    private fun collectHybridGifUrls(plan: List<DayPlan>): List<String> {
+        return plan
+            .asSequence()
+            .filter { !it.isRest }
+            .take(7)
+            .flatMap { it.workoutExercises.asSequence() }
+            .mapNotNull { exercise ->
+                exercise.gifFileName
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { GifUrlHelper.getUrl(it) }
+            }
+            .distinct()
+            .toList()
     }
 }
 

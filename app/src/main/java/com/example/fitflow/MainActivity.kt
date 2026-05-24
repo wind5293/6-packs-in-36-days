@@ -249,16 +249,26 @@ class MainActivity : ComponentActivity() {
                             LibraryScreen()
                         }
                         composable("loading") {
-                            LoadingScreen(onPlanReady = {
-                                navController.navigate("dashboard") {
-                                    popUpTo(0) { inclusive = true }
-                                    launchSingleTop = true
+                            val provisioningState by viewModel.planProvisioningState.collectAsState()
+                            LoadingScreen(
+                                provisioningState = provisioningState,
+                                onPlanReady = {
+                                    navController.navigate("dashboard") {
+                                        popUpTo(0) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                },
+                                onConfirmMobileData = {
+                                    viewModel.confirmUseMobileDataForProvisioning(applicationContext)
+                                },
+                                onRetry = {
+                                    viewModel.retryPlanProvisioning(applicationContext)
                                 }
-                            })
+                            )
                         }
                         composable("workout_setup") {
                             WorkoutSetupScreen(onComplete = { goal ->
-                                viewModel.saveGoal(goal)
+                                viewModel.startPlanProvisioning(applicationContext, goal)
                                 navController.navigate("loading") {
                                     popUpTo("workout_setup") { inclusive = true }
                                 }
