@@ -50,6 +50,7 @@ import coil.request.ImageRequest
 import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.WorkoutExercise
+import com.example.fitflow.utils.GifUrlHelper
 
 private enum class InstructionMode { ANIMATION, GUIDANCE }
 
@@ -73,20 +74,10 @@ fun ExerciseInstructionOverlayScreen(
     val modes = listOf("HOAT HINH", "HUONG DAN")
     val selectedMode = if (mode == 0) InstructionMode.ANIMATION else InstructionMode.GUIDANCE
 
-    val gifPath = run {
-        val fromJson = detail?.local_gifs?.firstOrNull()
-        val fromPlan = exercise.localGifs.firstOrNull()
-        val filename = fromJson ?: fromPlan
-        if (!filename.isNullOrBlank()) "gifs/$filename" else null
-    }
-
-    var hasGif by remember(gifPath) { mutableStateOf(false) }
-    LaunchedEffect(gifPath) {
-        hasGif = try {
-            if (gifPath == null) false else context.assets.open(gifPath).use { true }
-        } catch (_: Exception) {
-            false
-        }
+    val gifUrl = remember(exercise.gifFileName, detail) {
+        val fileName = detail?.local_gifs?.firstOrNull()
+            ?: exercise.gifFileName?.takeIf { it.isNotEmpty() }
+        fileName?.let { GifUrlHelper.getUrl(it) }
     }
 
     val targetMuscles = detail?.target_muscles
@@ -202,16 +193,12 @@ fun ExerciseInstructionOverlayScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (hasGif && gifPath != null) {
-                                val imageLoader = remember {
-                                    ImageLoader.Builder(context).components {
-                                        if (Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory())
-                                        else add(GifDecoder.Factory())
-                                    }.build()
-                                }
+                            if (gifUrl != null) {
+                                val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
                                 AsyncImage(
                                     model = ImageRequest.Builder(context)
-                                        .data("file:///android_asset/$gifPath")
+                                        .data(gifUrl)
+                                        .crossfade(true)
                                         .build(),
                                     imageLoader = imageLoader,
                                     contentDescription = "Exercise animation",

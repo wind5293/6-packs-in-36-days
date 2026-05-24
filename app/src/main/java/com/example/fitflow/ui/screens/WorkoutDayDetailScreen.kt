@@ -1,5 +1,6 @@
 package com.example.fitflow.ui.screens
 
+import android.content.ClipData
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,16 +21,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
+import com.example.fitflow.utils.GifUrlHelper
 
 @Composable
 fun WorkoutDayDetailScreen(
@@ -47,7 +54,7 @@ fun WorkoutDayDetailScreen(
             contentPadding = PaddingValues(bottom = 120.dp)
         ) {
             item {
-                HeaderAndSummarySection(1, dayPlan.workoutExercises, onBack)
+                HeaderAndSummarySection(dayPlan.dayNumber, dayPlan.workoutExercises, onBack)
             }
             items(dayPlan.workoutExercises) { exercise ->
                 ExerciseExpandableItem(exercise)
@@ -249,6 +256,14 @@ fun SummaryItem(
 @Composable
 private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
     var isExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+
+    val gifUrl = remember(exercise.gifFileName) {
+        exercise.gifFileName
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { GifUrlHelper.getUrl(it) }
+    }
 
     Column(
         modifier = Modifier
@@ -268,7 +283,18 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
                     .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small),
                 contentAlignment = Alignment.Center
             ) {
-                Text("IMG", fontSize = 10.sp, color = Color.Gray)
+                if (gifUrl != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(gifUrl)
+                            .crossfade(true)
+                            .build(),
+                        imageLoader = imageLoader,
+                        contentDescription = exercise.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -319,7 +345,7 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
     }
 }
 
- private val sampleExercises = listOf(
+private val sampleExercises = listOf(
     WorkoutExercise(category = "Cardio", name = "Jumping Jacks", sets = 1, reps = 0, kcal = 10, durationSec = 30),
     WorkoutExercise(category = "Strength", name = "Push Ups", sets = 1, reps = 0, kcal = 15, durationSec = 40),
     WorkoutExercise(category = "Strength", name = "Bodyweight Squats", sets = 1, reps = 0, kcal = 20, durationSec = 45),
