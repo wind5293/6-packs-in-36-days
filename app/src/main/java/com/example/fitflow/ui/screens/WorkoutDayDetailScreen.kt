@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,8 +40,7 @@ fun WorkoutDayDetailScreen(
     dayPlan: DayPlan,
     onBack: () -> Unit,
     onStartSession: () -> Unit = {},
-    onEditPlan: () -> Unit = {},
-    onWorkoutSettingsClick: () -> Unit = {}
+    onEditPlan: () -> Unit = {}
 ) {
     Box (
         modifier = Modifier
@@ -57,8 +55,7 @@ fun WorkoutDayDetailScreen(
                 HeaderAndSummarySection(
                     dayPlan = dayPlan,
                     onBack = onBack,
-                    onEditPlan = onEditPlan,
-                    onWorkoutSettingsClick = onWorkoutSettingsClick
+                    onEditPlan = onEditPlan
                 )
             }
             items(dayPlan.workoutExercises) { exercise ->
@@ -108,8 +105,7 @@ fun WorkoutDayDetailScreen(
 fun HeaderAndSummarySection(
     dayPlan: DayPlan,
     onBack: () -> Unit,
-    onEditPlan: () -> Unit,
-    onWorkoutSettingsClick: () -> Unit
+    onEditPlan: () -> Unit
 ) {
     val exercises = dayPlan.workoutExercises
     val totalKcal = exercises.sumOf { it.kcal }
@@ -223,38 +219,6 @@ fun HeaderAndSummarySection(
                     SummaryItem(value = "${exercises.size}", label = "Exercises")
                     SummaryItem(value = "$duration min", label = "Time")
                     SummaryItem(value = "$totalKcal", label = "Calories")
-                }
-                Spacer(modifier = Modifier.height(14.dp))
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onWorkoutSettingsClick() }
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            "Workout Settings",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            "Music & Coach & Timer, etc.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Icon(
-                        Icons.Default.ChevronRight,
-                        contentDescription = null,
-                        tint = Color.Gray
-                    )
                 }
             }
         }
@@ -410,8 +374,7 @@ fun HeaderAndSummarySectionPreview() {
         HeaderAndSummarySection(
             dayPlan = DayPlan(1, false, sampleExercises),
             onBack = {  },
-            onEditPlan = {  },
-            onWorkoutSettingsClick = {  }
+            onEditPlan = {  }
         )
     }
 }

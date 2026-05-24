@@ -14,12 +14,12 @@ FitFlow là ứng dụng Android mentor người dùng tập thể dục tại n
 ```
 app/src/main/java/com/example/fitflow/
 ├── MainActivity.kt              # Entry point, NavHost, navigation graph
-├── FitFlowApplication.kt        # Application class, khởi tạo UserPreferences
+├── FitFlowApplication.kt        # Application class, khởi tạo UserPreferences + global Coil imageLoader
 ├── data/
 │   ├── UserPreferences.kt       # SharedPreferences wrapper (lưu profile, onboarding, completed days)
 │   └── model/
 │       ├── DayPlan.kt           # Data class: dayNumber, isRest, workoutExercises
-│       ├── WorkoutExercise.kt   # Data class: category, name, sets, reps, kcal, durationSec, localGifs
+│       ├── WorkoutExercise.kt   # Data class: category, name, sets, reps, kcal, durationSec, gifFileName
 │       ├── Exercise.kt          # Legacy model (còn tồn tại trong codebase)
 │       └── UserProfile.kt       # Data class + FitnessGoal enum
 ├── domain/
@@ -100,7 +100,7 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 ```
 
 **Bottom navbar** hiển thị ở: `dashboard`, `planner`, `library`, `profile`
-**Ẩn navbar** ở: `onboarding`, `workout_setup`, `loading`, `day_detail/{dayNumber}`, `workout_session/{dayNumber}`
+**Ẩn navbar** ở: `onboarding`, `workout_setup`, `loading`, `day_detail/{dayNumber}`, `workout_session/{dayNumber}`, `edit_plan/{dayNumber}`, `workout_settings`
 
 ---
 
@@ -154,10 +154,11 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
    - Steps hỗ trợ 2 nguồn: `SENSOR` (live) và `MANUAL` (fallback)
    - Thêm status message rõ trạng thái: permission off / sensor unavailable / live tracking
 
-### 10. WorkoutPlanGenerator có test override cho Day 1 ⚠️ CẦN DỌN TRƯỚC RELEASE
-- **Vấn đề**: `WorkoutPlangenerator.generatePlan()` đang hardcode Day 1 thành 2 bài test (`Band Cross-Over`, `Barbell Shoulder Press`) với `localGifs`
-- **Ảnh hưởng**: Làm lệch hành vi plan chuẩn theo goal trong ngày đầu tiên
-- **Cần làm**: Bỏ nhánh `day == 1` test override hoặc chuyển thành dữ liệu seed có cờ môi trường
+### ~~10. WorkoutPlanGenerator có test override cho Day 1~~ ✅ ĐÃ SỬA (2026-05-24)
+- ~~`WorkoutPlangenerator.generatePlan()` hardcode Day 1 thành 2 bài test với `localGifs`~~
+- **Đã sửa**:
+   - Bỏ nhánh test override Day 1, quay về flow chọn bài theo pool/goal chuẩn
+   - Đồng bộ schema GIF sang `gifFileName` và map dữ liệu GIF từ repository trong lúc generate plan
 
 ### ~~11. Onboarding flow chưa khớp reference về chức năng/interaction~~ ✅ ĐÃ SỬA CƠ BẢN (2026-05-23)
 - ~~Flow onboarding còn lệch lớn so với reference (ruler/wheel semantics)~~
@@ -180,7 +181,7 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - **Cần làm**: Dọn sạch lỗi cú pháp và tiếp tục chuyển hardcoded strings theo lộ trình
 
 ### 14. Text mới trong Health Metrics còn hardcoded ⚠️ CẦN DỌN
-- **Vấn đề**: Một số text mới trong `DashboardScreen` vẫn hardcode (`"LIVE"`, `"ADD 500"`, status message sensor/permission, label dialog)
+- **Vấn đề**: Một số text mới trong `DashboardScreen` vẫn hardcode (`"LIVE"`, status message sensor/permission, label dialog)
 - **Ảnh hưởng**: Tăng debt i18n, khó mở rộng đa ngôn ngữ
 - **Cần làm**: Chuyển các text này vào `strings.xml` và dùng `stringResource(...)`
 
@@ -188,6 +189,11 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - **Vấn đề**: Đã thêm `onResume/onStop` để start/stop tracking, nhưng chưa có chiến lược background tracking hoặc WorkManager
 - **Ảnh hưởng**: Nếu yêu cầu tracking liên tục khi app background sẽ chưa đáp ứng
 - **Cần làm**: Chốt scope MVP (foreground-only hay background-capable), nếu cần background thì thiết kế thêm service/worker + battery policy
+
+### 16. Hygiene repo: file lỗi IDE bị commit nhầm ⚠️ CẦN DỌN
+- **Vấn đề**: File `.kotlin/errors/errors-1779632416724.log` được add trong commit `c61b557`
+- **Ảnh hưởng**: Tăng noise trong git history, dễ làm bẩn PR về sau
+- **Cần làm**: Xóa file khỏi repo và thêm rule ignore phù hợp để tránh lặp lại
 
 ### ~~8. Indentation không nhất quán~~ ✅ ĐÃ SỬA
 - ~~`MainActivity.kt` line 123: `composable("workout_setup")` bị thụt lề sai (dùng tab thay vì spaces)~~
@@ -293,7 +299,9 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 | Loading | ✅ MaterialTheme | ✅ Center column | ✅ Popbackstack clean | ✅ Fake 2.5s delay | ✅ Hoạt động |
 | Dashboard | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK | ✅ TodaysWeight + Calendar + Workouts + Steps/Water realtime từ ViewModel + permission/sensor fallback | ✅ Hoạt động |
 | Planner | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK | ✅ ViewModel | ✅ Hoạt động |
-| Day Detail | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK + onStartSession | ✅ ViewModel | ✅ Hoạt động |
+| Day Detail | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK + onStartSession + onEditPlan + onWorkoutSettingsClick | ✅ ViewModel | ✅ Hoạt động |
+| Edit Plan | ✅ MaterialTheme (partial token usage) | ✅ LazyColumn + reorder controls | ✅ Route `edit_plan/{dayNumber}` | ✅ Persist custom day plan vào SharedPreferences | ✅ Tích hợp |
+| Workout Settings | ✅ MaterialTheme (partial token usage) | ✅ LazyColumn + section cards | ✅ Route `workout_settings` | ✅ Persist settings (music/coach/timer) qua UserPreferences | ✅ Tích hợp |
 | Workout Session | ✅ MaterialTheme | ✅ Column | ✅ Route workout_session/{dayNumber} | ✅ Exercise (có category) từ DayPlan | ✅ Tích hợp |
 | Library | ✅ MaterialTheme | ✅ OK | ✅ OK | ❌ 2 exercises hardcoded | ⚠️ Cần phát triển |
 | Profile | ✅ MaterialTheme | ✅ OK | ✅ OK | ✅ Weight record/history chart + weekly Steps/Water charts (vẫn còn một phần stats placeholder) | ⚠️ Gần hoàn chỉnh MVP |
@@ -306,11 +314,14 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 | Theme (Theme.kt) | `ui/theme/Theme.kt` | ✅ Dark/Light scheme hoạt động |
 | Theme (Type.kt) | `ui/theme/Type.kt` | ⚠️ Chỉ có `bodyLarge`, phần còn lại bị comment |
 | BottomNavbar | `ui/components/BottomNavbar.kt` | ✅ Home, Plan, Library, Me — hoạt động |
-| Navigation | `MainActivity.kt` | ✅ 8 routes + wiring health metrics + ACTIVITY_RECOGNITION permission + lifecycle start/stop tracking |
-| UserPreferences | `data/UserPreferences.kt` | ✅ Lưu profile + goal + completed days + weightHistory + healthMetricsHistory (steps/water/goal/source), baseline sensor, trim 90 ngày |
-| UserViewModel | `viewmodel/UserViewModel.kt` | ✅ StateFlow đầy đủ cho profile/plan/completedDays/weightHistory/todayHealthMetrics/healthMetricsHistory + step tracking actions |
+| Navigation | `MainActivity.kt` | ✅ 11 routes + wiring health metrics + ACTIVITY_RECOGNITION permission + lifecycle start/stop tracking |
+| UserPreferences | `data/UserPreferences.kt` | ✅ Lưu profile + goal + completed days + weightHistory + healthMetricsHistory + custom day plan + workout settings |
+| UserViewModel | `viewmodel/UserViewModel.kt` | ✅ StateFlow đầy đủ cho profile/plan/completedDays/weightHistory/todayHealthMetrics/healthMetricsHistory + step tracking + `updateDayPlan(...)` |
+| WorkoutPlannerViewModel | `viewmodel/WorkoutPlannerViewModel.kt` | ✅ Quản lý edit mode/reorder/adjust/replace cho kế hoạch ngày |
+| WorkoutSettingsViewModel | `viewmodel/WorkoutSettingsViewModel.kt` | ✅ Quản lý state background music/voice guide/timer + playback mock |
 | StepCounterManager | `data/StepCounterManager.kt` | ✅ Bọc `SensorManager` (TYPE_STEP_COUNTER / TYPE_STEP_DETECTOR) với callback listener |
-| WorkoutPlanGenerator | `domain/WorkoutPlanGenerator.kt` | ✅ 4 goal-based pools, mỗi Exercise có **category** string (Cardio/Strength/Endurance/Maintenance) |
+| WorkoutPlanGenerator | `domain/WorkoutPlanGenerator.kt` | ✅ WEIGHT_LOSS dùng `JefitFatToFitPlan` + các goal còn lại dùng pool theo `FitnessGoal`; map GIF runtime qua repository |
+| JefitFatToFitPlan | `domain/JefitFatToFitPlan.kt` | ✅ Month-1 plan 30 ngày có metadata `title/difficulty/muscleGroup` |
 | strings.xml | `res/values/strings.xml` | ⚠️ Còn thiếu string migration cho Planner/WorkoutDayDetail và text mới của Health Metrics |
 
 ---
@@ -451,7 +462,8 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 | P1.1 | **Hardening onboarding parity** | `OnboardingScreen.kt` | Fine-tune behavior (ruler inertia, validation edge cases) để parity gần hơn reference |
 | P1.2 | **i18n migration cho text mới** | `DashboardScreen.kt`, `PlannerScreen.kt`, `WorkoutDayDetailScreen.kt`, `strings.xml` | Chuyển toàn bộ hardcoded strings mới (đặc biệt Health Metrics status/actions) sang resource |
 | P1.3 | **Health tracking test matrix** | `UserPreferences.kt`, `UserViewModel.kt`, `MainActivity.kt` | Kiểm thử các case đổi ngày, deny permission, sensor unavailable, process recreate |
-| P1.4 | **Dọn test override Day 1** | `WorkoutPlanGenerator.kt` | Gỡ nhánh test override hoặc bật/tắt bằng cờ môi trường trước release |
+| P1.4 | **Repo hygiene cleanup (.kotlin/errors)** | `.kotlin/errors/`, `.gitignore` | Xóa file log IDE đã commit nhầm và thêm guard để không tái diễn |
+| P1.5 | **Edit Plan & Workout Settings regression check** | `EditPlanScreen.kt`, `WorkoutSettingsScreen.kt`, `WorkoutPlannerViewModel.kt`, `WorkoutSettingsViewModel.kt` | Kiểm thử flow save/back/re-open state + validate persistence sau process recreate |
 
 ### 🟠 Priority 2 — Sprint 4 (Enhancement)
 
@@ -583,6 +595,40 @@ Dự án sử dụng hệ thống multi-agent trong `.claude/agents/`:
 ---
 
 ## Changelog
+
+### 2026-05-24 — Planner & Settings Expansion (commits c61b557 → 542cd77)
+
+#### 1) `feat(planner): add edit plan functionality with reorderable list` (c61b557)
+- Thêm route mới `edit_plan/{dayNumber}` và tích hợp từ `WorkoutDayDetailScreen` qua callback `onEditPlan`
+- Tạo màn hình mới `EditPlanScreen` với các hành vi: reorder bài tập, tăng/giảm reps hoặc duration, replace bài từ DB, save về ngày hiện tại
+- Tạo `WorkoutPlannerViewModel` để quản lý `editablePlan`, `isEditMode`, `savedExercises`
+- `UserPreferences` bổ sung lưu/đọc custom day plan (`saveCustomDayPlan`, `getCustomDayPlan`) bằng JSON
+- `UserViewModel` thêm `updateDayPlan(...)` và merge custom day plan vào plan khi `loadUserProfile()`
+- `DayPlan` mở rộng metadata (`title`, `difficulty`, `muscleGroup`), `WorkoutExercise` thêm `description`
+- Thêm màn hình/route `workout_settings` + `WorkoutSettingsScreen` và `WorkoutSettingsViewModel`
+- `UserPreferences` mở rộng persistence cho settings: background music, voice guide, coach, sound effect, auto counting, rest timer, countdown
+- `WorkoutPlanGenerator` cập nhật hướng tạo plan: `WEIGHT_LOSS` dùng `buildJefitMonth1Plan()` từ file mới `JefitFatToFitPlan.kt`; các goal khác theo pool hiện có
+
+#### 2) `Merge pull request #48 from wind5293/feature/workout-setup` (542cd77)
+- Merge toàn bộ tính năng Edit Plan + Workout Settings vào `main`
+- Cập nhật navigation để ẩn bottom nav ở `edit_plan/{dayNumber}` và `workout_settings`
+
+### 2026-05-24 — Remote Sync Updates (commits 209af48 → 18191b3)
+
+#### 1) `feat(ui): add img for WorkoutSessionScreen from github release` (209af48)
+- `FitFlowApplication` thêm `imageLoader` dùng chung toàn app (Coil + GIF decoder + disk/memory cache)
+- Chuẩn hóa schema GIF ở tầng workout: `WorkoutExercise` dùng `gifFileName` thay cho `localGifs`
+- `WorkoutPlanGenerator` tra `gifFileName` từ repository theo tên bài để gắn ảnh động cho bài tập runtime
+- `WorkoutSessionScreen`/`WorkoutSessionViewModel` nối lại luồng load GIF theo schema mới
+
+#### 2) `fix(ui): change gifUrl value data and image for ExerciseExpandableItem` (d0a3c1e)
+- `ExerciseInstructionOverlayScreen` đổi sang lấy URL qua `GifUrlHelper` + dùng global `imageLoader`
+- `WorkoutDayDetailScreen` thêm preview ảnh/GIF thật trong `ExerciseExpandableItem` (thay placeholder `IMG`)
+- Sửa `HeaderAndSummarySection` để dùng đúng `dayPlan.dayNumber` thay vì hardcode `1`
+
+#### 3) `Merge pull request #47 from wind5293/fix/ui` (18191b3)
+- Tích hợp toàn bộ fix GIF URL + image preview vào `main`
+- Resolve lỗi compile do lệch schema giữa `localGifs` và `gifFileName` sau khi đồng bộ remote
 
 ### 2026-05-23 — MVP Health Tracking Integration (local implementation)
 

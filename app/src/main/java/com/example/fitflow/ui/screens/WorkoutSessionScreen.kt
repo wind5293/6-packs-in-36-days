@@ -48,6 +48,7 @@ fun WorkoutSessionScreen(
     exercises: List<WorkoutExercise> = sampleExercises(),
     onBack: () -> Unit = {},
     onFinish: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     viewModel: WorkoutSessionViewModel = viewModel()
 ) {
   
@@ -193,6 +194,7 @@ fun WorkoutSessionScreen(
                     prepareOverlay = true,
                     prepareCountdown = phaseTimer,
                     onBack = onBack,
+                    onOpenSettings = onOpenSettings,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -262,6 +264,7 @@ fun WorkoutSessionScreen(
                     prepareOverlay = false,
                     prepareCountdown = 0,
                     onBack = onBack,
+                    onOpenSettings = onOpenSettings,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -433,6 +436,7 @@ private fun ExerciseMediaArea(
     prepareOverlay: Boolean,
     prepareCountdown: Int,
     onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -515,8 +519,20 @@ private fun ExerciseMediaArea(
                 )
             }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                IconButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(buttonBgColor)
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = textColor
+                    )
+                }
                 listOf(
-                    Icons.Default.Settings to "Settings",
                     Icons.Default.Fullscreen to "Expand",
                     Icons.Default.MusicNote to "Music",
                     Icons.Default.Videocam to "Video"

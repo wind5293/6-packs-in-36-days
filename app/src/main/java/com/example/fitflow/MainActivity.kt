@@ -144,7 +144,8 @@ class MainActivity : ComponentActivity() {
                                         launchSingleTop = true
                                         restoreState = true
                                     }
-                                }
+                                },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable("planner") {
@@ -161,7 +162,8 @@ class MainActivity : ComponentActivity() {
                                 currentDay = currentDay,
                                 onDayClick = { dayNumber ->
                                     navController.navigate("day_detail/$dayNumber")
-                                }
+                                },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable(
@@ -177,8 +179,7 @@ class MainActivity : ComponentActivity() {
                                 dayPlan = dayPlan,
                                 onBack = { navController.popBackStack() },
                                 onStartSession = { navController.navigate("workout_session/$dayNumber") },
-                                onEditPlan = { navController.navigate("edit_plan/$dayNumber") },
-                                onWorkoutSettingsClick = { navController.navigate("workout_settings") }
+                                onEditPlan = { navController.navigate("edit_plan/$dayNumber") }
                             )
                         }
                         composable("workout_settings") {
@@ -225,7 +226,8 @@ class MainActivity : ComponentActivity() {
                                 weightHistory = weightHistory,
                                 healthMetricsHistory = healthHistory,
                                 onRecordWeight = { viewModel.recordWeight(it) },
-                                onReCalibrate = { navController.navigate("onboarding") }
+                                onReCalibrate = { navController.navigate("onboarding") },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable("onboarding") {
@@ -278,7 +280,8 @@ class MainActivity : ComponentActivity() {
                                 onFinish = {
                                     viewModel.markDayComplete(dayNumber)
                                     navController.popBackStack()
-                                }
+                                },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                     }
