@@ -46,7 +46,7 @@ import com.example.fitflow.ui.theme.CardBackground
 import com.example.fitflow.ui.theme.CardNested
 import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
-import com.example.fitflow.utils.GifSourceResolver
+import com.example.fitflow.utils.GifUrlHelper
 import com.example.fitflow.viewmodel.WorkoutPlannerViewModel
 import kotlin.math.roundToInt
 
@@ -241,7 +241,7 @@ private fun EditExerciseRowItem(
 ) {
     val context = LocalContext.current
     val gifUrl = remember(exercise.gifFileName) {
-        exercise.gifFileName.takeIf { it.isNotEmpty() }?.let { GifSourceResolver.resolve(it, context) }
+        exercise.gifFileName.takeIf { it.isNotEmpty() }?.let { GifUrlHelper.getUrl(it) }
     }
 
     val accentColor = OrangePrimary

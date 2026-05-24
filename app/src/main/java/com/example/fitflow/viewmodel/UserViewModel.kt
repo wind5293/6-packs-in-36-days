@@ -3,9 +3,12 @@ package com.example.fitflow.viewmodel
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import android.content.Intent
 import android.icu.util.Calendar
 import android.util.Log
+import androidx.core.content.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -24,32 +27,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.WorkoutExercise
-import com.example.fitflow.utils.GifDownloadManager
 import com.example.fitflow.utils.GifUrlHelper
 import com.example.fitflow.utils.NetworkStateHelper
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.Job
-import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 data class PlanProvisioningState(
-    val progress: Float = 0f,
+    val firstSegmentProgress: Float = 0f,
+    val secondSegmentProgress: Float = 0f,
     val isCompleted: Boolean = false,
     val requiresMobileDataConsent: Boolean = false,
     val isNoNetwork: Boolean = false,
     val isInProgress: Boolean = false,
     val hasError: Boolean = false,
     val statusMessage: String = "Creating your plan..."
-)
-
-data class MediaPackStatus(
-    val isReady: Boolean = false,
-    val downloaded: Int = 0,
-    val total: Int = 0,
-    val failedCount: Int = 0,
-    val isSyncing: Boolean = false
 )
 
 class UserViewModel(
@@ -101,13 +98,9 @@ class UserViewModel(
     private val _planProvisioningState = MutableStateFlow(PlanProvisioningState())
     val planProvisioningState: StateFlow<PlanProvisioningState> = _planProvisioningState.asStateFlow()
 
-    private val _mediaPackStatus = MutableStateFlow(MediaPackStatus())
-    val mediaPackStatus: StateFlow<MediaPackStatus> = _mediaPackStatus.asStateFlow()
-
     private var stepCounterManager: StepCounterManager? = null
     private var planProvisioningJob: Job? = null
-    private var backgroundMediaJob: Job? = null
-    private var pendingGifFileNames: List<String> = emptyList()
+    private var pendingHybridUrls: List<String> = emptyList()
     private var pendingGoal: FitnessGoal? = null
     private var mobileDataConsentGranted = false
 
@@ -120,7 +113,6 @@ class UserViewModel(
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
         refreshHealthMetrics()
-        refreshMediaPackStatus()
 
         // ✅ generatePlan là suspend → cần viewModelScope
         viewModelScope.launch {
@@ -131,11 +123,7 @@ class UserViewModel(
             }
             _workoutPlan.value = basePlan.map { day ->
                 val custom = userPreferences.getCustomDayPlan(day.dayNumber)
-                if (custom != null) {
-                    day.copy(workoutExercises = remapMissingGifNames(custom))
-                } else {
-                    day
-                }
+                if (custom != null) day.copy(workoutExercises = custom) else day
             }
         }
     }
@@ -174,10 +162,12 @@ class UserViewModel(
 
         pendingGoal = goal
         mobileDataConsentGranted = false
-        pendingGifFileNames = emptyList()
+        pendingHybridUrls = emptyList()
+        userPreferences.markHybridGifCachePending(goal.name)
 
         _planProvisioningState.value = PlanProvisioningState(
-            progress = 0f,
+            firstSegmentProgress = 0f,
+            secondSegmentProgress = 0f,
             isCompleted = false,
             isInProgress = true,
             statusMessage = "Creating your plan..."
@@ -191,38 +181,24 @@ class UserViewModel(
                 val generatedPlan = workoutPlanGenerator.generatePlan(goal)
                 val mergedPlan = generatedPlan.map { day ->
                     val custom = userPreferences.getCustomDayPlan(day.dayNumber)
-                    if (custom != null) {
-                        day.copy(workoutExercises = remapMissingGifNames(custom))
-                    } else {
-                        day
-                    }
+                    if (custom != null) day.copy(workoutExercises = custom) else day
                 }
                 _workoutPlan.value = mergedPlan
 
                 _planProvisioningState.value = _planProvisioningState.value.copy(
-                    progress = 0.10f,
+                    firstSegmentProgress = 1f,
                     statusMessage = "Preparing resources..."
                 )
 
-                val gifFileNames = collectProvisioningGifFileNames(mergedPlan)
-                pendingGifFileNames = gifFileNames
-                val mediaPackSignature = buildMediaPackSignature(goal, gifFileNames)
+                val hybridUrls = collectHybridGifUrls(mergedPlan)
+                pendingHybridUrls = hybridUrls
 
-                if (userPreferences.isMediaPackReady(mediaPackSignature)) {
-                    completePlanProvisioning(mediaPackSignature)
-                    syncFullMediaPackInBackground(context.applicationContext)
+                if (hybridUrls.isEmpty()) {
+                    completePlanProvisioning(goal.name)
                     return@launch
                 }
 
-                userPreferences.markMediaPackPending(mediaPackSignature, gifFileNames.size)
-
-                if (gifFileNames.isEmpty()) {
-                    completePlanProvisioning(mediaPackSignature)
-                    syncFullMediaPackInBackground(context.applicationContext)
-                    return@launch
-                }
-
-                handleDownloadGate(context.applicationContext, goal, gifFileNames)
+                handlePrefetchGate(context.applicationContext, goal, hybridUrls)
             } catch (_: Exception) {
                 _planProvisioningState.value = _planProvisioningState.value.copy(
                     isInProgress = false,
@@ -234,10 +210,10 @@ class UserViewModel(
     }
 
     fun confirmUseMobileDataForProvisioning(context: Context) {
-        if (pendingGifFileNames.isEmpty()) return
+        if (pendingHybridUrls.isEmpty()) return
 
         mobileDataConsentGranted = true
-        continueDownload(context.applicationContext, pendingGifFileNames)
+        continuePrefetch(context.applicationContext, pendingHybridUrls)
     }
 
     fun retryPlanProvisioning(context: Context) {
@@ -249,16 +225,9 @@ class UserViewModel(
             statusMessage = "Retrying setup..."
         )
 
-        val failedFiles = userPreferences.getMediaPackFailedFiles()
-        if (failedFiles.isNotEmpty()) {
-            pendingGifFileNames = failedFiles
-            continueDownload(context.applicationContext, failedFiles)
-            return
-        }
-
-        val fileNames = pendingGifFileNames
-        if (fileNames.isNotEmpty()) {
-            continueDownload(context.applicationContext, fileNames)
+        val urls = pendingHybridUrls
+        if (urls.isNotEmpty()) {
+            continuePrefetch(context.applicationContext, urls)
             return
         }
 
@@ -355,115 +324,6 @@ class UserViewModel(
         stepCounterManager = null
     }
 
-    fun downloadFullMediaPackOnDemand(context: Context) {
-        syncFullMediaPackInBackground(context.applicationContext, allowCellular = true)
-    }
-
-    fun downloadAllLibraryMediaOnDemand(context: Context) {
-        if (backgroundMediaJob?.isActive == true) return
-
-        backgroundMediaJob = viewModelScope.launch {
-            try {
-                val allLibraryNames = allExercises.value
-                    .asSequence()
-                    .flatMap { it.local_gifs.asSequence() }
-                    .map { GifUrlHelper.canonicalize(it) }
-                    .filter { it.isNotBlank() }
-                    .distinct()
-                    .toList()
-
-                if (allLibraryNames.isEmpty()) return@launch
-
-                _mediaPackStatus.value = _mediaPackStatus.value.copy(
-                    isSyncing = true,
-                    total = allLibraryNames.size
-                )
-
-                val manager = GifDownloadManager(context.applicationContext)
-                val result = manager.downloadMissing(allLibraryNames) { done, total ->
-                    userPreferences.updateMediaPackProgress(done, total)
-                    _mediaPackStatus.value = _mediaPackStatus.value.copy(
-                        downloaded = done,
-                        total = total,
-                        isSyncing = true
-                    )
-                }
-
-                userPreferences.updateMediaPackProgress(result.downloaded, result.total)
-                userPreferences.setMediaPackFailedFiles(result.failedFiles)
-            } catch (error: Exception) {
-                Log.w("MediaPack", "Manual full-library download failed", error)
-            } finally {
-                _mediaPackStatus.value = _mediaPackStatus.value.copy(isSyncing = false)
-                refreshMediaPackStatus()
-            }
-        }
-    }
-
-    fun syncFullMediaPackInBackground(context: Context, allowCellular: Boolean = false) {
-        if (backgroundMediaJob?.isActive == true) return
-
-        val goal = _userProfile.value?.goal ?: return
-        val network = NetworkStateHelper.getNetworkState(context.applicationContext)
-        if (!network.isConnected) return
-        if (network.isCellular && !allowCellular) return
-
-        backgroundMediaJob = viewModelScope.launch {
-            try {
-                val allNames = collectAllGifFileNames(_workoutPlan.value)
-                if (allNames.isEmpty()) return@launch
-
-                val signature = buildMediaPackSignature(goal, allNames)
-                if (userPreferences.isMediaPackReady(signature)) {
-                    refreshMediaPackStatus()
-                    return@launch
-                }
-
-                _mediaPackStatus.value = _mediaPackStatus.value.copy(
-                    isSyncing = true,
-                    total = allNames.size
-                )
-
-                val manager = GifDownloadManager(context.applicationContext)
-                val result = manager.downloadMissing(allNames) { done, total ->
-                    userPreferences.updateMediaPackProgress(done, total)
-                    _mediaPackStatus.value = _mediaPackStatus.value.copy(
-                        downloaded = done,
-                        total = total,
-                        isSyncing = true
-                    )
-                }
-
-                if (result.failedFiles.isEmpty()) {
-                    userPreferences.markMediaPackReady(signature, result.downloaded, result.total)
-                } else {
-                    userPreferences.markMediaPackPending(signature, result.total, result.failedFiles)
-                    userPreferences.updateMediaPackProgress(result.downloaded, result.total)
-                    userPreferences.setMediaPackFailedFiles(result.failedFiles)
-                }
-            } catch (error: Exception) {
-                Log.w("MediaPack", "Background sync failed", error)
-            } finally {
-                _mediaPackStatus.value = _mediaPackStatus.value.copy(isSyncing = false)
-                refreshMediaPackStatus()
-            }
-        }
-    }
-
-    fun resetLocalMediaPackForDebug(context: Context) {
-        val dir = File(context.applicationContext.filesDir, "gifs")
-        if (dir.exists()) {
-            dir.listFiles()?.forEach { file ->
-                runCatching { file.delete() }
-            }
-        }
-
-        userPreferences.markMediaPackPending("debug-reset", 0)
-        userPreferences.updateMediaPackProgress(0, 0)
-        userPreferences.setMediaPackFailedFiles(emptyList())
-        refreshMediaPackStatus()
-    }
-
     fun scheduleWorkoutReminder(context: Context, hour: Int, minute: Int) {
         Log.d("FitFlowDebug", "Scheduling alarm for $hour:$minute")
 
@@ -496,36 +356,15 @@ class UserViewModel(
         loadUserProfile()
     }
 
-    private fun refreshMediaPackStatus() {
-        val libraryTotal = allExercises.value
-            .asSequence()
-            .flatMap { it.local_gifs.asSequence() }
-            .map { GifUrlHelper.canonicalize(it) }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .count()
-
-        val persistedDownloaded = userPreferences.getMediaPackDownloadedCount()
-        val downloaded = persistedDownloaded.coerceIn(0, libraryTotal)
-
-        _mediaPackStatus.value = MediaPackStatus(
-            isReady = userPreferences.isMediaPackReady(),
-            downloaded = downloaded,
-            total = libraryTotal,
-            failedCount = userPreferences.getMediaPackFailedFiles().size,
-            isSyncing = backgroundMediaJob?.isActive == true
-        )
-    }
-
     private fun defaultWaterGoalMl(): Int {
         val weight = _userProfile.value?.weight ?: 57f
         return (weight * 35f).toInt().coerceIn(1200, 5000)
     }
 
-    private suspend fun handleDownloadGate(
+    private suspend fun handlePrefetchGate(
         context: Context,
         goal: FitnessGoal,
-        gifFileNames: List<String>
+        hybridUrls: List<String>
     ) {
         val network = NetworkStateHelper.getNetworkState(context)
 
@@ -549,19 +388,19 @@ class UserViewModel(
             }
 
             else -> {
-                runDownload(context, buildMediaPackSignature(goal, gifFileNames), gifFileNames)
+                runPrefetch(context, goal.name, hybridUrls)
             }
         }
     }
 
-    private fun continueDownload(context: Context, fileNames: List<String>) {
+    private fun continuePrefetch(context: Context, urls: List<String>) {
         val goal = pendingGoal ?: _userProfile.value?.goal ?: FitnessGoal.WEIGHT_LOSS
 
         planProvisioningJob = viewModelScope.launch {
             try {
-                handleDownloadGate(context, goal, fileNames)
+                handlePrefetchGate(context, goal, urls)
             } catch (error: Exception) {
-                Log.e("PlanProvisioning", "continueDownload failed", error)
+                Log.e("PlanProvisioning", "continuePrefetch failed", error)
                 _planProvisioningState.value = _planProvisioningState.value.copy(
                     isInProgress = false,
                     hasError = true,
@@ -571,48 +410,55 @@ class UserViewModel(
         }
     }
 
-    private suspend fun runDownload(
+    private suspend fun runPrefetch(
         context: Context,
         goalSignature: String,
-        fileNames: List<String>
+        urls: List<String>
     ) {
         _planProvisioningState.value = _planProvisioningState.value.copy(
             isInProgress = true,
             isNoNetwork = false,
             requiresMobileDataConsent = false,
             hasError = false,
-            progress = 0.10f,
-            statusMessage = "Downloading workout media..."
+            secondSegmentProgress = 0f,
+            statusMessage = "Finalizing setup..."
         )
 
-        val downloadManager = GifDownloadManager(context.applicationContext)
-        val result = downloadManager.downloadMissing(fileNames) { done, total ->
-            val downloadProgress = done / total.toFloat()
-            val weightedProgress = 0.10f + (downloadProgress * 0.90f)
-            _planProvisioningState.value = _planProvisioningState.value.copy(progress = weightedProgress)
-            userPreferences.updateMediaPackProgress(done, total)
-        }
+        val imageLoader = (context.applicationContext as com.example.fitflow.FitFlowApplication).imageLoader
+        val total = urls.size.coerceAtLeast(1)
 
-        if (result.failedFiles.isNotEmpty()) {
-            Log.w("PlanProvisioning", "Some GIF downloads failed: ${result.failedFiles.size}/${result.total}")
-            userPreferences.markMediaPackPending(goalSignature, result.total, result.failedFiles)
-            userPreferences.updateMediaPackProgress(result.downloaded, result.total)
-            userPreferences.setMediaPackFailedFiles(result.failedFiles)
-        } else {
-            userPreferences.markMediaPackReady(goalSignature, result.downloaded, result.total)
+        withContext(Dispatchers.IO) {
+            urls.forEachIndexed { index, url ->
+                try {
+                    imageLoader.execute(
+                        ImageRequest.Builder(context)
+                            .data(url)
+                            .memoryCacheKey(url)
+                            .diskCacheKey(url)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .build()
+                    )
+                } catch (error: Exception) {
+                    Log.w("PlanProvisioning", "Prefetch failed for $url", error)
+                    // Skip failed URL and continue completion accounting.
+                }
+
+                val progress = (index + 1) / total.toFloat()
+                _planProvisioningState.value = _planProvisioningState.value.copy(secondSegmentProgress = progress)
+            }
         }
 
         completePlanProvisioning(goalSignature)
-        syncFullMediaPackInBackground(context.applicationContext)
     }
 
     private fun completePlanProvisioning(goalSignature: String) {
         userPreferences.markHybridGifCacheReady(goalSignature)
-        pendingGifFileNames = emptyList()
-        refreshMediaPackStatus()
+        pendingHybridUrls = emptyList()
 
         _planProvisioningState.value = _planProvisioningState.value.copy(
-            progress = 1f,
+            firstSegmentProgress = 1f,
+            secondSegmentProgress = 1f,
             isInProgress = false,
             isCompleted = true,
             isNoNetwork = false,
@@ -622,7 +468,7 @@ class UserViewModel(
         )
     }
 
-    private fun collectProvisioningGifFileNames(plan: List<DayPlan>): List<String> {
+    private fun collectHybridGifUrls(plan: List<DayPlan>): List<String> {
         return plan
             .asSequence()
             .filter { !it.isRest }
@@ -631,48 +477,10 @@ class UserViewModel(
             .mapNotNull { exercise ->
                 exercise.gifFileName
                     .takeIf { it.isNotEmpty() }
+                    ?.let { GifUrlHelper.getUrl(it) }
             }
             .distinct()
             .toList()
-    }
-
-    private fun collectAllGifFileNames(plan: List<DayPlan>): List<String> {
-        return plan
-            .asSequence()
-            .filter { !it.isRest }
-            .flatMap { it.workoutExercises.asSequence() }
-            .mapNotNull { exercise ->
-                exercise.gifFileName.takeIf { it.isNotEmpty() }
-            }
-            .distinct()
-            .toList()
-    }
-
-    private fun buildMediaPackSignature(goal: FitnessGoal, fileNames: List<String>): String {
-        val versionPart = fileNames
-            .asSequence()
-            .map { GifUrlHelper.getVersion(it) }
-            .distinct()
-            .sorted()
-            .joinToString("+")
-            .ifEmpty { "none" }
-
-        return "${goal.name}|$versionPart|${fileNames.sorted().joinToString(",").hashCode()}"
-    }
-
-    private suspend fun remapMissingGifNames(exercises: List<WorkoutExercise>): List<WorkoutExercise> {
-        return exercises.map { exercise ->
-            if (exercise.gifFileName.isNotBlank()) {
-                exercise
-            } else {
-                val mapped = exerciseRepository.getGifFileName(exercise.name).orEmpty()
-                if (mapped.isBlank()) {
-                    exercise
-                } else {
-                    exercise.copy(gifFileName = mapped)
-                }
-            }
-        }
     }
 }
 

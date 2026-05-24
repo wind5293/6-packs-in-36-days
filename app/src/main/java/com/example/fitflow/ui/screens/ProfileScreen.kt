@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,7 +32,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.UserProfile
-import com.example.fitflow.viewmodel.MediaPackStatus
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -46,11 +44,8 @@ fun ProfileScreen(
     startDate: LocalDate? = null,
     weightHistory: List<Pair<LocalDate, Float>> = emptyList(),
     healthMetricsHistory: List<DailyHealthMetrics> = emptyList(),
-    mediaPackStatus: MediaPackStatus = MediaPackStatus(),
     onRecordWeight: (Float) -> Unit = {},
     onReCalibrate: () -> Unit = {},
-    onDownloadAllMedia: () -> Unit = {},
-    onResetMediaPackDebug: () -> Unit = {},
     onOpenSettings: () -> Unit = {}
 ) {
     val completedCount = completedDays.size
@@ -281,14 +276,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        MediaPackStatusCard(
-            status = mediaPackStatus,
-            onDownloadAll = onDownloadAllMedia,
-            onResetDebug = onResetMediaPackDebug
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         WeightTrackingSection(
             currentWeight = userProfile?.weight,
             targetWeight = userProfile?.targetWeight,
@@ -388,125 +375,6 @@ fun ProfileScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
-private fun MediaPackStatusCard(
-    status: MediaPackStatus,
-    onDownloadAll: () -> Unit,
-    onResetDebug: () -> Unit
-) {
-    val progress = if (status.total <= 0) 0f else (status.downloaded.toFloat() / status.total.toFloat()).coerceIn(0f, 1f)
-    val remaining = (status.total - status.downloaded).coerceAtLeast(0)
-    val label = when {
-        status.isSyncing -> "SYNCING OFFLINE GIF PACK"
-        status.isReady && status.failedCount == 0 -> "OFFLINE GIF PACK READY"
-        status.failedCount > 0 -> "SOME GIF FILES NEED RETRY"
-        else -> "OFFLINE GIF PACK PENDING"
-    }
-
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Storage,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = label,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp
-                    )
-                }
-                Text(
-                    text = "${status.downloaded}/${status.total}",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(50)),
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-            )
-
-            if (status.failedCount > 0) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "${status.failedCount} files pending retry",
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = if (remaining > 0) {
-                    "$remaining files remaining to download"
-                } else {
-                    "All tracked library files downloaded"
-                },
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            if (remaining > 0 || status.isSyncing) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
-                    onClick = onDownloadAll,
-                    enabled = !status.isSyncing,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-                        disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = if (status.isSyncing) "SYNCING..." else "DOWNLOAD ALL LIBRARY GIFS",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            TextButton(onClick = onResetDebug) {
-                Text(
-                    text = "RESET MEDIA PACK (DEBUG)",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
     }
 }
 

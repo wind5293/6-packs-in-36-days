@@ -35,7 +35,7 @@ import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
-import com.example.fitflow.utils.GifSourceResolver
+import com.example.fitflow.utils.GifUrlHelper
 
 @Composable
 fun WorkoutDayDetailScreen(
@@ -50,7 +50,7 @@ fun WorkoutDayDetailScreen(
         dayPlan.workoutExercises.mapNotNull { exercise ->
             exercise.gifFileName
                 .takeIf { it.isNotEmpty() }
-                ?.let { GifSourceResolver.resolve(it, context) }
+                ?.let { GifUrlHelper.getUrl(it) }
         }
     }
 
@@ -312,7 +312,7 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
     val gifUrl = remember(exercise.gifFileName) {
         exercise.gifFileName
             .takeIf { it.isNotEmpty() }
-            ?.let { GifSourceResolver.resolve(it, context) }
+            ?.let { GifUrlHelper.getUrl(it) }
     }
 
     Column(

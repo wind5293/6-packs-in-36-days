@@ -218,7 +218,6 @@ class MainActivity : ComponentActivity() {
                             val startDate by viewModel.startDate.collectAsState()
                             val weightHistory by viewModel.weightHistory.collectAsState()
                             val healthHistory by viewModel.healthMetricsHistory.collectAsState()
-                            val mediaPackStatus by viewModel.mediaPackStatus.collectAsState()
                             ProfileScreen(
                                 userProfile = userProfile,
                                 completedDays = completedDays,
@@ -226,11 +225,8 @@ class MainActivity : ComponentActivity() {
                                 startDate = startDate,
                                 weightHistory = weightHistory,
                                 healthMetricsHistory = healthHistory,
-                                mediaPackStatus = mediaPackStatus,
                                 onRecordWeight = { viewModel.recordWeight(it) },
                                 onReCalibrate = { navController.navigate("onboarding") },
-                                onDownloadAllMedia = { viewModel.downloadAllLibraryMediaOnDemand(applicationContext) },
-                                onResetMediaPackDebug = { viewModel.resetLocalMediaPackForDebug(applicationContext) },
                                 onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
@@ -313,7 +309,6 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         syncActivityRecognitionPermission()
         uiViewModel?.refreshHealthMetrics()
-        uiViewModel?.syncFullMediaPackInBackground(applicationContext)
         if (uiViewModel?.activityRecognitionGranted?.value == true) {
             uiViewModel?.startStepTracking(applicationContext)
         }

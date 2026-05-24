@@ -93,7 +93,7 @@ app/src/main/res/
 ## Navigation Flow
 
 ```
-onboarding → workout_setup → loading (real provisioning) → dashboard (root)
+onboarding → workout_setup → loading (2.5s) → dashboard (root)
                                                    ├── planner → day_detail/{dayNumber} → workout_session/{dayNumber}
                                                    ├── library
                                                    └── profile → (re-calibrate) → onboarding
@@ -195,16 +195,6 @@ onboarding → workout_setup → loading (real provisioning) → dashboard (root
 - **Ảnh hưởng**: Tăng noise trong git history, dễ làm bẩn PR về sau
 - **Cần làm**: Xóa file khỏi repo và thêm rule ignore phù hợp để tránh lặp lại
 
-### 17. Media pack integrity hiện mới dùng existence/size check ⚠️ CẦN HARDEN
-- **Vấn đề**: Luồng download GIF persistent đã chạy ổn định nhưng validation file hiện mới ở mức file tồn tại + length > 0
-- **Ảnh hưởng**: Rủi ro nhỏ với file hỏng im lặng (partial/corrupt) nếu server/network trả dữ liệu không chuẩn
-- **Cần làm**: Bổ sung checksum metadata hoặc decode sanity check sau download để tăng độ tin cậy
-
-### 18. Debug reset media pack đang hiển thị trực tiếp trong Profile ⚠️ CẦN GATE
-- **Vấn đề**: Nút `RESET MEDIA PACK (DEBUG)` hiện đang hiển thị trên UI Profile
-- **Ảnh hưởng**: Có thể gây thao tác nhầm trong bản release nếu không giới hạn theo build type
-- **Cần làm**: Gate theo `BuildConfig.DEBUG` hoặc chuyển vào màn hình dev/internal setting
-
 ### ~~8. Indentation không nhất quán~~ ✅ ĐÃ SỬA
 - ~~`MainActivity.kt` line 123: `composable("workout_setup")` bị thụt lề sai (dùng tab thay vì spaces)~~
 - **Đã sửa** (2026-05-08): Căn về đúng indent cùng cấp với các `composable()` khác
@@ -282,7 +272,7 @@ onboarding → workout_setup → loading (real provisioning) → dashboard (root
 ```
 
 **IDE**: Android Studio (Brave Badger+)
-**JDK/Toolchain**: Gradle daemon toolchain hiện là **21** (`gradle-daemon-jvm.properties`)
+**JDK Target**: 17
 
 ### Dependencies đáng chú ý
 - `androidx.navigation:navigation-compose:2.7.7` — Navigation
@@ -306,15 +296,15 @@ onboarding → workout_setup → loading (real provisioning) → dashboard (root
 |----------|-------|--------|-----------|------|----------|
 | Onboarding | ✅ MaterialTheme | ✅ Multi-step flow | ✅ OK | ✅ Đã refactor 4-step (height/birth year/current weight/target weight) theo hướng parity reference | ✅ Hoạt động |
 | Workout Setup | ✅ MaterialTheme | ✅ Scroll | ✅ OK | ✅ Goal + equipment + frequency | ✅ Hoạt động |
-| Loading | ✅ MaterialTheme | ✅ Center column + 2 progress tracks | ✅ Popbackstack clean | ✅ Real provisioning state (generate + download), consent/retry theo network | ✅ Hoạt động |
+| Loading | ✅ MaterialTheme | ✅ Center column | ✅ Popbackstack clean | ✅ Fake 2.5s delay | ✅ Hoạt động |
 | Dashboard | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK | ✅ TodaysWeight + Calendar + Workouts + Steps/Water realtime từ ViewModel + permission/sensor fallback | ✅ Hoạt động |
 | Planner | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK | ✅ ViewModel | ✅ Hoạt động |
-| Day Detail | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK + onStartSession + onEditPlan + onWorkoutSettingsClick | ✅ GIF local-first resolver (local file > remote fallback) | ✅ Hoạt động |
+| Day Detail | ✅ MaterialTheme | ✅ LazyColumn | ✅ OK + onStartSession + onEditPlan + onWorkoutSettingsClick | ✅ ViewModel | ✅ Hoạt động |
 | Edit Plan | ✅ MaterialTheme (partial token usage) | ✅ LazyColumn + reorder controls | ✅ Route `edit_plan/{dayNumber}` | ✅ Persist custom day plan vào SharedPreferences | ✅ Tích hợp |
 | Workout Settings | ✅ MaterialTheme (partial token usage) | ✅ LazyColumn + section cards | ✅ Route `workout_settings` | ✅ Persist settings (music/coach/timer) qua UserPreferences | ✅ Tích hợp |
-| Workout Session | ✅ MaterialTheme | ✅ Column | ✅ Route workout_session/{dayNumber} | ✅ GIF source từ ViewModel local-first map | ✅ Tích hợp |
+| Workout Session | ✅ MaterialTheme | ✅ Column | ✅ Route workout_session/{dayNumber} | ✅ Exercise (có category) từ DayPlan | ✅ Tích hợp |
 | Library | ✅ MaterialTheme | ✅ OK | ✅ OK | ❌ 2 exercises hardcoded | ⚠️ Cần phát triển |
-| Profile | ✅ MaterialTheme | ✅ OK | ✅ OK | ✅ Weight/steps/water charts + media pack status card + debug reset action | ✅ Gần hoàn chỉnh MVP |
+| Profile | ✅ MaterialTheme | ✅ OK | ✅ OK | ✅ Weight record/history chart + weekly Steps/Water charts (vẫn còn một phần stats placeholder) | ⚠️ Gần hoàn chỉnh MVP |
 
 ### Trạng thái theo component hệ thống
 
@@ -324,15 +314,13 @@ onboarding → workout_setup → loading (real provisioning) → dashboard (root
 | Theme (Theme.kt) | `ui/theme/Theme.kt` | ✅ Dark/Light scheme hoạt động |
 | Theme (Type.kt) | `ui/theme/Type.kt` | ⚠️ Chỉ có `bodyLarge`, phần còn lại bị comment |
 | BottomNavbar | `ui/components/BottomNavbar.kt` | ✅ Home, Plan, Library, Me — hoạt động |
-| Navigation | `MainActivity.kt` | ✅ 11 routes + provisioning loading flow + media-pack background sync ở `onResume` |
-| UserPreferences | `data/UserPreferences.kt` | ✅ Lưu profile + health + custom plan + workout settings + media pack state (`version/progress/failedFiles`) |
-| UserViewModel | `viewmodel/UserViewModel.kt` | ✅ Provisioning state machine + persistent GIF download + retry failed files + background full-pack sync |
+| Navigation | `MainActivity.kt` | ✅ 11 routes + wiring health metrics + ACTIVITY_RECOGNITION permission + lifecycle start/stop tracking |
+| UserPreferences | `data/UserPreferences.kt` | ✅ Lưu profile + goal + completed days + weightHistory + healthMetricsHistory + custom day plan + workout settings |
+| UserViewModel | `viewmodel/UserViewModel.kt` | ✅ StateFlow đầy đủ cho profile/plan/completedDays/weightHistory/todayHealthMetrics/healthMetricsHistory + step tracking + `updateDayPlan(...)` |
 | WorkoutPlannerViewModel | `viewmodel/WorkoutPlannerViewModel.kt` | ✅ Quản lý edit mode/reorder/adjust/replace cho kế hoạch ngày |
 | WorkoutSettingsViewModel | `viewmodel/WorkoutSettingsViewModel.kt` | ✅ Quản lý state background music/voice guide/timer + playback mock |
 | StepCounterManager | `data/StepCounterManager.kt` | ✅ Bọc `SensorManager` (TYPE_STEP_COUNTER / TYPE_STEP_DETECTOR) với callback listener |
 | WorkoutPlanGenerator | `domain/WorkoutPlanGenerator.kt` | ✅ WEIGHT_LOSS dùng `JefitFatToFitPlan` + các goal còn lại dùng pool theo `FitnessGoal`; map GIF runtime qua repository |
-| GifDownloadManager | `utils/GifDownloadManager.kt` | ✅ Download GIF vào `filesDir/gifs` với temp file + atomic rename + retry |
-| GifSourceResolver | `utils/GifSourceResolver.kt` | ✅ Local-first resolve (`file://` local trước, fallback GitHub URL) |
 | JefitFatToFitPlan | `domain/JefitFatToFitPlan.kt` | ✅ Month-1 plan 30 ngày có metadata `title/difficulty/muscleGroup` |
 | strings.xml | `res/values/strings.xml` | ⚠️ Còn thiếu string migration cho Planner/WorkoutDayDetail và text mới của Health Metrics |
 
@@ -476,8 +464,6 @@ onboarding → workout_setup → loading (real provisioning) → dashboard (root
 | P1.3 | **Health tracking test matrix** | `UserPreferences.kt`, `UserViewModel.kt`, `MainActivity.kt` | Kiểm thử các case đổi ngày, deny permission, sensor unavailable, process recreate |
 | P1.4 | **Repo hygiene cleanup (.kotlin/errors)** | `.kotlin/errors/`, `.gitignore` | Xóa file log IDE đã commit nhầm và thêm guard để không tái diễn |
 | P1.5 | **Edit Plan & Workout Settings regression check** | `EditPlanScreen.kt`, `WorkoutSettingsScreen.kt`, `WorkoutPlannerViewModel.kt`, `WorkoutSettingsViewModel.kt` | Kiểm thử flow save/back/re-open state + validate persistence sau process recreate |
-| P1.6 | **Media pack integrity hardening** | `GifDownloadManager.kt`, `UserViewModel.kt`, `UserPreferences.kt` | Thêm checksum/decode verify + policy retry cho file corrupt thay vì chỉ existence/size |
-| P1.7 | **Gate debug reset action** | `ProfileScreen.kt`, `MainActivity.kt` | Ẩn `RESET MEDIA PACK (DEBUG)` khỏi release build bằng `BuildConfig.DEBUG` hoặc dev flag |
 
 ### 🟠 Priority 2 — Sprint 4 (Enhancement)
 
@@ -487,7 +473,6 @@ onboarding → workout_setup → loading (real provisioning) → dashboard (root
 | P2.2 | **Phát triển Library** | Thêm exercise pools đầy đủ từ `WorkoutPlanGenerator` (4 pools × 9 bài), hiện theo category với filter |
 | P2.3 | **Check-in Record section** | Thêm calendar heatmap hoặc streak indicator theo design `1deaf581` — biểu diễn completedDays |
 | P2.4 | **Harden health/weight tracking data model** | Chuẩn hóa schema history (timestamp/source/device), xem xét chuyển từ SharedPreferences sang Room |
-| P2.5 | **Media pack differential updater** | Đồng bộ theo release manifest để chỉ tải file đổi mới khi version tăng, tránh tải lại dư thừa |
 
 ### 🟡 Priority 3 — Sprint 5 (Polish)
 
@@ -590,22 +575,6 @@ onboarding → workout_setup → loading (real provisioning) → dashboard (root
 - **Quyết định**: `onResume` refresh + start tracking (khi có permission), `onStop` stop tracking
 - **Lý do**: Tránh chạy sensor listener không cần thiết ở background, giảm rủi ro pin và complexity trước release MVP
 
-### QĐ-19: Chuyển từ prefetch cache sang persistent download cho GIF
-- **Quyết định**: Bỏ chiến lược phụ thuộc Coil disk cache làm persistence chính; chuyển sang download file thật vào `filesDir/gifs`
-- **Lý do**: Cache có thể bị evict, gây cold-load lặp lại và UX không ổn định; `filesDir` đảm bảo local-first/offline tốt hơn cho workout flow
-
-### QĐ-20: Resolver local-first, fallback remote
-- **Quyết định**: Mọi màn hình/render entry point dùng `GifSourceResolver` (local URI trước, thiếu file mới dùng URL remote)
-- **Lý do**: Tăng tốc mở màn hình thường dùng, giảm phụ thuộc mạng, vẫn giữ khả năng hoạt động khi pack chưa tải đủ
-
-### QĐ-21: Retry provisioning ưu tiên failed file list
-- **Quyết định**: Lưu `failedFiles` trong `UserPreferences`; khi Retry chỉ thử lại tập file lỗi trước
-- **Lý do**: Tránh tải lại các file đã thành công, giảm thời gian retry và băng thông, giúp khôi phục nhanh hơn sau lỗi mạng
-
-### QĐ-22: Hybrid completion strategy
-- **Quyết định**: Onboarding/loading chỉ block tới hybrid subset cần cho first-use, sau đó sync full media pack ở nền khi có Wi‑Fi (`onResume`)
-- **Lý do**: Cân bằng giữa tốc độ vào app lần đầu và mục tiêu full offline dần theo thời gian, tránh waiting quá lâu ở onboarding
-
 ### QĐ-6: Strings hardcode chấp nhận tạm thời
 - **Quyết định**: PlannerScreen và WorkoutDayDetailScreen còn ~17 strings hardcode, chưa chuyển sang `strings.xml`
 - **Lý do**: Sprint 1 ưu tiên sửa color consistency + UX bugs trước. Strings hardcode không gây crash hay sai logic — chỉ vi phạm convention i18n. Được plan vào Priority 1.2 để sửa sớm nhất ở phiên tiếp theo
@@ -626,32 +595,6 @@ Dự án sử dụng hệ thống multi-agent trong `.claude/agents/`:
 ---
 
 ## Changelog
-
-### 2026-05-25 — Media Pack Persistent Download Migration (local implementation)
-
-#### 1) `feat(media): replace cache-prefetch with persistent GIF downloader`
-- Thêm `GifDownloadManager` tải GIF vào `filesDir/gifs` thay cho dựa vào Coil cache
-- Download flow có retry theo file, temp `.part` + atomic rename để giảm rủi ro file hỏng
-- `UserViewModel.runDownload(...)` map progress thật vào thanh thứ 2 của `LoadingScreen`
-
-#### 2) `feat(media): add local-first GIF resolver and wire all consumers`
-- Thêm `GifSourceResolver` với rule local-first, fallback remote URL qua `GifUrlHelper`
-- Update các điểm dùng GIF: `WorkoutDayDetailScreen`, `EditPlanScreen`, `ExerciseInstructionOverlayScreen`, `WorkoutSessionViewModel`
-- Kết quả: mở lại màn workout/day detail ưu tiên file local, giảm delay khi đã provisioned
-
-#### 3) `feat(state): persist media-pack version/progress/failed-files`
-- `UserPreferences` bổ sung keys/state cho media pack: `ready`, `version`, `downloaded`, `total`, `failedFiles`
-- `retryPlanProvisioning(...)` ưu tiên retry danh sách `failedFiles` trước khi regenerate flow
-- Bổ sung `MediaPackStatus` state trong `UserViewModel` để UI quan sát trạng thái pack
-
-#### 4) `feat(app/ui): background full-pack sync + status visibility`
-- `MainActivity.onResume()` gọi `syncFullMediaPackInBackground(...)` khi phù hợp network
-- `ProfileScreen` thêm card hiển thị trạng thái media pack (ready/syncing/progress/failed count)
-- Thêm action reset media pack phục vụ debug QA (`RESET MEDIA PACK (DEBUG)`)
-
-#### 5) `build(validation): compile success after migration`
-- Chạy `./gradlew :app:compileDebugKotlin` thành công (Exit 0)
-- Còn warnings deprecation không block build (`Icons.Filled.ArrowBack`, `String.capitalize()`)
 
 ### 2026-05-24 — Planner & Settings Expansion (commits c61b557 → 542cd77)
 
