@@ -135,6 +135,20 @@ class WorkoutPlanGenerator(
     private val exerciseRepository: ExerciseRepository
 ) {
     suspend fun generatePlan(goal: FitnessGoal): List<DayPlan> {
+        if (goal == FitnessGoal.WEIGHT_LOSS) {
+            return buildJefitMonth1Plan().map { dayPlan ->
+                if (dayPlan.isRest) {
+                    dayPlan
+                } else {
+                    val updatedExercises = dayPlan.workoutExercises.map { ex ->
+                        val gifFileName = exerciseRepository.getGifFileName(ex.name) ?: ""
+                        ex.copy(gifFileName = gifFileName)
+                    }
+                    dayPlan.copy(workoutExercises = updatedExercises)
+                }
+            }
+        }
+
         val pool = planRegistry[goal] ?: planRegistry[FitnessGoal.ABS_CORE_STRENGTH]!!
 
         return (1..30).map { day ->

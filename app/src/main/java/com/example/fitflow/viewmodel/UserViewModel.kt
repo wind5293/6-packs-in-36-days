@@ -26,12 +26,24 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+import com.example.fitflow.data.model.Exercise
+import com.example.fitflow.data.model.WorkoutExercise
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+
 class UserViewModel(
     private val userPreferences: UserPreferences,
     private val exerciseRepository: ExerciseRepository
 ) : ViewModel() {
     private val _userProfile: MutableStateFlow<UserProfile?> = MutableStateFlow(null)
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
+
+    val allExercises: StateFlow<List<Exercise>> = exerciseRepository.getAll()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     private val _workoutPlan = MutableStateFlow<List<DayPlan>>(emptyList())
     val workoutPlan: StateFlow<List<DayPlan>> = _workoutPlan.asStateFlow()
@@ -79,10 +91,25 @@ class UserViewModel(
 
         // ✅ generatePlan là suspend → cần viewModelScope
         viewModelScope.launch {
-            _workoutPlan.value = if (profile != null) {
+            val basePlan = if (profile != null) {
                 workoutPlanGenerator.generatePlan(profile.goal)
             } else {
                 emptyList()
+            }
+            _workoutPlan.value = basePlan.map { day ->
+                val custom = userPreferences.getCustomDayPlan(day.dayNumber)
+                if (custom != null) day.copy(workoutExercises = custom) else day
+            }
+        }
+    }
+
+    fun updateDayPlan(dayNumber: Int, updatedExercises: List<WorkoutExercise>) {
+        userPreferences.saveCustomDayPlan(dayNumber, updatedExercises)
+        _workoutPlan.value = _workoutPlan.value.map { day ->
+            if (day.dayNumber == dayNumber) {
+                day.copy(workoutExercises = updatedExercises)
+            } else {
+                day
             }
         }
     }
