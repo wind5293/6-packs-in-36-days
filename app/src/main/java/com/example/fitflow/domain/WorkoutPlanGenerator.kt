@@ -1,11 +1,11 @@
 package com.example.fitflow.domain
 
+import android.util.Log
 import com.example.fitflow.data.ExerciseRepository
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.domain.ABS_CORE_STRENGTH_POOL
-import com.example.fitflow.utils.GifUrlHelper
 
 // ─────────────────────────────────────────────────────────────
 // 1. THÊM PLAN MỚI:
@@ -134,6 +134,8 @@ private val planRegistry: Map<FitnessGoal, ExercisePool> = mapOf(
 class WorkoutPlanGenerator(
     private val exerciseRepository: ExerciseRepository
 ) {
+    private val loggedMissingGifKeys = mutableSetOf<String>()
+
     suspend fun generatePlan(goal: FitnessGoal): List<DayPlan> {
         if (goal == FitnessGoal.WEIGHT_LOSS) {
             return buildJefitMonth1Plan().map { dayPlan ->
@@ -142,6 +144,15 @@ class WorkoutPlanGenerator(
                 } else {
                     val updatedExercises = dayPlan.workoutExercises.map { ex ->
                         val gifFileName = exerciseRepository.getGifFileName(ex.name) ?: ""
+                        if (gifFileName.isBlank()) {
+                            val key = "${goal.name}|${ex.name}"
+                            if (loggedMissingGifKeys.add(key)) {
+                                Log.w(
+                                    "GIF_MAP",
+                                    "Missing GIF mapping | goal=${goal.name} day=${dayPlan.dayNumber} exercise=${ex.name}"
+                                )
+                            }
+                        }
                         ex.copy(gifFileName = gifFileName)
                     }
                     dayPlan.copy(workoutExercises = updatedExercises)
@@ -177,6 +188,15 @@ class WorkoutPlanGenerator(
 
             // ✅ Tra GIF từ DB theo tên bài tập
             val gifFileName = exerciseRepository.getGifFileName(withSets.name) ?: ""
+            if (gifFileName.isBlank()) {
+                val key = "NON_WEIGHT_LOSS|${withSets.name}"
+                if (loggedMissingGifKeys.add(key)) {
+                    Log.w(
+                        "GIF_MAP",
+                        "Missing GIF mapping | goal=NON_WEIGHT_LOSS day=$day exercise=${withSets.name}"
+                    )
+                }
+            }
             withSets.copy(gifFileName = gifFileName)
         }
     }

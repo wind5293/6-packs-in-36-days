@@ -24,7 +24,7 @@ import coil.request.ImageRequest
 import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.WorkoutExercise
-import com.example.fitflow.utils.GifUrlHelper
+import com.example.fitflow.utils.GifSourceResolver
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -46,8 +46,8 @@ fun ExerciseInstructionOverlayScreen(
 
     val gifUrl = remember(exercise.gifFileName, detail) {
         val fileName = detail?.local_gifs?.firstOrNull()
-            ?: exercise.gifFileName?.takeIf { it.isNotEmpty() }
-        fileName?.let { GifUrlHelper.getUrl(it) }
+            ?: exercise.gifFileName.takeIf { it.isNotEmpty() }
+        fileName?.let { GifSourceResolver.resolve(it, context) }
     }
 
     val targetMuscles = detail?.target_muscles
@@ -109,9 +109,6 @@ fun ExerciseInstructionOverlayScreen(
                         }
                     }
                     1 -> {
-                        Text("Updating...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    2 -> {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -148,7 +145,7 @@ fun ExerciseInstructionOverlayScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val tabs = listOf("Animation", "Muscle", "Video")
+                val tabs = listOf("Animation", "Video")
                 tabs.forEachIndexed { index, label ->
                     val isSelected = selectedTab == index
                     Box(
