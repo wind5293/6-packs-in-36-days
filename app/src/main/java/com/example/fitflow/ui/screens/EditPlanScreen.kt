@@ -3,6 +3,7 @@ package com.example.fitflow.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -11,10 +12,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Save
@@ -26,13 +26,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.fitflow.FitFlowApplication
@@ -44,6 +48,7 @@ import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
 import com.example.fitflow.utils.GifUrlHelper
 import com.example.fitflow.viewmodel.WorkoutPlannerViewModel
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +78,10 @@ fun EditPlanScreen(
     }
 
     var showReplaceDialogForIndex by remember { mutableStateOf<Int?>(null) }
+    var draggingIndex by remember { mutableStateOf<Int?>(null) }
+    var dragAccumulatedPx by remember { mutableFloatStateOf(0f) }
+    var draggedItemOffsetPx by remember { mutableFloatStateOf(0f) }
+    val dragStepPx = with(LocalDensity.current) { 72.dp.toPx() }
 
     Scaffold(
         topBar = {
@@ -153,9 +162,35 @@ fun EditPlanScreen(
                         EditExerciseRowItem(
                             index = index,
                             exercise = exercise,
-                            totalItems = editablePlan.size,
-                            onMoveUp = { plannerViewModel.moveExercise(index, index - 1) },
-                            onMoveDown = { plannerViewModel.moveExercise(index, index + 1) },
+                            isDragging = draggingIndex == index,
+                            onDragStart = {
+                                draggingIndex = index
+                                dragAccumulatedPx = 0f
+                                draggedItemOffsetPx = 0f
+                            },
+                            onDrag = { deltaY ->
+                                val currentIndex = draggingIndex ?: return@EditExerciseRowItem
+                                dragAccumulatedPx += deltaY
+                                draggedItemOffsetPx += deltaY
+
+                                if (dragAccumulatedPx > dragStepPx && currentIndex < editablePlan.lastIndex) {
+                                    plannerViewModel.moveExercise(currentIndex, currentIndex + 1)
+                                    draggingIndex = currentIndex + 1
+                                    dragAccumulatedPx -= dragStepPx
+                                    draggedItemOffsetPx -= dragStepPx
+                                } else if (dragAccumulatedPx < -dragStepPx && currentIndex > 0) {
+                                    plannerViewModel.moveExercise(currentIndex, currentIndex - 1)
+                                    draggingIndex = currentIndex - 1
+                                    dragAccumulatedPx += dragStepPx
+                                    draggedItemOffsetPx += dragStepPx
+                                }
+                            },
+                            onDragEnd = {
+                                draggingIndex = null
+                                dragAccumulatedPx = 0f
+                                draggedItemOffsetPx = 0f
+                            },
+                            dragOffsetPx = if (draggingIndex == index) draggedItemOffsetPx else 0f,
                             onAdjustQty = { delta -> plannerViewModel.adjustQuantity(index, delta) },
                             onReplace = { showReplaceDialogForIndex = index }
                         )
@@ -196,9 +231,11 @@ fun EditPlanScreen(
 private fun EditExerciseRowItem(
     index: Int,
     exercise: WorkoutExercise,
-    totalItems: Int,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
+    isDragging: Boolean,
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+    dragOffsetPx: Float,
     onAdjustQty: (Int) -> Unit,
     onReplace: () -> Unit
 ) {
@@ -220,7 +257,15 @@ private fun EditExerciseRowItem(
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = CardBackground),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .offset { IntOffset(x = 0, y = dragOffsetPx.roundToInt()) }
+            .zIndex(if (isDragging) 1f else 0f)
+            .border(
+                width = if (isDragging) 1.dp else 0.dp,
+                color = if (isDragging) OrangePrimary else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
+            )
     ) {
         Row(
             modifier = Modifier
@@ -228,38 +273,34 @@ private fun EditExerciseRowItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Reorder controls
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(end = 6.dp)
+            // Drag handle for reordering
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (isDragging) OrangePrimary.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.05f))
+                    .pointerInput(index) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { onDragStart() },
+                            onDragEnd = onDragEnd,
+                            onDragCancel = onDragEnd,
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                onDrag(dragAmount.y)
+                            }
+                        )
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                IconButton(
-                    onClick = onMoveUp,
-                    enabled = index > 0,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowUpward,
-                        contentDescription = "Move Up",
-                        tint = if (index > 0) OrangePrimary else Color.Gray.copy(alpha = 0.3f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
-                IconButton(
-                    onClick = onMoveDown,
-                    enabled = index < totalItems - 1,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDownward,
-                        contentDescription = "Move Down",
-                        tint = if (index < totalItems - 1) OrangePrimary else Color.Gray.copy(alpha = 0.3f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Drag to reorder",
+                    tint = OrangePrimary,
+                    modifier = Modifier.size(18.dp)
+                )
             }
+
+            Spacer(Modifier.width(8.dp))
 
             // Thumbnail
             Box(
@@ -319,15 +360,27 @@ private fun EditExerciseRowItem(
                 // Adjustment Row (- / + reps or duration)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    IconButton(
-                        onClick = { onAdjustQty(-1) },
+                    Box(
                         modifier = Modifier
-                            .size(26.dp)
-                            .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.12f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { onAdjustQty(-1) },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Remove, null, modifier = Modifier.size(14.dp), tint = Color.White)
+                        Icon(
+                            Icons.Default.Remove,
+                            null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
                     }
 
                     Text(
@@ -339,13 +392,25 @@ private fun EditExerciseRowItem(
                         onTextLayout = {}
                     )
 
-                    IconButton(
-                        onClick = { onAdjustQty(1) },
+                    Box(
                         modifier = Modifier
-                            .size(26.dp)
-                            .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.12f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { onAdjustQty(1) },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Add, null, modifier = Modifier.size(14.dp), tint = Color.White)
+                        Icon(
+                            Icons.Default.Add,
+                            null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 }
             }

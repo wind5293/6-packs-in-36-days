@@ -454,11 +454,21 @@ fun WorkoutTimeStep(workoutTime: String, onTimeSelected: (String) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            TimeInput(
-                state = timePickerState,
-                modifier = Modifier,
-                colors = TimePickerDefaults.colors()
-            )
+            CompositionLocalProvider(
+                LocalTextStyle provides LocalTextStyle.current.copy(fontWeight = FontWeight.Black)
+            ) {
+                TimeInput(
+                    state = timePickerState,
+                    modifier = Modifier,
+                    colors = TimePickerDefaults.colors(
+                        selectorColor = MaterialTheme.colorScheme.primary,
+                        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+                        periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                        periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
             LaunchedEffect(timePickerState.hour, timePickerState.minute) {
                 onTimeSelected(String.format("%02d:%02d", timePickerState.hour, timePickerState.minute))
             }
