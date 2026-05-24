@@ -1,6 +1,7 @@
 package com.example.fitflow.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitflow.FitFlowApplication
@@ -24,14 +25,17 @@ class WorkoutSessionViewModel(application: Application) : AndroidViewModel(appli
      */
     fun loadGifs(exercises: List<WorkoutExercise>) {
         viewModelScope.launch {
+            Log.d("GIF_DEBUG", "=== loadGifs START, exercises: ${exercises.size}")
             val urls = mutableMapOf<String, String>()
             exercises.forEach { exercise ->
-                val fileName = repository.getGifFileName(exercise.name)
-                if (!fileName.isNullOrEmpty()) {
-                    urls[exercise.name] = GifUrlHelper.getUrl(fileName)
-                }
+                val trimmed = (exercise.gifFileName ?: "").trim()
+                val url = GifUrlHelper.getUrl(trimmed)
+                Log.d("GIF_DEBUG", "Adding: ${exercise.name} → $url")
+                urls[exercise.name] = url
             }
+            Log.d("GIF_DEBUG", "=== Before assign, map size: ${urls.size}")
             _gifUrls.value = urls
+            Log.d("GIF_DEBUG", "=== After assign, gifUrls size: ${_gifUrls.value.size}")
         }
     }
 }

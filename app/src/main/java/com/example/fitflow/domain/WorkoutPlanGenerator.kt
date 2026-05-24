@@ -1,8 +1,11 @@
 package com.example.fitflow.domain
 
+import com.example.fitflow.data.ExerciseRepository
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.data.model.FitnessGoal
+import com.example.fitflow.domain.ABS_CORE_STRENGTH_POOL
+import com.example.fitflow.utils.GifUrlHelper
 
 // ─────────────────────────────────────────────────────────────
 // 1. THÊM PLAN MỚI:
@@ -19,9 +22,8 @@ data class ExercisePool(
 /** Helper tạo một WorkoutExercise nhanh hơn, không cần điền đủ tên tham số. */
 private fun ex(
     category: String, name: String,
-    sets: Int = 3, reps: Int = 0, kcal: Int = 0, durationSec: Int = 60,
-    gifs: String = ""
-) = WorkoutExercise(category, name, sets, reps, kcal, durationSec, gifs)
+    sets: Int = 3, reps: Int = 0, kcal: Int = 0, durationSec: Int = 60
+) = WorkoutExercise(category, name, sets, reps, kcal, durationSec, gifFileName = "")
 
 // ─────────────────────────────────────────────────────────────
 // 2. KHAI BÁO CÁC POOL BÀI TẬP CHO TỪNG MỤC TIÊU
@@ -88,6 +90,31 @@ private val MAINTENANCE_POOL = ExercisePool(
     )
 )
 
+private val ABS_CORE_STRENGTH_POOL = ExercisePool(
+    restDays = setOf(3, 6, 7, 10, 13, 14, 17, 20, 21, 24, 27, 28),
+    exercises = listOf(
+
+        // Dynamic movements → dùng reps
+        ex("Abs", "Crunch",             reps = 20,  kcal = 30),
+        ex("Abs", "Sit-Up",             reps = 15,  kcal = 35),
+        ex("Abs", "Leg Raise",          reps = 12,  kcal = 35),
+        ex("Abs", "Reverse Crunch",     reps = 15,  kcal = 32),
+        ex("Abs", "Air Bike",           reps = 20,  kcal = 38),
+        ex("Abs", "Mountain Climber",   reps = 30,  kcal = 45),
+        ex("Abs", "V-Up",               reps = 12,  kcal = 40),
+        ex("Abs", "Scissor Kick",       reps = 20,  kcal = 33),
+        ex("Abs", "Jackknife Sit-Up",   reps = 12,  kcal = 42),
+
+        // Oblique focus → kết hợp
+        ex("Abs", "Oblique Crunch",     reps = 15,  kcal = 30),
+        ex("Abs", "Alternating Heel Touch", reps = 20, kcal = 28),
+        ex("Abs", "Cross Body Crunch",  reps = 16,  kcal = 32),
+
+        // Hip flexor / lower abs → reps
+        ex("Abs", "Leg Pull-In",        reps = 15,  kcal = 33),
+    )
+)
+
 // ─────────────────────────────────────────────────────────────
 // 3. REGISTRY: Map FitnessGoal → ExercisePool
 //    → Thêm plan mới: chỉ thêm 1 dòng vào đây.
@@ -97,29 +124,21 @@ private val planRegistry: Map<FitnessGoal, ExercisePool> = mapOf(
     FitnessGoal.WEIGHT_LOSS to WEIGHT_LOSS_POOL,
     FitnessGoal.MUSCLE_GAIN to MUSCLE_GAIN_POOL,
     FitnessGoal.ENDURANCE   to ENDURANCE_POOL,
-    FitnessGoal.MAINTENANCE to MAINTENANCE_POOL,
+    FitnessGoal.ABS_CORE_STRENGTH to ABS_CORE_STRENGTH_POOL,
 )
 
 // ─────────────────────────────────────────────────────────────
 // 4. ENGINE TẠO LỊCH TẬP — Không cần chỉnh sửa phần này.
 // ─────────────────────────────────────────────────────────────
 
-object WorkoutPlanGenerator {
-
-    fun generatePlan(goal: FitnessGoal): List<DayPlan> {
-        val pool = planRegistry[goal] ?: planRegistry[FitnessGoal.MAINTENANCE]!!
+class WorkoutPlanGenerator(
+    private val exerciseRepository: ExerciseRepository
+) {
+    suspend fun generatePlan(goal: FitnessGoal): List<DayPlan> {
+        val pool = planRegistry[goal] ?: planRegistry[FitnessGoal.ABS_CORE_STRENGTH]!!
 
         return (1..30).map { day ->
             when {
-                // TEST override: Ngày 1 dùng dữ liệu thật từ exercises.json
-                day == 1 -> DayPlan(
-                    dayNumber = 1,
-                    isRest = false,
-                    workoutExercises = listOf(
-                        ex("Chest",     "Band Cross-Over",        sets = 1, reps = 12, kcal = 10, durationSec = 0, gifs = "band_cross-over_1.gif"),
-                        ex("Shoulders", "Barbell Shoulder Press", sets = 1, reps = 10, kcal = 15, durationSec = 0, gifs = "barbell_shoulder_press_1.gif"),
-                    )
-                )
                 day in pool.restDays -> DayPlan(
                     dayNumber = day, isRest = true, workoutExercises = emptyList()
                 )
@@ -134,14 +153,17 @@ object WorkoutPlanGenerator {
             }
         }
     }
-
-    private fun pickExercises(
+    private suspend fun pickExercises(
         exercises: List<WorkoutExercise>, day: Int, weekIndex: Int
     ): List<WorkoutExercise> {
         val start = (day - 1) % exercises.size
         return (0 until 3).map { i ->
             val base = exercises[(start + i) % exercises.size]
-            if (weekIndex >= 2) base.copy(sets = base.sets + 1) else base
+            val withSets = if (weekIndex >= 2) base.copy(sets = base.sets + 1) else base
+
+            // ✅ Tra GIF từ DB theo tên bài tập
+            val gifFileName = exerciseRepository.getGifFileName(withSets.name) ?: ""
+            withSets.copy(gifFileName = gifFileName)
         }
     }
 }

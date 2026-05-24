@@ -309,6 +309,7 @@ fun WeightStep(
                     FitnessGoal.MUSCLE_GAIN -> "Prioritize protein intake and progressive overload."
                     FitnessGoal.ENDURANCE -> "Incorporate consistent zone 2 cardio sessions."
                     FitnessGoal.MAINTENANCE -> "Balanced nutrition and lifestyle consistency."
+                    FitnessGoal.ABS_CORE_STRENGTH -> "Improve core strength and stability."
                 }
                 Text(advice, fontSize = 14.sp)
             }
