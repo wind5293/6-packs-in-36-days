@@ -446,7 +446,7 @@ fun WeeklyChartCard(
 fun WeeklyBarChart(values: List<Int>, labels: List<String>, color: Color) {
     val maxValue = values.maxOrNull()?.coerceAtLeast(1) ?: 1
     Row(
-        modifier = Modifier.fillMaxWidth().height(64.dp),
+        modifier = Modifier.fillMaxWidth().height(76.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Bottom
     ) {
@@ -454,7 +454,7 @@ fun WeeklyBarChart(values: List<Int>, labels: List<String>, color: Color) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).fillMaxHeight()
             ) {
                 Box(
                     modifier = Modifier
@@ -465,10 +465,10 @@ fun WeeklyBarChart(values: List<Int>, labels: List<String>, color: Color) {
                             RoundedCornerShape(3.dp)
                         )
                 )
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     label,
-                    fontSize = 8.sp,
+                    fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                     fontWeight = FontWeight.Bold
                 )
@@ -645,7 +645,8 @@ fun WeightHistoryMiniChart(
                 val ratio = ((value - minValue) / range).coerceIn(0f, 1f)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(1f)
+                    verticalArrangement = Arrangement.Bottom,
+                    modifier = Modifier.weight(1f).fillMaxHeight()
                 ) {
                     Box(
                         modifier = Modifier

@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -162,20 +163,14 @@ fun HeaderAndSummarySection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .offset(y = (-8).dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onBack) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             tint = Color(0xFFFFFFFF),
                             contentDescription = "back")
-                    }
-                    IconButton(onClick = onEditPlan) {
-                        Icon(
-                            Icons.Default.Edit,
-                            tint = Color(0xFFFFFFFF),
-                            contentDescription = "Edit Plan")
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -247,6 +242,39 @@ fun HeaderAndSummarySection(
                     SummaryItem(value = "${exercises.size}", label = "Exercises")
                     SummaryItem(value = "$duration min", label = "Time")
                     SummaryItem(value = "$totalKcal", label = "Calories")
+                }
+                
+                Spacer(modifier = Modifier.height(14.dp))
+                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onEditPlan() }
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            "Edit Workout",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            "Add, remove or reorder exercises",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Edit Plan",
+                        tint = Color.Gray
+                    )
                 }
             }
         }
@@ -357,19 +385,20 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
                     .fillMaxWidth()
                     .padding(top = 12.dp, start = 76.dp) // Canh lề cho khớp với phần text ở trên
             ) {
+                val textColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 Text(
                     text = "Category: ${exercise.category}",
                     fontSize = 12.sp,
-                    color = Color.DarkGray
+                    color = textColor
                 )
-                Text(text = "Sets: ${exercise.sets}", fontSize = 12.sp, color = Color.DarkGray)
-                Text(text = "Burn: ${exercise.kcal} kcal", fontSize = 12.sp, color = Color.DarkGray)
+                Text(text = "Sets: ${exercise.sets}", fontSize = 12.sp, color = textColor)
+                Text(text = "Burn: ${exercise.kcal} kcal", fontSize = 12.sp, color = textColor)
                 if (exercise.description.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Description: ${exercise.description}",
                         fontSize = 12.sp,
-                        color = Color.DarkGray
+                        color = textColor
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))

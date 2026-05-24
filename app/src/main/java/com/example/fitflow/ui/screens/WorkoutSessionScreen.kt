@@ -73,7 +73,6 @@ fun WorkoutSessionScreen(
             exercise = current,
             onClose = { showInstructionScreen = false }
         )
-        return
     }
 
     val primaryColor  = MaterialTheme.colorScheme.primary

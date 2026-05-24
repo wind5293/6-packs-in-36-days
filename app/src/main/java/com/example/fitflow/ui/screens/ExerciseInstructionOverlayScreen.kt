@@ -1,59 +1,32 @@
 package com.example.fitflow.ui.screens
 
-import android.os.Build
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.utils.GifUrlHelper
 
-private enum class InstructionMode { ANIMATION, GUIDANCE }
-
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExerciseInstructionOverlayScreen(
     exercise: WorkoutExercise,
@@ -65,14 +38,11 @@ fun ExerciseInstructionOverlayScreen(
     }
 
     var detail by remember(exercise.name) { mutableStateOf<Exercise?>(null) }
-    var mode by remember { mutableIntStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(exercise.name) {
         detail = repository.findBestMatchByName(exercise.name)
     }
-
-    val modes = listOf("HOAT HINH", "HUONG DAN")
-    val selectedMode = if (mode == 0) InstructionMode.ANIMATION else InstructionMode.GUIDANCE
 
     val gifUrl = remember(exercise.gifFileName, detail) {
         val fileName = detail?.local_gifs?.firstOrNull()
@@ -84,181 +54,270 @@ fun ExerciseInstructionOverlayScreen(
         ?.filter { it.lowercase() != "main" }
         ?.distinct()
         .orEmpty()
+        .ifEmpty { listOf("Full Body") }
 
     val instructions = detail?.instructions.orEmpty()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onClose,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.background,
+        dragHandle = { BottomSheetDefaults.DragHandle() },
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 16.dp)
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
+                .padding(horizontal = 24.dp)
         ) {
+            Text(
+                text = exercise.name,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Media Box
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                when (selectedTab) {
+                    0 -> {
+                        if (gifUrl != null) {
+                            val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(gifUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                imageLoader = imageLoader,
+                                contentDescription = "Exercise animation",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text("No animation available", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    1 -> {
+                        Text("Updating...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    2 -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = "Play",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "Video updating...",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Custom Tabs
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        text = "EXERCISE DETAIL",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    )
-                    Text(
-                        text = exercise.name,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-                IconButton(
-                    onClick = onClose,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ScrollableTabRow(selectedTabIndex = mode) {
-                modes.forEachIndexed { index, label ->
-                    Tab(
-                        selected = mode == index,
-                        onClick = { mode = index },
-                        text = {
-                            Text(
-                                text = label,
-                                fontWeight = if (mode == index) FontWeight.Black else FontWeight.Medium,
-                                letterSpacing = 1.sp
-                            )
-                        }
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                Text(
-                    text = "TARGET MUSCLES",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (targetMuscles.isEmpty()) {
-                        AssistChip(onClick = {}, enabled = false, label = { Text("N/A") })
-                    } else {
-                        targetMuscles.forEach { muscle ->
-                            AssistChip(onClick = {}, label = { Text(muscle.uppercase()) })
-                        }
-                    }
-                }
-
-                if (selectedMode == InstructionMode.ANIMATION) {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(20.dp),
+                val tabs = listOf("Animation", "Muscle", "Video")
+                tabs.forEachIndexed { index, label ->
+                    val isSelected = selectedTab == index
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(280.dp)
+                            .weight(1f)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                            .clickable { selectedTab = index }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (gifUrl != null) {
-                                val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .data(gifUrl)
-                                        .crossfade(true)
-                                        .build(),
-                                    imageLoader = imageLoader,
-                                    contentDescription = "Exercise animation",
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            } else {
-                                Text(
-                                    text = "No animation available",
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                                )
-                            }
-                        }
-                    }
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        AssistChip(
-                            onClick = {},
-                            label = {
-                                val info = if (exercise.reps > 0) "x ${exercise.reps}" else "${exercise.durationSec}s"
-                                Text(info)
-                            }
-                        )
-                        AssistChip(onClick = {}, label = { Text("SETS ${exercise.sets}") })
-                    }
-                } else {
-                    Text(
-                        text = "INSTRUCTIONS",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
-                    )
-
-                    if (instructions.isEmpty()) {
                         Text(
-                            text = "Instruction is not available for this exercise yet.",
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                            text = label,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             fontSize = 14.sp
                         )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Scrollable Content
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // Info Row (Reps or Duration)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (exercise.reps > 0) {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = "REPS",
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 16.sp,
+                                letterSpacing = 1.sp
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "(each side)",
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(bottom = 1.dp)
+                            )
+                        }
+                        Text(
+                            text = exercise.reps.toString(),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     } else {
-                        instructions.forEachIndexed { index, line ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Text(
-                                    text = "${index + 1}.",
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.width(24.dp)
-                                )
-                                Text(
-                                    text = line,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    lineHeight = 22.sp
-                                )
-                            }
+                        Text(
+                            text = "DURATION",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 16.sp,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "${exercise.durationSec}s",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Instructions
+                Text(
+                    text = "INSTRUCTIONS",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                if (instructions.isEmpty()) {
+                    Text(
+                        text = "Instruction is not available for this exercise yet.",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        fontSize = 14.sp
+                    )
+                } else {
+                    instructions.forEach { line ->
+                        val cleanedLine = line.replaceFirst(Regex("^[\\d\\.\\)\\s]+"), "")
+                        Text(
+                            text = cleanedLine,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
+                            lineHeight = 24.sp,
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(bottom = 14.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Target Muscles
+                Text(
+                    text = "TARGET MUSCLES",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    targetMuscles.forEach { muscle ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 14.dp, vertical = 10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = muscle,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp
+                            )
                         }
                     }
                 }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            // Close button
+            Button(
+                onClick = onClose,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Text(
+                    text = "CLOSE",
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp,
+                    fontSize = 18.sp
+                )
             }
         }
     }
