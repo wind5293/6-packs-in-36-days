@@ -56,12 +56,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val app = application as FitFlowApplication
-        val userPreferences = app.userPreferences
         val viewModel: UserViewModel by viewModels {
-            UserViewModelFactory(userPreferences)
+            UserViewModelFactory(app.userPreferences, app.exerciseRepository)
         }
         uiViewModel = viewModel
-        val startDestination = if (userPreferences.isOnboarded()) "dashboard" else "onboarding"
+        val startDestination = if (app.userPreferences.isOnboarded()) "dashboard" else "onboarding"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }

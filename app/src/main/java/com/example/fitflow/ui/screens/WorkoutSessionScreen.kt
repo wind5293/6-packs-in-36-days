@@ -1,6 +1,7 @@
 package com.example.fitflow.ui.screens
 
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -25,14 +26,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
-import com.example.fitflow.utils.GifUrlHelper
 import com.example.fitflow.viewmodel.WorkoutSessionViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -61,7 +59,8 @@ fun WorkoutSessionScreen(
     var phaseTimer by remember { mutableStateOf(PREPARE_SECONDS) }
 
     val gifUrls by viewModel.gifUrls.collectAsState()
-    LaunchedEffect(exercises) {
+    Log.d("GIF_DEBUG", "gifUrls in UI: ${gifUrls.size}, keys: ${gifUrls.keys}")
+    LaunchedEffect(Unit) {
         viewModel.loadGifs(exercises)
     }
 
@@ -437,7 +436,7 @@ private fun ExerciseMediaArea(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val exerciseName = current?.name ?: ""
+    val imageLoader = (LocalContext.current.applicationContext as FitFlowApplication).imageLoader
 
     Box(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -452,6 +451,7 @@ private fun ExerciseMediaArea(
                         .data(gifUrl)
                         .crossfade(true)
                         .build(),
+                    imageLoader = imageLoader,
                     contentDescription = "Exercise GIF",
                     modifier = Modifier.fillMaxSize()
                 )

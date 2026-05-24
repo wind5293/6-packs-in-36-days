@@ -9,6 +9,8 @@ import android.util.Log
 import androidx.core.content.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.fitflow.data.ExerciseRepository
 import com.example.fitflow.data.StepCounterManager
 import com.example.fitflow.data.UserPreferences
 import com.example.fitflow.data.model.DayPlan
@@ -16,14 +18,18 @@ import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.data.model.UserProfile
-import com.example.fitflow.domain.WorkoutPlangenerator
+import com.example.fitflow.domain.WorkoutPlanGenerator
 import com.example.fitflow.notification.WorkoutReminderReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() {
+class UserViewModel(
+    private val userPreferences: UserPreferences,
+    private val exerciseRepository: ExerciseRepository
+) : ViewModel() {
     private val _userProfile: MutableStateFlow<UserProfile?> = MutableStateFlow(null)
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
 
@@ -61,6 +67,8 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
 
     private var stepCounterManager: StepCounterManager? = null
 
+    private val workoutPlanGenerator = WorkoutPlanGenerator(exerciseRepository)
+
     private fun loadUserProfile() {
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
@@ -68,10 +76,14 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
         refreshHealthMetrics()
-        _workoutPlan.value = if (profile != null) {
-            WorkoutPlangenerator.generatePlan(profile.goal)
-        } else {
-            emptyList()
+
+        // ✅ generatePlan là suspend → cần viewModelScope
+        viewModelScope.launch {
+            _workoutPlan.value = if (profile != null) {
+                workoutPlanGenerator.generatePlan(profile.goal)
+            } else {
+                emptyList()
+            }
         }
     }
 
@@ -220,11 +232,14 @@ class UserViewModel(private val userPreferences: UserPreferences) : ViewModel() 
     }
 }
 
-class UserViewModelFactory(private val userPreferences: UserPreferences) : ViewModelProvider.Factory {
+class UserViewModelFactory(
+    private val userPreferences: UserPreferences,
+    private val exerciseRepository: ExerciseRepository
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return UserViewModel(userPreferences) as T
+            return UserViewModel(userPreferences, exerciseRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
