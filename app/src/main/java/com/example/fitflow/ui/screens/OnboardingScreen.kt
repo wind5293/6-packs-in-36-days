@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +31,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.fitflow.data.model.BmiCategory
 import com.example.fitflow.data.model.FitnessGoal
+import com.example.fitflow.domain.calculateBmi
+import com.example.fitflow.domain.getBmiCategory
 import com.example.fitflow.notification.WorkoutReminderReceiver
 import com.example.fitflow.ui.theme.FitflowTheme
 import kotlinx.coroutines.launch
@@ -46,18 +51,18 @@ fun OnboardingScreen(
         workoutTime: String
             ) -> Unit
 ) {
-    val totalSteps = 4
+    val totalSteps = 6
     val pagerState = rememberPagerState(pageCount = { totalSteps })
     val scope = rememberCoroutineScope()
     val context = LocalContext.current // Lấy context để gửi Broadcast
 
     // State chung
     val selectedGoal = FitnessGoal.WEIGHT_LOSS
-    var height by remember { mutableFloatStateOf(170f) }
-    var weight by remember { mutableFloatStateOf(65f) }
+    var height by remember { mutableFloatStateOf(160f) }
+    var weight by remember { mutableFloatStateOf(60f) }
     var birthYear by remember { mutableIntStateOf(2000) }
     var targetWeight by remember { mutableFloatStateOf(60f) }
-    val workoutTime = "08:00"
+    var workoutTime by remember { mutableStateOf("08:00") }
 
     Column(
         modifier = Modifier
@@ -76,10 +81,12 @@ fun OnboardingScreen(
             verticalAlignment = Alignment.Top
         ) { page ->
             when (page) {
-                0 -> HeightStep(height) { height = it }
-                1 -> BirthYearStep(birthYear) { birthYear = it }
-                2 -> TargetWeightStep(targetWeight, weight) { targetWeight = it }
-                3 -> WeightStep(weight, height, selectedGoal, { weight = it })
+                0 -> WeightStep(weight) { weight = it }
+                1 -> HeightStep(height) { height = it }
+                2 -> BmiInfoStep(weight = weight, height = height)
+                3 -> TargetWeightStep(targetWeight, weight) { targetWeight = it }
+                4 -> BirthYearStep(birthYear) { birthYear = it }
+                5 -> WorkoutTimeStep(workoutTime = workoutTime) { workoutTime = it }
             }
         }
 
@@ -241,6 +248,7 @@ fun HeightStep(height: Float, onHeightChange: (Float) -> Unit) {
             selectedValue = cmValue,
             values = (120..220).toList(),
             majorTickEvery = 5,
+            minorTickStep = 1,
             onSelect = { onHeightChange(it.toFloat()) }
         )
         Spacer(Modifier.height(18.dp))
@@ -257,9 +265,7 @@ fun HeightStep(height: Float, onHeightChange: (Float) -> Unit) {
 @Composable
 fun WeightStep(
     weight: Float,
-    height: Float,
-    goal: FitnessGoal,
-    onWeightChange: (Float) -> Unit,
+    onWeightChange: (Float) -> Unit
 ) {
     var useKg by remember { mutableStateOf(true) }
     val kgValue = weight.coerceIn(30f, 150f)
@@ -277,6 +283,7 @@ fun WeightStep(
             selectedValue = kgValue.toInt(),
             values = (30..150).toList(),
             majorTickEvery = 5,
+            minorTickStep = 1,
             onSelect = { onWeightChange(it.toFloat()) }
         )
         Spacer(Modifier.height(18.dp))
@@ -287,32 +294,73 @@ fun WeightStep(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
 
-        Spacer(Modifier.height(32.dp))
+@Composable
+fun BmiInfoStep(weight: Float, height: Float) {
+    val bmi = calculateBmi(height = height, weight = weight)
+    val category = getBmiCategory(bmi)
 
-        // BMI Card
+    val categoryLabel = when (category) {
+        BmiCategory.UNDERWEIGHT -> "UNDERWEIGHT"
+        BmiCategory.NORMAL -> "NORMAL"
+        BmiCategory.OVERWEIGHT -> "OVERWEIGHT"
+    }
+
+    val guidance = when (category) {
+        BmiCategory.UNDERWEIGHT -> "Your BMI is below average. Focus on balanced nutrition and strength workouts."
+        BmiCategory.NORMAL -> "Your BMI is in a healthy range. Keep training consistently to improve fitness."
+        BmiCategory.OVERWEIGHT -> "Your BMI is above average. A gradual calorie deficit with regular training is ideal."
+    }
+
+    StepLayout(title = "YOUR BMI RESULT", subtitle = "BODY MASS INDEX") {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp),
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                    0.3f
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = String.format("%.1f", bmi),
+                    fontSize = 52.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic
                 )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = categoryLabel,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.5.sp
+                )
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
             )
         ) {
-            Column(Modifier.padding(16.dp)) {
-                Text("ADVICE FOR ${goal.title}", fontWeight = FontWeight.Black, fontSize = 12.sp)
-                Spacer(Modifier.height(4.dp))
-                val advice = when (goal) {
-                    FitnessGoal.WEIGHT_LOSS -> "Focus on a calorie deficit and high-intensity training."
-                    FitnessGoal.MUSCLE_GAIN -> "Prioritize protein intake and progressive overload."
-                    FitnessGoal.ENDURANCE -> "Incorporate consistent zone 2 cardio sessions."
-                    FitnessGoal.MAINTENANCE -> "Balanced nutrition and lifestyle consistency."
-                    FitnessGoal.ABS_CORE_STRENGTH -> "Improve core strength and stability."
-                }
-                Text(advice, fontSize = 14.sp)
-            }
+            Text(
+                text = guidance,
+                modifier = Modifier.padding(16.dp),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
         }
     }
 }
@@ -338,6 +386,7 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
             selectedValue = kgValue.toInt(),
             values = (30..150).toList(),
             majorTickEvery = 5,
+            minorTickStep = 1,
             onSelect = { onTargetChange(it.toFloat()) },
             majorTickColor = MaterialTheme.colorScheme.secondary
         )
@@ -392,9 +441,11 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutTimeStep(workoutTime: String, onTimeSelected: (String) -> Unit) {
+    val initialHour = workoutTime.split(":").getOrNull(0)?.toIntOrNull()?.coerceIn(0, 23) ?: 8
+    val initialMinute = workoutTime.split(":").getOrNull(1)?.toIntOrNull()?.coerceIn(0, 59) ?: 0
     val timePickerState = rememberTimePickerState(
-        initialHour = 0,
-        initialMinute = 0,
+        initialHour = initialHour,
+        initialMinute = initialMinute,
         is24Hour = true
     )
 
@@ -403,13 +454,23 @@ fun WorkoutTimeStep(workoutTime: String, onTimeSelected: (String) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            TimeInput(
-                state = timePickerState,
-                modifier = Modifier,
-                colors = TimePickerDefaults.colors()
-            )
+            CompositionLocalProvider(
+                LocalTextStyle provides LocalTextStyle.current.copy(fontWeight = FontWeight.Black)
+            ) {
+                TimeInput(
+                    state = timePickerState,
+                    modifier = Modifier,
+                    colors = TimePickerDefaults.colors(
+                        selectorColor = MaterialTheme.colorScheme.primary,
+                        timeSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                        timeSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+                        periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                        periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
             LaunchedEffect(timePickerState.hour, timePickerState.minute) {
-                onTimeSelected("${timePickerState.hour}:${timePickerState.minute}")
+                onTimeSelected(String.format("%02d:%02d", timePickerState.hour, timePickerState.minute))
             }
             Text(
                 "We'll remind you to stay consistent!",
@@ -482,10 +543,16 @@ fun WeightStepPreview() {
     FitflowTheme {
         WeightStep(
             weight = 65f,
-            height = 170f,
-            goal = FitnessGoal.WEIGHT_LOSS,
             onWeightChange = {}
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BmiInfoStepPreview() {
+    FitflowTheme {
+        BmiInfoStep(weight = 60f, height = 160f)
     }
 }
 
@@ -561,21 +628,83 @@ fun RulerPicker(
     selectedValue: Int,
     values: List<Int>,
     majorTickEvery: Int,
+    minorTickStep: Int,
     onSelect: (Int) -> Unit,
     majorTickColor: Color = MaterialTheme.colorScheme.primary
 ) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        items(values) { value ->
-            val isSelected = value == selectedValue
-            RulerTick(
-                value = value,
-                isMajor = value % majorTickEvery == 0,
-                isSelected = isSelected,
-                majorTickColor = majorTickColor,
-                onClick = { onSelect(value) }
+    val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val tickSlotWidth = 16.dp
+        val tickSpacing = 4.dp
+        val horizontalPadding = (maxWidth / 2) - (tickSlotWidth / 2)
+        val selectedIndex = values.indexOf(selectedValue).coerceAtLeast(0)
+
+        LaunchedEffect(selectedIndex) {
+            val nearestCenteredIndex = listState.layoutInfo.visibleItemsInfo
+                .minByOrNull { item ->
+                    val viewportCenter =
+                        (listState.layoutInfo.viewportStartOffset + listState.layoutInfo.viewportEndOffset) / 2
+                    abs((item.offset + item.size / 2) - viewportCenter)
+                }
+                ?.index
+
+            if (nearestCenteredIndex != selectedIndex) {
+                listState.scrollToItem(selectedIndex)
+            }
+        }
+
+        LaunchedEffect(listState, values) {
+            snapshotFlow {
+                val layoutInfo = listState.layoutInfo
+                val visibleItems = layoutInfo.visibleItemsInfo
+                if (visibleItems.isEmpty()) {
+                    null
+                } else {
+                    val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+                    visibleItems.minByOrNull { item ->
+                        abs((item.offset + item.size / 2) - viewportCenter)
+                    }?.index
+                }
+            }.collect { centeredIndex ->
+                if (centeredIndex == null || centeredIndex !in values.indices) return@collect
+                val valueAtCenter = values[centeredIndex]
+                if (valueAtCenter != selectedValue) {
+                    onSelect(valueAtCenter)
+                }
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            LazyRow(
+                state = listState,
+                contentPadding = PaddingValues(horizontal = horizontalPadding),
+                horizontalArrangement = Arrangement.spacedBy(tickSpacing),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                itemsIndexed(values) { index, value ->
+                    val isSelected = value == selectedValue
+                    RulerTick(
+                        value = value,
+                        isMajor = value % majorTickEvery == 0,
+                        isMinor = value % minorTickStep == 0,
+                        isSelected = isSelected,
+                        majorTickColor = majorTickColor,
+                        onClick = {
+                            scope.launch { listState.animateScrollToItem(index) }
+                        }
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .width(4.dp)
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(majorTickColor)
             )
         }
     }
@@ -585,15 +714,16 @@ fun RulerPicker(
 fun RulerTick(
     value: Int,
     isMajor: Boolean,
+    isMinor: Boolean,
     isSelected: Boolean,
     majorTickColor: Color,
     onClick: () -> Unit
 ) {
-    val tickHeight: Dp = if (isMajor) 44.dp else 24.dp
+    val tickHeight: Dp = if (isMajor) 40.dp else if (isMinor) 24.dp else 14.dp
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(22.dp)
+            .width(16.dp)
             .clickable(onClick = onClick)
     ) {
         Box(
@@ -621,6 +751,13 @@ fun YearWheelPicker(
     years: List<Int>,
     onYearChange: (Int) -> Unit
 ) {
+    val listState = rememberLazyListState()
+    val selectedIndex = years.indexOf(selectedYear).coerceAtLeast(0)
+
+    LaunchedEffect(selectedIndex) {
+        listState.scrollToItem(selectedIndex)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -630,6 +767,7 @@ fun YearWheelPicker(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f))
     ) {
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             contentPadding = PaddingValues(vertical = 56.dp)

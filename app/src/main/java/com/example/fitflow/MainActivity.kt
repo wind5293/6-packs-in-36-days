@@ -30,9 +30,13 @@ import com.example.fitflow.ui.screens.WorkoutDayDetailScreen
 import com.example.fitflow.ui.screens.WorkoutSessionScreen
 import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.screens.OnboardingScreen
+import com.example.fitflow.ui.screens.EditPlanScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
+import com.example.fitflow.viewmodel.WorkoutPlannerViewModel
+import com.example.fitflow.ui.screens.WorkoutSettingsScreen
+import com.example.fitflow.viewmodel.WorkoutSettingsViewModel
 
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
@@ -59,6 +63,7 @@ class MainActivity : ComponentActivity() {
         val viewModel: UserViewModel by viewModels {
             UserViewModelFactory(app.userPreferences, app.exerciseRepository)
         }
+        val plannerViewModel: WorkoutPlannerViewModel by viewModels()
         uiViewModel = viewModel
         val startDestination = if (app.userPreferences.isOnboarded()) "dashboard" else "onboarding"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -93,6 +98,8 @@ class MainActivity : ComponentActivity() {
                                 || currentRoute == "loading"
                                 || (currentRoute.startsWith("day_detail"))
                                 || (currentRoute.startsWith("workout_session"))
+                                || (currentRoute.startsWith("edit_plan"))
+                                || currentRoute == "workout_settings"
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
@@ -137,7 +144,8 @@ class MainActivity : ComponentActivity() {
                                         launchSingleTop = true
                                         restoreState = true
                                     }
-                                }
+                                },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable("planner") {
@@ -154,7 +162,8 @@ class MainActivity : ComponentActivity() {
                                 currentDay = currentDay,
                                 onDayClick = { dayNumber ->
                                     navController.navigate("day_detail/$dayNumber")
-                                }
+                                },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable(
@@ -169,7 +178,37 @@ class MainActivity : ComponentActivity() {
                             WorkoutDayDetailScreen(
                                 dayPlan = dayPlan,
                                 onBack = { navController.popBackStack() },
-                                onStartSession = { navController.navigate("workout_session/$dayNumber") }
+                                onStartSession = { navController.navigate("workout_session/$dayNumber") },
+                                onEditPlan = { navController.navigate("edit_plan/$dayNumber") }
+                            )
+                        }
+                        composable("workout_settings") {
+                            WorkoutSettingsScreen(
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                        composable(
+                            route = "edit_plan/{dayNumber}",
+                            arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            val dayNumber =
+                                backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val dayPlan =
+                                workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
+                            val allExercises by viewModel.allExercises.collectAsState()
+
+                            EditPlanScreen(
+                                dayNumber = dayNumber,
+                                dayTitle = dayPlan.title,
+                                initialExercises = dayPlan.workoutExercises,
+                                allDatabaseExercises = allExercises,
+                                plannerViewModel = plannerViewModel,
+                                onBack = { navController.popBackStack() },
+                                onSave = { updatedExercises ->
+                                    viewModel.updateDayPlan(dayNumber, updatedExercises)
+                                    navController.popBackStack()
+                                }
                             )
                         }
                         composable("profile") {
@@ -187,7 +226,8 @@ class MainActivity : ComponentActivity() {
                                 weightHistory = weightHistory,
                                 healthMetricsHistory = healthHistory,
                                 onRecordWeight = { viewModel.recordWeight(it) },
-                                onReCalibrate = { navController.navigate("onboarding") }
+                                onReCalibrate = { navController.navigate("onboarding") },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable("onboarding") {
@@ -209,16 +249,26 @@ class MainActivity : ComponentActivity() {
                             LibraryScreen()
                         }
                         composable("loading") {
-                            LoadingScreen(onPlanReady = {
-                                navController.navigate("dashboard") {
-                                    popUpTo(0) { inclusive = true }
-                                    launchSingleTop = true
+                            val provisioningState by viewModel.planProvisioningState.collectAsState()
+                            LoadingScreen(
+                                provisioningState = provisioningState,
+                                onPlanReady = {
+                                    navController.navigate("dashboard") {
+                                        popUpTo(0) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                },
+                                onConfirmMobileData = {
+                                    viewModel.confirmUseMobileDataForProvisioning(applicationContext)
+                                },
+                                onRetry = {
+                                    viewModel.retryPlanProvisioning(applicationContext)
                                 }
-                            })
+                            )
                         }
                         composable("workout_setup") {
                             WorkoutSetupScreen(onComplete = { goal ->
-                                viewModel.saveGoal(goal)
+                                viewModel.startPlanProvisioning(applicationContext, goal)
                                 navController.navigate("loading") {
                                     popUpTo("workout_setup") { inclusive = true }
                                 }
@@ -240,7 +290,8 @@ class MainActivity : ComponentActivity() {
                                 onFinish = {
                                     viewModel.markDayComplete(dayNumber)
                                     navController.popBackStack()
-                                }
+                                },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                     }

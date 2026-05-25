@@ -7,10 +7,14 @@ import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.data.model.UserProfile
 import com.example.fitflow.domain.calculateBmi
 import com.example.fitflow.domain.getBmiCategory
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.example.fitflow.data.model.WorkoutExercise
 import java.time.LocalDate
 
 class UserPreferences(context: Context) {
     private val prefs = context.getSharedPreferences("fitflow_prefs", Context.MODE_PRIVATE)
+    private val gson = Gson()
 
     companion object {
         const val KEY_HEIGHT = "height"
@@ -27,6 +31,18 @@ class UserPreferences(context: Context) {
         const val KEY_STEP_BASELINE_DAY = "step_baseline_day"
         const val KEY_STEP_BASELINE_VALUE = "step_baseline_value"
         const val KEY_STEP_SENSOR_ENABLED = "step_sensor_enabled"
+
+        const val KEY_SETTING_BG_MUSIC_ENABLED = "setting_bg_music_enabled"
+        const val KEY_SETTING_BG_MUSIC_VOLUME = "setting_bg_music_volume"
+        const val KEY_SETTING_VOICE_GUIDE_ENABLED = "setting_voice_guide_enabled"
+        const val KEY_SETTING_COACH_NAME = "setting_coach_name"
+        const val KEY_SETTING_COACH_VOLUME = "setting_coach_volume"
+        const val KEY_SETTING_SOUND_EFFECT_ENABLED = "setting_sound_effect_enabled"
+        const val KEY_SETTING_AUTO_COUNTING = "setting_auto_counting"
+        const val KEY_SETTING_REST_TIMER = "setting_rest_timer"
+        const val KEY_SETTING_COUNTDOWN = "setting_countdown"
+        const val KEY_HYBRID_GIF_CACHE_READY = "hybrid_gif_cache_ready"
+        const val KEY_HYBRID_GIF_CACHE_SIGNATURE = "hybrid_gif_cache_signature"
 
         const val HISTORY_MAX_DAYS = 90
     }
@@ -265,4 +281,64 @@ class UserPreferences(context: Context) {
             }
         prefs.edit().putString(KEY_HEALTH_HISTORY, encoded).apply()
     }
+
+    fun saveCustomDayPlan(dayNumber: Int, exercises: List<WorkoutExercise>) {
+        val json = gson.toJson(exercises)
+        prefs.edit().putString("custom_day_plan_$dayNumber", json).apply()
+    }
+
+    fun getCustomDayPlan(dayNumber: Int): List<WorkoutExercise>? {
+        val json = prefs.getString("custom_day_plan_$dayNumber", null) ?: return null
+        return try {
+            val type = object : TypeToken<List<WorkoutExercise>>() {}.type
+            gson.fromJson(json, type)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun isBgMusicEnabled(): Boolean = prefs.getBoolean(KEY_SETTING_BG_MUSIC_ENABLED, true)
+    fun setBgMusicEnabled(value: Boolean) = prefs.edit().putBoolean(KEY_SETTING_BG_MUSIC_ENABLED, value).apply()
+
+    fun getBgMusicVolume(): Float = prefs.getFloat(KEY_SETTING_BG_MUSIC_VOLUME, 0.5f)
+    fun setBgMusicVolume(value: Float) = prefs.edit().putFloat(KEY_SETTING_BG_MUSIC_VOLUME, value).apply()
+
+    fun isVoiceGuideEnabled(): Boolean = prefs.getBoolean(KEY_SETTING_VOICE_GUIDE_ENABLED, true)
+    fun setVoiceGuideEnabled(value: Boolean) = prefs.edit().putBoolean(KEY_SETTING_VOICE_GUIDE_ENABLED, value).apply()
+
+    fun getCoachName(): String = prefs.getString(KEY_SETTING_COACH_NAME, "James") ?: "James"
+    fun setCoachName(value: String) = prefs.edit().putString(KEY_SETTING_COACH_NAME, value).apply()
+
+    fun getCoachVolume(): Float = prefs.getFloat(KEY_SETTING_COACH_VOLUME, 0.8f)
+    fun setCoachVolume(value: Float) = prefs.edit().putFloat(KEY_SETTING_COACH_VOLUME, value).apply()
+
+    fun isSoundEffectEnabled(): Boolean = prefs.getBoolean(KEY_SETTING_SOUND_EFFECT_ENABLED, true)
+    fun setSoundEffectEnabled(value: Boolean) = prefs.edit().putBoolean(KEY_SETTING_SOUND_EFFECT_ENABLED, value).apply()
+
+    fun getAutoCounting(): String = prefs.getString(KEY_SETTING_AUTO_COUNTING, "Off") ?: "Off"
+    fun setAutoCounting(value: String) = prefs.edit().putString(KEY_SETTING_AUTO_COUNTING, value).apply()
+
+    fun getRestTimer(): String = prefs.getString(KEY_SETTING_REST_TIMER, "30s") ?: "30s"
+    fun setRestTimer(value: String) = prefs.edit().putString(KEY_SETTING_REST_TIMER, value).apply()
+
+    fun getCountdown(): String = prefs.getString(KEY_SETTING_COUNTDOWN, "5s") ?: "5s"
+    fun setCountdown(value: String) = prefs.edit().putString(KEY_SETTING_COUNTDOWN, value).apply()
+
+    fun markHybridGifCachePending(signature: String) {
+        prefs.edit()
+            .putBoolean(KEY_HYBRID_GIF_CACHE_READY, false)
+            .putString(KEY_HYBRID_GIF_CACHE_SIGNATURE, signature)
+            .apply()
+    }
+
+    fun markHybridGifCacheReady(signature: String) {
+        prefs.edit()
+            .putBoolean(KEY_HYBRID_GIF_CACHE_READY, true)
+            .putString(KEY_HYBRID_GIF_CACHE_SIGNATURE, signature)
+            .apply()
+    }
+
+    fun isHybridGifCacheReady(): Boolean = prefs.getBoolean(KEY_HYBRID_GIF_CACHE_READY, false)
+
+    fun getHybridGifCacheSignature(): String? = prefs.getString(KEY_HYBRID_GIF_CACHE_SIGNATURE, null)
 }

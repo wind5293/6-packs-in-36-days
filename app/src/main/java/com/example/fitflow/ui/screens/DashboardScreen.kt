@@ -13,7 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
@@ -51,7 +51,8 @@ fun DashboardScreen(
     onUnlockStepSensor: () -> Unit = {},
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
-    onStartWorkout: () -> Unit = {}
+    onStartWorkout: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -67,7 +68,7 @@ fun DashboardScreen(
             .padding(16.dp)
     ) {
         item {
-            HeaderSection()
+            HeaderSection(onOpenSettings = onOpenSettings)
         }
         item {
             Spacer(modifier = Modifier.height(32.dp))
@@ -193,7 +194,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
 }
 
 @Composable
-fun HeaderSection() {
+fun HeaderSection(onOpenSettings: () -> Unit = {}) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -218,7 +219,7 @@ fun HeaderSection() {
             }
         }
         IconButton(
-            onClick = {},
+            onClick = onOpenSettings,
             modifier = Modifier
                 .background(
                     MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
@@ -231,8 +232,8 @@ fun HeaderSection() {
                 )
         ) {
             Icon(
-                Icons.Default.Notifications,
-                contentDescription = "Notify",
+                Icons.Default.Settings,
+                contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
             )
         }

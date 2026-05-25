@@ -31,7 +31,8 @@ fun PlannerScreen(
     workoutPlan: List<DayPlan>,
     completedDays: Set<Int> = emptySet(),
     currentDay: Int = -1,
-    onDayClick: (Int) -> Unit = {}
+    onDayClick: (Int) -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
     val groupedByWeek = workoutPlan.groupBy { (it.dayNumber - 1) / 7 }
 
@@ -67,7 +68,7 @@ fun PlannerScreen(
                 }
             }
             IconButton(
-                onClick = {},
+                onClick = onOpenSettings,
                 modifier = Modifier
                     .background(
                         MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),

@@ -1,6 +1,5 @@
 package com.example.fitflow.ui.screens
 
-import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -35,11 +34,6 @@ import com.example.fitflow.viewmodel.WorkoutSessionViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
-// ─── Thay đổi thời gian tại đây ───────────────────────────
-private const val PREPARE_SECONDS = 5   // Đếm ngược trước mỗi bài
-private const val REST_SECONDS = 25  // Nghỉ ngơi giữa các bài
-// ──────────────────────────────────────────────────────────
-
 enum class SessionPhase { PREPARING, EXERCISING, RESTING }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +42,7 @@ fun WorkoutSessionScreen(
     exercises: List<WorkoutExercise> = sampleExercises(),
     onBack: () -> Unit = {},
     onFinish: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     viewModel: WorkoutSessionViewModel = viewModel()
 ) {
   
@@ -56,14 +51,18 @@ fun WorkoutSessionScreen(
     var remaining by remember { mutableStateOf(exercises.getOrNull(0)?.durationSec ?: 0) }
     var isRunning by remember { mutableStateOf(false) }
     var phase by remember { mutableStateOf(SessionPhase.PREPARING) }
-    var phaseTimer by remember { mutableStateOf(PREPARE_SECONDS) }
+    var countdownStarted by remember { mutableStateOf(false) }
+    var isFirstLoad by remember { mutableStateOf(true) }
 
     val gifUrls by viewModel.gifUrls.collectAsState()
     Log.d("GIF_DEBUG", "gifUrls in UI: ${gifUrls.size}, keys: ${gifUrls.keys}")
     LaunchedEffect(Unit) {
         viewModel.loadGifs(exercises)
     }
-
+    val countdownRemaining by viewModel.countdownRemaining.collectAsState()
+    val isCountingDown by viewModel.isCountingDown.collectAsState()
+    val restRemaining by viewModel.restRemaining.collectAsState()
+    val isResting by viewModel.isResting.collectAsState()
     val current = exercises.getOrNull(index)
     val next = exercises.getOrNull(index + 1)
 
@@ -72,7 +71,6 @@ fun WorkoutSessionScreen(
             exercise = current,
             onClose = { showInstructionScreen = false }
         )
-        return
     }
 
     val primaryColor  = MaterialTheme.colorScheme.primary
@@ -88,7 +86,6 @@ fun WorkoutSessionScreen(
             remaining = exercises[index].durationSec
             isRunning = false
             phase = SessionPhase.PREPARING
-            phaseTimer = PREPARE_SECONDS
         } else {
             onFinish()
         }
@@ -100,38 +97,38 @@ fun WorkoutSessionScreen(
             remaining = exercises[index].durationSec
             isRunning = false
             phase = SessionPhase.PREPARING
-            phaseTimer = PREPARE_SECONDS
         }
     }
 
-    // ── Timer chung xử lý cả 3 phase ───────────────────────
+    // Timer chung xử lý cả 3 phase
+    LaunchedEffect(Unit) {
+        viewModel.loadGifs(exercises)
+    }
+
     LaunchedEffect(phase, index) {
         when (phase) {
             SessionPhase.PREPARING -> {
-                phaseTimer = PREPARE_SECONDS
-                while (isActive && phaseTimer > 0) {
-                    delay(1000L); phaseTimer--
-                }
-                phase = SessionPhase.EXERCISING
-                isRunning = current?.reps == 0
+                viewModel.startCountdown()
             }
-
-            SessionPhase.EXERCISING -> { /* Timer xử lý riêng bên dưới */
+            SessionPhase.EXERCISING -> {
+                remaining = exercises.getOrNull(index)?.durationSec ?: 0
+                isRunning = exercises.getOrNull(index)?.reps == 0
             }
-
             SessionPhase.RESTING -> {
-                phaseTimer = REST_SECONDS
-                while (isActive && phaseTimer > 0) {
-                    delay(1000L); phaseTimer--
-                }
-                skipToNext()
+                viewModel.startRest()
             }
         }
     }
 
-    // Timer cho bài tập dựa-vào-thời-gian (time-based)
-    LaunchedEffect(index, isRunning) {
-        if (phase != SessionPhase.EXERCISING || !isRunning) return@LaunchedEffect
+    LaunchedEffect(isCountingDown) {
+        if (!isCountingDown && phase == SessionPhase.PREPARING) {
+            phase = SessionPhase.EXERCISING
+        }
+    }
+
+    LaunchedEffect(index, isRunning, phase) {
+        if (phase != SessionPhase.EXERCISING || !isRunning)
+            return@LaunchedEffect
         while (isActive && remaining > 0) {
             delay(1000L)
             remaining = (remaining - 1).coerceAtLeast(0)
@@ -143,6 +140,12 @@ fun WorkoutSessionScreen(
             } else {
                 onFinish()
             }
+        }
+    }
+
+    LaunchedEffect(isResting) {
+        if (!isResting && phase == SessionPhase.RESTING) {
+            skipToNext()
         }
     }
 
@@ -191,8 +194,9 @@ fun WorkoutSessionScreen(
                     iconColor = iconColor,
                     primaryColor = primaryColor,
                     prepareOverlay = true,
-                    prepareCountdown = phaseTimer,
+                    prepareCountdown = countdownRemaining,
                     onBack = onBack,
+                    onOpenSettings = onOpenSettings,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -232,6 +236,8 @@ fun WorkoutSessionScreen(
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = {
+                            countdownStarted = false
+                            viewModel.skipCountdown()
                             phase = SessionPhase.EXERCISING
                             isRunning = current?.reps == 0
                         },
@@ -262,6 +268,7 @@ fun WorkoutSessionScreen(
                     prepareOverlay = false,
                     prepareCountdown = 0,
                     onBack = onBack,
+                    onOpenSettings = onOpenSettings,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -405,12 +412,12 @@ fun WorkoutSessionScreen(
             // ─── Màn hình NGHỈ NGƠI ─────────────────────────
             SessionPhase.RESTING -> {
                 RestScreen(
-                    restSeconds = phaseTimer,
+                    restSeconds = restRemaining,
                     nextExercise = next,
                     nextGifUrl = gifUrls[next?.name],
                     nextIndex = index + 1,
                     totalExercises = exercises.size,
-                    onAddTime = { phaseTimer += 20 },
+                    onAddTime = { viewModel.addRestTime(20 ) },
                     onSkip = { skipToNext() },
                     onBack = onBack,
                     primaryColor = primaryColor
@@ -433,6 +440,7 @@ private fun ExerciseMediaArea(
     prepareOverlay: Boolean,
     prepareCountdown: Int,
     onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -515,8 +523,20 @@ private fun ExerciseMediaArea(
                 )
             }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                IconButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(buttonBgColor)
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = textColor
+                    )
+                }
                 listOf(
-                    Icons.Default.Settings to "Settings",
                     Icons.Default.Fullscreen to "Expand",
                     Icons.Default.MusicNote to "Music",
                     Icons.Default.Videocam to "Video"
