@@ -5,12 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.House
-import com.composables.icons.lucide.Calendar
-import com.composables.icons.lucide.Plus
-import com.composables.icons.lucide.List
-import com.composables.icons.lucide.User
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,37 +12,47 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.House
+import com.composables.icons.lucide.List
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Plus
+import com.composables.icons.lucide.User
 
 @Composable
 fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        NavItem("Home",    Lucide.House,      currentRoute == "dashboard") { onNavigate("dashboard") }
-        NavItem("Plan",    Lucide.Calendar,  currentRoute == "planner")  { onNavigate("planner") }
-
-        Box(
+        Row(
             modifier = Modifier
-                .offset(y = (-24).dp)
-                .size(64.dp)
-                .background(MaterialTheme.colorScheme.primary, CircleShape)
-                .clip(CircleShape)
-                .clickable { onNavigate("workout_setup") }
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Lucide.Plus, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
-        }
 
-        NavItem("Library", Lucide.List,   currentRoute == "library") { onNavigate("library") }
-        NavItem("Me",      Lucide.User, currentRoute == "profile") { onNavigate("profile") }
+            NavItem("Home", Lucide.House, currentRoute == "dashboard") {
+                onNavigate("dashboard")
+            }
+
+            NavItem("Plan", Lucide.Calendar, currentRoute == "planner") {
+                onNavigate("planner")
+            }
+
+            NavItem("Library", Lucide.List, currentRoute == "library") {
+                onNavigate("library")
+            }
+
+            NavItem("Me", Lucide.User, currentRoute == "profile") {
+                onNavigate("profile")
+            }
+        }
     }
 }
 
@@ -59,7 +63,10 @@ fun NavItem(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+    val color =
+        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(
+            alpha = 0.4f
+        )
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -71,4 +78,10 @@ fun NavItem(
         Spacer(modifier = Modifier.height(4.dp))
         Text(label, color = color, fontSize = 9.sp, fontWeight = FontWeight.Black)
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomNavbarPreview() {
+    BottomNavbar("dashboard") {}
 }
