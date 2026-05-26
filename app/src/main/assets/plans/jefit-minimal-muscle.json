@@ -1,0 +1,105 @@
+{
+  "planId": "jefit-minimal-muscle",
+  "title": "Minimalist Muscle Gain - 30 Days",
+  "days": [
+    { "dayNumber": 1, "isRest": false, "title": "Chest & Back", "difficulty": "Intermediate", "muscleGroup": "Chest/Back", "workoutExercises": [
+      { "category": "Chest", "name": "Dumbbell Floor Press", "sets": 3, "reps": 12, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Lying on floor, press dumbbells up." },
+      { "category": "Back", "name": "Dumbbell Row", "sets": 3, "reps": 12, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Hinge hips, pull dumbbells to ribcage." },
+      { "category": "Shoulders", "name": "Resistance Band Pull Apart", "sets": 3, "reps": 15, "kcal": 25, "durationSec": 0, "gifFileName": "", "description": "Keep arms straight, squeeze rear delts." }
+    ]},
+    { "dayNumber": 2, "isRest": false, "title": "Legs & Core", "difficulty": "Intermediate", "muscleGroup": "Legs/Core", "workoutExercises": [
+      { "category": "Legs", "name": "Dumbbell Goblet Squat", "sets": 3, "reps": 15, "kcal": 65, "durationSec": 0, "gifFileName": "", "description": "Hold dumbbell vertically at chest, squat deep." },
+      { "category": "Legs", "name": "Dumbbell Romanian Deadlift", "sets": 3, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Hinge at hips, keep back straight, feel hamstrings." },
+      { "category": "Core", "name": "Plank", "sets": 3, "reps": 0, "kcal": 20, "durationSec": 60, "gifFileName": "", "description": "Hold solid plank position." }
+    ]},
+    { "dayNumber": 3, "isRest": true, "title": "Rest & Recovery", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 4, "isRest": false, "title": "Shoulders & Arms", "difficulty": "Intermediate", "muscleGroup": "Shoulders/Arms", "workoutExercises": [
+      { "category": "Shoulders", "name": "Dumbbell Shoulder Press", "sets": 3, "reps": 12, "kcal": 45, "durationSec": 0, "gifFileName": "", "description": "Seated or standing, press dumbbells overhead." },
+      { "category": "Shoulders", "name": "Dumbbell Lateral Raise", "sets": 3, "reps": 15, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Raise dumbbells out to sides strictly." },
+      { "category": "Arms", "name": "Dumbbell Bicep Curl", "sets": 3, "reps": 12, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Alternate curls with controlled negative." }
+    ]},
+    { "dayNumber": 5, "isRest": false, "title": "Chest & Back Hypertrophy", "difficulty": "Intermediate", "muscleGroup": "Chest/Back", "workoutExercises": [
+      { "category": "Chest", "name": "Push-Up", "sets": 3, "reps": 15, "kcal": 45, "durationSec": 0, "gifFileName": "", "description": "Standard push-ups with perfect form." },
+      { "category": "Back", "name": "Resistance Band Bent-Over Row", "sets": 3, "reps": 15, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "Step on band, pull handles up." },
+      { "category": "Core", "name": "Russian Twist", "sets": 3, "reps": 20, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Rotate torso with dumbbell if possible." }
+    ]},
+    { "dayNumber": 6, "isRest": true, "title": "Rest Day", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 7, "isRest": true, "title": "Active Rest & Mobility", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 8, "isRest": false, "title": "Chest & Back (Overload)", "difficulty": "Intermediate", "muscleGroup": "Chest/Back", "workoutExercises": [
+      { "category": "Chest", "name": "Dumbbell Floor Press", "sets": 4, "reps": 12, "kcal": 65, "durationSec": 0, "gifFileName": "", "description": "Increase sets for chest overload." },
+      { "category": "Back", "name": "Dumbbell Row", "sets": 4, "reps": 12, "kcal": 65, "durationSec": 0, "gifFileName": "", "description": "Pull strong, squeeze lats." },
+      { "category": "Shoulders", "name": "Resistance Band Pull Apart", "sets": 4, "reps": 15, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "High volume pull aparts." }
+    ]},
+    { "dayNumber": 9, "isRest": false, "title": "Legs & Core (Overload)", "difficulty": "Intermediate", "muscleGroup": "Legs/Core", "workoutExercises": [
+      { "category": "Legs", "name": "Dumbbell Goblet Squat", "sets": 4, "reps": 15, "kcal": 85, "durationSec": 0, "gifFileName": "", "description": "Deep controlled squats." },
+      { "category": "Legs", "name": "Dumbbell Romanian Deadlift", "sets": 4, "reps": 12, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Slow eccentric hinge." },
+      { "category": "Core", "name": "Plank", "sets": 3, "reps": 0, "kcal": 25, "durationSec": 75, "gifFileName": "", "description": "Longer plank holds." }
+    ]},
+    { "dayNumber": 10, "isRest": true, "title": "Mid-Week Recovery", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 11, "isRest": false, "title": "Shoulders & Arms (Overload)", "difficulty": "Intermediate", "muscleGroup": "Shoulders/Arms", "workoutExercises": [
+      { "category": "Shoulders", "name": "Dumbbell Shoulder Press", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Overhead pressing strength." },
+      { "category": "Shoulders", "name": "Dumbbell Lateral Raise", "sets": 4, "reps": 15, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "Raise dumbbells strictly." },
+      { "category": "Arms", "name": "Dumbbell Bicep Curl", "sets": 4, "reps": 12, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "Focus on the squeeze at the top." }
+    ]},
+    { "dayNumber": 12, "isRest": false, "title": "Chest & Back Volume", "difficulty": "Intermediate", "muscleGroup": "Chest/Back", "workoutExercises": [
+      { "category": "Chest", "name": "Push-Up", "sets": 4, "reps": 15, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "High chest volume." },
+      { "category": "Back", "name": "Resistance Band Bent-Over Row", "sets": 4, "reps": 15, "kcal": 55, "durationSec": 0, "gifFileName": "", "description": "Keep tension high." },
+      { "category": "Core", "name": "Russian Twist", "sets": 3, "reps": 24, "kcal": 35, "durationSec": 0, "gifFileName": "", "description": "Side-to-side rotation." }
+    ]},
+    { "dayNumber": 13, "isRest": true, "title": "Weekend Prep Rest", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 14, "isRest": true, "title": "Full Rest & Stretch", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 15, "isRest": false, "title": "Upper Body Power", "difficulty": "Advanced", "muscleGroup": "Chest/Back", "workoutExercises": [
+      { "category": "Chest", "name": "Dumbbell Floor Press", "sets": 4, "reps": 15, "kcal": 75, "durationSec": 0, "gifFileName": "", "description": "Press heavier dumbbells." },
+      { "category": "Back", "name": "Dumbbell Row", "sets": 4, "reps": 15, "kcal": 75, "durationSec": 0, "gifFileName": "", "description": "Heavy horizontal pull." },
+      { "category": "Shoulders", "name": "Resistance Band Pull Apart", "sets": 4, "reps": 20, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "Squeeze lats and rear delts." }
+    ]},
+    { "dayNumber": 16, "isRest": false, "title": "Lower Body Power", "difficulty": "Advanced", "muscleGroup": "Legs/Core", "workoutExercises": [
+      { "category": "Legs", "name": "Dumbbell Goblet Squat", "sets": 4, "reps": 20, "kcal": 100, "durationSec": 0, "gifFileName": "", "description": "High rep heavy squats." },
+      { "category": "Legs", "name": "Dumbbell Romanian Deadlift", "sets": 4, "reps": 15, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Controlled hip hinge." },
+      { "category": "Core", "name": "Plank", "sets": 3, "reps": 0, "kcal": 30, "durationSec": 90, "gifFileName": "", "description": "90s max plank." }
+    ]},
+    { "dayNumber": 17, "isRest": true, "title": "Mid-Phase Active Recovery", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 18, "isRest": false, "title": "Shoulder & Arm Pump", "difficulty": "Advanced", "muscleGroup": "Shoulders/Arms", "workoutExercises": [
+      { "category": "Shoulders", "name": "Dumbbell Shoulder Press", "sets": 4, "reps": 15, "kcal": 75, "durationSec": 0, "gifFileName": "", "description": "High volume overhead press." },
+      { "category": "Shoulders", "name": "Dumbbell Lateral Raise", "sets": 4, "reps": 20, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Intense side delt pump." },
+      { "category": "Arms", "name": "Dumbbell Bicep Curl", "sets": 4, "reps": 15, "kcal": 45, "durationSec": 0, "gifFileName": "", "description": "Strict alternate curling." }
+    ]},
+    { "dayNumber": 19, "isRest": false, "title": "Upper Body Density", "difficulty": "Advanced", "muscleGroup": "Chest/Back", "workoutExercises": [
+      { "category": "Chest", "name": "Push-Up", "sets": 4, "reps": 20, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Maximum chest pump." },
+      { "category": "Back", "name": "Resistance Band Bent-Over Row", "sets": 4, "reps": 20, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Hold squeeze at peak contraction." },
+      { "category": "Core", "name": "Russian Twist", "sets": 4, "reps": 24, "kcal": 45, "durationSec": 0, "gifFileName": "", "description": "Weighted twist." }
+    ]},
+    { "dayNumber": 20, "isRest": true, "title": "Rest & Recover", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 21, "isRest": true, "title": "Stretch & Yoga", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 22, "isRest": false, "title": "Chest & Back Peak", "difficulty": "Advanced", "muscleGroup": "Chest/Back", "workoutExercises": [
+      { "category": "Chest", "name": "Dumbbell Floor Press", "sets": 4, "reps": 15, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Peak weight floor press." },
+      { "category": "Back", "name": "Dumbbell Row", "sets": 4, "reps": 15, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Strict high-intensity rows." }
+    ]},
+    { "dayNumber": 23, "isRest": false, "title": "Legs Peak Intensity", "difficulty": "Advanced", "muscleGroup": "Legs/Core", "workoutExercises": [
+      { "category": "Legs", "name": "Dumbbell Goblet Squat", "sets": 4, "reps": 20, "kcal": 110, "durationSec": 0, "gifFileName": "", "description": "Full quad burn." },
+      { "category": "Legs", "name": "Dumbbell Romanian Deadlift", "sets": 4, "reps": 15, "kcal": 100, "durationSec": 0, "gifFileName": "", "description": "Glute and hamstring squeeze." }
+    ]},
+    { "dayNumber": 24, "isRest": true, "title": "Active Mobility Recovery", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 25, "isRest": false, "title": "Arms & Shoulders Giant Set", "difficulty": "Advanced", "muscleGroup": "Shoulders/Arms", "workoutExercises": [
+      { "category": "Shoulders", "name": "Dumbbell Shoulder Press", "sets": 4, "reps": 15, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Standing overhead press." },
+      { "category": "Arms", "name": "Dumbbell Bicep Curl", "sets": 4, "reps": 15, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Bicep peak contraction." }
+    ]},
+    { "dayNumber": 26, "isRest": false, "title": "Core & Back Conditioning", "difficulty": "Advanced", "muscleGroup": "Back/Core", "workoutExercises": [
+      { "category": "Back", "name": "Resistance Band Bent-Over Row", "sets": 4, "reps": 20, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Explosive pull, slow negative." },
+      { "category": "Core", "name": "Plank", "sets": 3, "reps": 0, "kcal": 40, "durationSec": 100, "gifFileName": "", "description": "100s plank challenge." }
+    ]},
+    { "dayNumber": 27, "isRest": true, "title": "Pre-Challenge Rest", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 28, "isRest": true, "title": "Deep Relaxation & Sleep", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 29, "isRest": false, "title": "Full Body Pump Test", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Chest", "name": "Push-Up", "sets": 4, "reps": 20, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Chest pump test." },
+      { "category": "Back", "name": "Dumbbell Row", "sets": 4, "reps": 15, "kcal": 85, "durationSec": 0, "gifFileName": "", "description": "Row test." }
+    ]},
+    { "dayNumber": 30, "isRest": false, "title": "Final Muscle Challenge", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Chest", "name": "Dumbbell Floor Press", "sets": 5, "reps": 15, "kcal": 100, "durationSec": 0, "gifFileName": "", "description": "Max floor press volume." },
+      { "category": "Legs", "name": "Dumbbell Goblet Squat", "sets": 5, "reps": 20, "kcal": 120, "durationSec": 0, "gifFileName": "", "description": "Max squat volume." }
+    ]}
+  ]
+}
