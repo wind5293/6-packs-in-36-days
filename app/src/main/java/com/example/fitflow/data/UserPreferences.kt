@@ -43,6 +43,11 @@ class UserPreferences(context: Context) {
         const val KEY_SETTING_COUNTDOWN = "setting_countdown"
         const val KEY_HYBRID_GIF_CACHE_READY = "hybrid_gif_cache_ready"
         const val KEY_HYBRID_GIF_CACHE_SIGNATURE = "hybrid_gif_cache_signature"
+        const val KEY_MEDIA_PACK_READY = "media_pack_ready"
+        const val KEY_MEDIA_PACK_VERSION = "media_pack_version"
+        const val KEY_MEDIA_PACK_DOWNLOADED = "media_pack_downloaded"
+        const val KEY_MEDIA_PACK_TOTAL = "media_pack_total"
+        const val KEY_MEDIA_PACK_FAILED_FILES = "media_pack_failed_files"
 
         const val HISTORY_MAX_DAYS = 90
     }
@@ -323,6 +328,59 @@ class UserPreferences(context: Context) {
 
     fun getCountdown(): String = prefs.getString(KEY_SETTING_COUNTDOWN, "5s") ?: "5s"
     fun setCountdown(value: String) = prefs.edit().putString(KEY_SETTING_COUNTDOWN, value).apply()
+
+    fun markMediaPackPending(version: String, total: Int, failedFiles: List<String> = emptyList()) {
+        prefs.edit()
+            .putBoolean(KEY_MEDIA_PACK_READY, false)
+            .putString(KEY_MEDIA_PACK_VERSION, version)
+            .putInt(KEY_MEDIA_PACK_DOWNLOADED, 0)
+            .putInt(KEY_MEDIA_PACK_TOTAL, total.coerceAtLeast(0))
+            .putString(KEY_MEDIA_PACK_FAILED_FILES, failedFiles.joinToString(","))
+            .apply()
+    }
+
+    fun updateMediaPackProgress(downloaded: Int, total: Int) {
+        prefs.edit()
+            .putInt(KEY_MEDIA_PACK_DOWNLOADED, downloaded.coerceAtLeast(0))
+            .putInt(KEY_MEDIA_PACK_TOTAL, total.coerceAtLeast(0))
+            .apply()
+    }
+
+    fun markMediaPackReady(version: String, downloaded: Int, total: Int) {
+        prefs.edit()
+            .putBoolean(KEY_MEDIA_PACK_READY, true)
+            .putString(KEY_MEDIA_PACK_VERSION, version)
+            .putInt(KEY_MEDIA_PACK_DOWNLOADED, downloaded.coerceAtLeast(0))
+            .putInt(KEY_MEDIA_PACK_TOTAL, total.coerceAtLeast(0))
+            .putString(KEY_MEDIA_PACK_FAILED_FILES, "")
+            .apply()
+    }
+
+    fun setMediaPackFailedFiles(files: List<String>) {
+        prefs.edit().putString(KEY_MEDIA_PACK_FAILED_FILES, files.joinToString(",")).apply()
+    }
+
+    fun isMediaPackReady(version: String? = null): Boolean {
+        val ready = prefs.getBoolean(KEY_MEDIA_PACK_READY, false)
+        if (!ready) return false
+        if (version == null) return true
+        return prefs.getString(KEY_MEDIA_PACK_VERSION, null) == version
+    }
+
+    fun getMediaPackVersion(): String? = prefs.getString(KEY_MEDIA_PACK_VERSION, null)
+
+    fun getMediaPackDownloadedCount(): Int = prefs.getInt(KEY_MEDIA_PACK_DOWNLOADED, 0)
+
+    fun getMediaPackTotalCount(): Int = prefs.getInt(KEY_MEDIA_PACK_TOTAL, 0)
+
+    fun getMediaPackFailedFiles(): List<String> {
+        val raw = prefs.getString(KEY_MEDIA_PACK_FAILED_FILES, "") ?: ""
+        if (raw.isBlank()) return emptyList()
+        return raw.split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+    }
 
     fun markHybridGifCachePending(signature: String) {
         prefs.edit()

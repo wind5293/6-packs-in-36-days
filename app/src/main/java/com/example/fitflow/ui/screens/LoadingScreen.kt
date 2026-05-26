@@ -1,8 +1,10 @@
 package com.example.fitflow.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -13,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,16 +37,10 @@ fun LoadingScreen(
         }
     }
 
-    val firstProgress by animateFloatAsState(
-        targetValue = provisioningState.firstSegmentProgress,
+    val overallProgress by animateFloatAsState(
+        targetValue = provisioningState.progress,
         animationSpec = tween(durationMillis = 300),
-        label = "first_progress"
-    )
-
-    val secondProgress by animateFloatAsState(
-        targetValue = provisioningState.secondSegmentProgress,
-        animationSpec = tween(durationMillis = 300),
-        label = "second_progress"
+        label = "overall_progress"
     )
 
     val statusText = when {
@@ -93,41 +90,17 @@ fun LoadingScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            ProgressTrack(
-                progress = firstProgress,
-                modifier = Modifier.weight(1f)
-            )
-            ProgressTrack(
-                progress = secondProgress,
-                modifier = Modifier.weight(1f)
-            )
-        }
+        SpotlightProgressTrack(progress = overallProgress)
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "GENERATE WORKOUT",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = "GIF",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-        }
+        Text(
+            text = statusText,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.58f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.4.sp
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -175,19 +148,47 @@ fun LoadingScreen(
 }
 
 @Composable
-private fun ProgressTrack(progress: Float, modifier: Modifier = Modifier) {
-    Box(
+private fun SpotlightProgressTrack(progress: Float, modifier: Modifier = Modifier) {
+    val clamped = progress.coerceIn(0f, 1f)
+    val animatedPercent by animateIntAsState(
+        targetValue = (clamped * 100f).toInt(),
+        animationSpec = tween(durationMillis = 220),
+        label = "loading_percent"
+    )
+    val percentText = "$animatedPercent%"
+
+    BoxWithConstraints(
         modifier = modifier
-            .height(4.dp)
-            .clip(RoundedCornerShape(50))
-            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+            .fillMaxWidth()
+            .height(44.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f))
     ) {
+        val density = LocalDensity.current
+        val trackWidthPx = with(density) { maxWidth.toPx() }
+        val trackCenterPx = trackWidthPx / 2f
+        val fillEndPx = trackWidthPx * clamped
+        val percentColor = if (fillEndPx >= trackCenterPx) {
+            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.78f)
+        } else {
+            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
+        }
+
         Box(
             modifier = Modifier
-                .fillMaxWidth(progress)
-                .height(4.dp)
-                .clip(RoundedCornerShape(50))
+                .fillMaxWidth(clamped)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(999.dp))
                 .background(MaterialTheme.colorScheme.primary)
+        )
+
+        Text(
+            text = percentText,
+            modifier = Modifier.align(Alignment.Center),
+            color = percentColor,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 0.8.sp
         )
     }
 }
@@ -198,8 +199,7 @@ fun LoadingScreenPreview() {
     FitflowTheme() {
         LoadingScreen(
             provisioningState = PlanProvisioningState(
-                firstSegmentProgress = 1f,
-                secondSegmentProgress = 0.4f,
+                progress = 0.64f,
                 statusMessage = "Finalizing setup...",
                 isInProgress = true
             ),

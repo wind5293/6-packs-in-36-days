@@ -3,12 +3,10 @@ package com.example.fitflow.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Calendar
-import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.List
 import com.composables.icons.lucide.User
 import androidx.compose.material3.*
@@ -28,25 +26,11 @@ fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
             .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavItem("Home",    Lucide.House,      currentRoute == "dashboard") { onNavigate("dashboard") }
         NavItem("Plan",    Lucide.Calendar,  currentRoute == "planner")  { onNavigate("planner") }
-
-        Box(
-            modifier = Modifier
-                .offset(y = (-24).dp)
-                .size(64.dp)
-                .background(MaterialTheme.colorScheme.primary, CircleShape)
-                .clip(CircleShape)
-                .clickable { onNavigate("workout_setup") }
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Lucide.Plus, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
-        }
-
         NavItem("Library", Lucide.List,   currentRoute == "library") { onNavigate("library") }
         NavItem("Me",      Lucide.User, currentRoute == "profile") { onNavigate("profile") }
     }

@@ -3,9 +3,11 @@ package com.example.fitflow.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,31 +16,42 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.ui.theme.FitflowTheme
+import com.example.fitflow.utils.GifSourceResolver
 import com.example.fitflow.viewmodel.LibraryViewModel
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.clickable
 import com.example.fitflow.data.model.Exercise
+import com.example.fitflow.data.model.WorkoutExercise
 
 @Composable
 fun LibraryScreen(
     viewModel: LibraryViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val filterState by viewModel.filterState.collectAsState()
     val filteredExercises by viewModel.filteredExercises.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val difficulties by viewModel.difficulties.collectAsState()
     val muscleGroups by viewModel.muscleGroups.collectAsState()
+    var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
 
     Column(
         modifier = Modifier
@@ -193,9 +206,22 @@ fun LibraryScreen(
                 )
             }
 
-            items(filteredExercises) { exercise ->
-                ExerciseListItem(exercise = exercise)
+            items(
+                items = filteredExercises,
+                key = { it.name }
+            ) { exercise ->
+                ExerciseListItem(
+                    exercise = exercise,
+                    onClick = { selectedExercise = exercise }
+                )
             }
+        }
+
+        selectedExercise?.let { exercise ->
+            ExerciseInstructionOverlayScreen(
+                exercise = exercise.toWorkoutExercise(),
+                onClose = { selectedExercise = null }
+            )
         }
     }
 }
@@ -260,73 +286,120 @@ fun ExerciseListItem(
     exercise: Exercise,
     onClick: () -> Unit = {}
 ) {
-    Row(
+    val context = LocalContext.current
+    val gifSource = remember(exercise.local_gifs) {
+        exercise.local_gifs.firstOrNull()?.let { GifSourceResolver.resolve(it, context) }
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(20.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(vertical = 8.dp)
     ) {
-        // Thumbnail placeholder (sau này thay bằng GIF)
-        Box(
+        Column(
             modifier = Modifier
-                .size(56.dp)
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    RoundedCornerShape(12.dp)
-                ),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(12.dp)
         ) {
-            Text(
-                exercise.exercise_type.take(3).uppercase(),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (gifSource != null) {
+                    val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(gifSource)
+                            .crossfade(true)
+                            .build(),
+                        imageLoader = imageLoader,
+                        contentDescription = exercise.name,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        text = "NO ANIMATION",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
 
-        // Thông tin chính
-        Column(modifier = Modifier.weight(1f)) {
+            Spacer(modifier = Modifier.height(12.dp))
+
             Text(
                 exercise.name,
-                fontSize = 14.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(4.dp))
+
+            Spacer(modifier = Modifier.height(6.dp))
+
             val muscles = exercise.target_muscles
                 .filter { it != "Main" }
-                .take(2)
+                .take(3)
                 .joinToString(" · ")
+                .ifBlank { "Full Body" }
+
             Text(
                 muscles,
                 fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
-                maxLines = 1
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-        }
 
-        // Difficulty badge
-        val badgeColor = when (exercise.difficulty) {
-            "beginner" -> MaterialTheme.colorScheme.secondary
-            "advanced" -> MaterialTheme.colorScheme.error
-            else -> MaterialTheme.colorScheme.primary
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val category = exercise.exercise_type.replaceFirstChar { it.uppercase() }
+                Chip(category)
+
+                val difficultyColor = when (exercise.difficulty) {
+                    "beginner" -> MaterialTheme.colorScheme.secondary
+                    "advanced" -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.primary
+                }
+
+                Text(
+                    exercise.difficulty.replaceFirstChar { it.uppercase() },
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    color = difficultyColor,
+                    modifier = Modifier
+                        .background(difficultyColor.copy(alpha = 0.1f), RoundedCornerShape(50))
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                )
+            }
         }
-        Text(
-            exercise.difficulty.replaceFirstChar { it.uppercase() },
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Black,
-            color = badgeColor,
-            modifier = Modifier
-                .background(badgeColor.copy(alpha = 0.1f), RoundedCornerShape(50))
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        )
     }
+}
 
-    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+private fun Exercise.toWorkoutExercise(): WorkoutExercise {
+    val category = exercise_type.replaceFirstChar { it.uppercase() }
+    val gif = local_gifs.firstOrNull().orEmpty()
+    return WorkoutExercise(
+        category = category,
+        name = name,
+        sets = 1,
+        reps = 12,
+        kcal = 8,
+        durationSec = 30,
+        gifFileName = gif,
+        description = instructions.firstOrNull().orEmpty()
+    )
 }
 
 @Composable
