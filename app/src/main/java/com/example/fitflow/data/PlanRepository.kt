@@ -34,6 +34,7 @@ class PlanRepository(private val context: Context) {
                 else -> "jefit-month1"
             }
             FitnessGoal.MUSCLE_GAIN -> when (equipment) {
+                "minimal", "minimalist" -> "jefit-minimal-muscle"
                 "gym", "full", "fullprotocol" -> "jefit-fullprotocol-muscle"
                 else -> "jefit-month1"
             }
