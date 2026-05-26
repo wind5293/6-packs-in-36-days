@@ -15,6 +15,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fitflow.data.ExerciseRepository
 import com.example.fitflow.data.StepCounterManager
 import com.example.fitflow.data.UserPreferences
+import com.example.fitflow.data.PlanRepository
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.FitnessGoal
@@ -51,7 +52,8 @@ data class PlanProvisioningState(
 
 class UserViewModel(
     private val userPreferences: UserPreferences,
-    private val exerciseRepository: ExerciseRepository
+    private val exerciseRepository: ExerciseRepository,
+    private val planRepository: PlanRepository
 ) : ViewModel() {
     private val _userProfile: MutableStateFlow<UserProfile?> = MutableStateFlow(null)
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
@@ -104,7 +106,7 @@ class UserViewModel(
     private var pendingGoal: FitnessGoal? = null
     private var mobileDataConsentGranted = false
 
-    private val workoutPlanGenerator = WorkoutPlanGenerator(exerciseRepository)
+    private val workoutPlanGenerator = WorkoutPlanGenerator(exerciseRepository, planRepository)
 
     private fun loadUserProfile() {
         val profile = userPreferences.getUserProfile()
@@ -117,7 +119,7 @@ class UserViewModel(
         // ✅ generatePlan là suspend → cần viewModelScope
         viewModelScope.launch {
             val basePlan = if (profile != null) {
-                workoutPlanGenerator.generatePlan(profile.goal)
+                workoutPlanGenerator.generatePlan(profile.goal, profile.equipment)
             } else {
                 emptyList()
             }
@@ -157,7 +159,7 @@ class UserViewModel(
         loadUserProfile()
     }
 
-    fun startPlanProvisioning(context: Context, goal: FitnessGoal) {
+    fun startPlanProvisioning(context: Context, goal: FitnessGoal, equipment: String = "bodyweight") {
         if (planProvisioningJob?.isActive == true) return
 
         pendingGoal = goal
@@ -176,9 +178,11 @@ class UserViewModel(
         planProvisioningJob = viewModelScope.launch {
             try {
                 userPreferences.saveGoal(goal)
+                userPreferences.saveEquipment(equipment)
+                userPreferences.clearCustomDayPlans()
                 _userProfile.value = userPreferences.getUserProfile()
 
-                val generatedPlan = workoutPlanGenerator.generatePlan(goal)
+                val generatedPlan = workoutPlanGenerator.generatePlan(goal, equipment)
                 val mergedPlan = generatedPlan.map { day ->
                     val custom = userPreferences.getCustomDayPlan(day.dayNumber)
                     if (custom != null) day.copy(workoutExercises = custom) else day
@@ -232,7 +236,8 @@ class UserViewModel(
         }
 
         val goal = pendingGoal ?: _userProfile.value?.goal ?: FitnessGoal.WEIGHT_LOSS
-        startPlanProvisioning(context.applicationContext, goal)
+        val equipment = _userProfile.value?.equipment ?: "bodyweight"
+        startPlanProvisioning(context.applicationContext, goal, equipment)
     }
 
     fun markDayComplete(dayNumber: Int) {
@@ -486,12 +491,13 @@ class UserViewModel(
 
 class UserViewModelFactory(
     private val userPreferences: UserPreferences,
-    private val exerciseRepository: ExerciseRepository
+    private val exerciseRepository: ExerciseRepository,
+    private val planRepository: PlanRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return UserViewModel(userPreferences, exerciseRepository) as T
+            return UserViewModel(userPreferences, exerciseRepository, planRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

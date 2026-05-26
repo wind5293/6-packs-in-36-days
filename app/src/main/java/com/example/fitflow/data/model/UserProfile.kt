@@ -22,4 +22,5 @@ data class UserProfile(
     val bmi: Float,
     val bmiCategory: BmiCategory,
     val goal: FitnessGoal,
+    val equipment: String = "bodyweight",
 )

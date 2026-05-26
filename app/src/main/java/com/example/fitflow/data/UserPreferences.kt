@@ -24,6 +24,7 @@ class UserPreferences(context: Context) {
         const val KEY_IS_ONBOARDED = "is_onboarded"
         const val KEY_COMPLETED_DAYS = "completed_days"
         const val KEY_GOAL           = "goal"
+        const val KEY_EQUIPMENT      = "equipment"
         const val KEY_START_DATE     = "start_date"
         const val KEY_WORKOUT_TIME   = "workout_time"
         const val KEY_WEIGHT_HISTORY = "weight_history"
@@ -53,10 +54,12 @@ class UserPreferences(context: Context) {
         weight: Float,
         birthYear: Int,
         targetWeight: Float,
-        workoutTime: String
+        workoutTime: String,
+        equipment: String = "bodyweight"
     ) {
         prefs.edit()
             .putString(KEY_GOAL, selectedGoal.name)
+            .putString(KEY_EQUIPMENT, equipment)
             .putFloat(KEY_HEIGHT, height)
             .putFloat(KEY_WEIGHT, weight)
             .putInt(KEY_BIRTH_YEAR, birthYear)
@@ -66,6 +69,10 @@ class UserPreferences(context: Context) {
             .apply()
 
             upsertWeightRecord(LocalDate.now(), weight)
+    }
+
+    fun saveEquipment(equipment: String) {
+        prefs.edit().putString(KEY_EQUIPMENT, equipment).apply()
     }
 
     fun getStartDate(): LocalDate? {
@@ -97,8 +104,9 @@ class UserPreferences(context: Context) {
         } catch (e: IllegalArgumentException) {
             FitnessGoal.WEIGHT_LOSS
         }
+        val equipment = prefs.getString(KEY_EQUIPMENT, "bodyweight") ?: "bodyweight"
 
-        return UserProfile(height, weight, birthYear, targetWeight, bmi, bmiCategory, goal)
+        return UserProfile(height, weight, birthYear, targetWeight, bmi, bmiCategory, goal, equipment)
     }
 
     fun setOnboarded(value: Boolean) {
@@ -295,6 +303,16 @@ class UserPreferences(context: Context) {
         } catch (e: Exception) {
             null
         }
+    }
+
+    fun clearCustomDayPlans() {
+        val editor = prefs.edit()
+        prefs.all.keys.forEach { key ->
+            if (key.startsWith("custom_day_plan_")) {
+                editor.remove(key)
+            }
+        }
+        editor.apply()
     }
 
     fun isBgMusicEnabled(): Boolean = prefs.getBoolean(KEY_SETTING_BG_MUSIC_ENABLED, true)
