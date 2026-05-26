@@ -1,5 +1,6 @@
 package com.example.fitflow.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -24,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,6 +35,7 @@ import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
 import com.example.fitflow.ui.theme.CardBackground
 import com.example.fitflow.ui.theme.CardNested
+import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.Song
 import com.example.fitflow.viewmodel.WorkoutSettingsViewModel
 
@@ -303,35 +306,11 @@ fun WorkoutSettingsScreen(
                                 Spacer(modifier = Modifier.height(20.dp))
 
                                 // Volume Slider
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Lucide.Volume2,
-                                        contentDescription = "Volume Low",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Slider(
-                                        value = bgMusicVolume,
-                                        onValueChange = { viewModel.setBgMusicVolume(it) },
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = OrangePrimary,
-                                            activeTrackColor = OrangePrimary,
-                                            inactiveTrackColor = Color.DarkGray
-                                        ),
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(horizontal = 12.dp)
-                                    )
-                                    Icon(
-                                        imageVector = Lucide.Volume2,
-                                        contentDescription = "Volume High",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
+                                VolumeSlider(
+                                    value = bgMusicVolume,
+                                    onValueChange = { viewModel.setBgMusicVolume(it) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
                             }
                         }
                     }
@@ -436,35 +415,11 @@ fun WorkoutSettingsScreen(
                                 }
 
                                 // Coach volume Slider
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Lucide.Volume2,
-                                        contentDescription = "Volume Low",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Slider(
-                                        value = coachVolume,
-                                        onValueChange = { viewModel.setCoachVolume(it) },
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = OrangePrimary,
-                                            activeTrackColor = OrangePrimary,
-                                            inactiveTrackColor = Color.DarkGray
-                                        ),
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(horizontal = 12.dp)
-                                    )
-                                    Icon(
-                                        imageVector = Lucide.Volume2,
-                                        contentDescription = "Volume High",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
+                                VolumeSlider(
+                                    value = coachVolume,
+                                    onValueChange = { viewModel.setCoachVolume(it) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
                             }
                         }
 
@@ -634,6 +589,90 @@ fun WorkoutSettingsScreen(
                 shape = RoundedCornerShape(16.dp)
             )
         }
+    }
+}
+
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@Composable
+fun VolumeSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(
+            imageVector = Lucide.Volume1,
+            contentDescription = "Volume Low",
+            tint = Color.Gray,
+            modifier = Modifier.size(18.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(28.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            // Track background
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.12f))
+            )
+
+            // Track filled
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(value.coerceIn(0f, 1f))
+                    .height(4.dp)
+                    .clip(CircleShape)
+                    .background(OrangePrimary)
+            )
+
+            // Thumb
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val thumbOffsetDp = maxWidth * value.coerceIn(0f, 1f)
+                Box(
+                    modifier = Modifier
+                        .offset(x = thumbOffsetDp - 10.dp)
+                        .size(20.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .border(2.dp, OrangePrimary.copy(alpha = 0.3f), CircleShape)
+                )
+            }
+
+            // Invisible full-width slider để handle gesture
+            Slider(
+                value = value,
+                onValueChange = onValueChange,
+                colors = SliderDefaults.colors(
+                    thumbColor = Color.Transparent,
+                    activeTrackColor = Color.Transparent,
+                    inactiveTrackColor = Color.Transparent,
+                    activeTickColor = Color.Transparent,
+                    inactiveTickColor = Color.Transparent,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(28.dp)
+            )
+        }
+
+        Icon(
+            imageVector = Lucide.Volume2,
+            contentDescription = "Volume High",
+            tint = Color.White,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
