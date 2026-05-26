@@ -1,6 +1,7 @@
 package com.example.fitflow.domain
 
 import com.example.fitflow.data.ExerciseRepository
+import com.example.fitflow.data.PlanRepository
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.data.model.FitnessGoal
@@ -132,9 +133,26 @@ private val planRegistry: Map<FitnessGoal, ExercisePool> = mapOf(
 // ─────────────────────────────────────────────────────────────
 
 class WorkoutPlanGenerator(
-    private val exerciseRepository: ExerciseRepository
+    private val exerciseRepository: ExerciseRepository,
+    private val planRepository: PlanRepository
 ) {
-    suspend fun generatePlan(goal: FitnessGoal): List<DayPlan> {
+    suspend fun generatePlan(goal: FitnessGoal, equipment: String = "bodyweight"): List<DayPlan> {
+        val assetPlan = planRepository.getPlanForGoal(goal, equipment)
+        if (assetPlan != null) {
+            return assetPlan.map { dayPlan ->
+                if (dayPlan.isRest) {
+                    dayPlan
+                } else {
+                    val updatedExercises = dayPlan.workoutExercises.map { ex ->
+                        val gifFileName = exerciseRepository.getGifFileName(ex.name) ?: ""
+                        ex.copy(gifFileName = gifFileName)
+                    }
+                    dayPlan.copy(workoutExercises = updatedExercises)
+                }
+            }
+        }
+
+
         if (goal == FitnessGoal.WEIGHT_LOSS) {
             return buildJefitMonth1Plan().map { dayPlan ->
                 if (dayPlan.isRest) {
