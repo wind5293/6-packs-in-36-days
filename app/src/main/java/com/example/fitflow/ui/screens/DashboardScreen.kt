@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun DashboardScreen(
+    paddingValues: PaddingValues = PaddingValues(0.dp),
     completedDays: Set<Int> = emptySet(),
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
@@ -64,8 +65,13 @@ fun DashboardScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(
+            top = 16.dp,
+            start = 16.dp,
+            end = 16.dp,
+            bottom = paddingValues.calculateBottomPadding() + 16.dp,
+        )
     ) {
         item {
             HeaderSection(onOpenSettings = onOpenSettings)
