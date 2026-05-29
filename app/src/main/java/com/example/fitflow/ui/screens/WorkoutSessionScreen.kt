@@ -30,6 +30,7 @@ import coil.request.ImageRequest
 import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
+import com.example.fitflow.utils.TextToSpeechHelper
 import com.example.fitflow.viewmodel.WorkoutSessionViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -65,6 +66,15 @@ fun WorkoutSessionScreen(
     val isResting by viewModel.isResting.collectAsState()
     val current = exercises.getOrNull(index)
     val next = exercises.getOrNull(index + 1)
+
+    val context = LocalContext.current
+    val ttsHelper = remember { TextToSpeechHelper(context) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            ttsHelper.shutdown()
+        }
+    }
 
     if (showInstructionScreen && current != null) {
         ExerciseInstructionOverlayScreen(
@@ -149,6 +159,39 @@ fun WorkoutSessionScreen(
         }
     }
 
+    LaunchedEffect(phase, index, countdownRemaining) {
+        when (phase) {
+            SessionPhase.PREPARING -> {
+                when (countdownRemaining) {
+                    5    -> ttsHelper.speak("Ready to go!")
+                    3, 2, 1 -> ttsHelper.speak("$countdownRemaining")
+                    else -> ""
+                }
+            }
+            SessionPhase.EXERCISING -> {
+                val exercise = exercises.getOrNull(index) ?: return@LaunchedEffect
+                val repsOrDuration = when {
+                    exercise.reps > 0        -> "${exercise.reps}. Reps"
+                    exercise.durationSec > 0 -> "${exercise.durationSec}. Seconds"
+                    else                     -> ""
+                }
+                ttsHelper.speak("Go! Do your exercise! $repsOrDuration. ${exercise.name}. ")
+
+                // Tick nếu bài đếm giây
+                if (exercise.durationSec > 0) {
+                    delay(2000)
+                }
+            }
+            SessionPhase.RESTING -> {
+                val nextExercise = exercises.getOrNull(index + 1)
+                if (nextExercise != null && exercises.getOrNull(index + 2) != null) {
+                    ttsHelper.speak("Take your rest. Up next: ${nextExercise.name}")
+                } else {
+                    ttsHelper.speak("Rest. Last exercise coming up!")
+                }
+            }
+        }
+    }
     // ── Shared Progress Bar ─────────────────────────────────
     Column(
         modifier = Modifier
