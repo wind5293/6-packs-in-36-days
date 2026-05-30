@@ -159,15 +159,18 @@ fun WorkoutSessionScreen(
         }
     }
 
-    LaunchedEffect(phase, index, countdownRemaining) {
+    LaunchedEffect(countdownRemaining) {
+        if (phase != SessionPhase.PREPARING) return@LaunchedEffect
+        when (countdownRemaining) {
+            5    -> ttsHelper.speak("Ready to go!")
+            3, 2, 1 -> ttsHelper.speak("$countdownRemaining")
+        }
+    }
+
+    LaunchedEffect(phase, index) {
         when (phase) {
-            SessionPhase.PREPARING -> {
-                when (countdownRemaining) {
-                    5    -> ttsHelper.speak("Ready to go!")
-                    3, 2, 1 -> ttsHelper.speak("$countdownRemaining")
-                    else -> ""
-                }
-            }
+            SessionPhase.PREPARING -> { }
+
             SessionPhase.EXERCISING -> {
                 val exercise = exercises.getOrNull(index) ?: return@LaunchedEffect
                 val repsOrDuration = when {
@@ -185,7 +188,7 @@ fun WorkoutSessionScreen(
             SessionPhase.RESTING -> {
                 val nextExercise = exercises.getOrNull(index + 1)
                 if (nextExercise != null && exercises.getOrNull(index + 2) != null) {
-                    ttsHelper.speak("Take your rest. Up next: ${nextExercise.name}")
+                    ttsHelper.speak("Take your rest. Up next. ${nextExercise.name}")
                 } else {
                     ttsHelper.speak("Rest. Last exercise coming up!")
                 }
