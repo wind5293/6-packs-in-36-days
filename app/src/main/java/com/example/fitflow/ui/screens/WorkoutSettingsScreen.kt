@@ -43,7 +43,7 @@ import com.example.fitflow.viewmodel.WorkoutSettingsViewModel
 @Composable
 fun WorkoutSettingsScreen(
     onBack: () -> Unit,
-    viewModel: WorkoutSettingsViewModel = viewModel()
+    viewModel: WorkoutSettingsViewModel
 ) {
     // Collecting states from ViewModel
     val isBgMusicEnabled by viewModel.isBgMusicEnabled.collectAsState()
@@ -73,6 +73,10 @@ fun WorkoutSettingsScreen(
         val m = sec / 60
         val s = sec % 60
         String.format("%02d:%02d", m, s)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.syncWithCurrentPlayback()
     }
 
     Box(
