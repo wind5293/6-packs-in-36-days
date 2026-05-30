@@ -1,0 +1,150 @@
+{
+  "planId": "jefit-bodyweight-weightloss",
+  "title": "Bodyweight Weight Loss - 30 Days",
+  "days": [
+    { "dayNumber": 1, "isRest": false, "title": "Full Body HIIT", "difficulty": "Intermediate", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Cardio", "name": "Jumping Jack", "sets": 1, "reps": 0, "kcal": 30, "durationSec": 60, "gifFileName": "", "description": "Warm-up: steady rhythm." },
+      { "category": "Full Body", "name": "Push-Up", "sets": 3, "reps": 12, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Controlled reps with full range." },
+      { "category": "Legs", "name": "Air Squat", "sets": 3, "reps": 20, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Hips back, drive through heels." }
+    ]},
+    { "dayNumber": 2, "isRest": false, "title": "Core & Cardio", "difficulty": "Intermediate", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Cardio", "name": "Mountain Climber", "sets": 3, "reps": 0, "kcal": 40, "durationSec": 45, "gifFileName": "", "description": "Fast alternating knees." },
+      { "category": "Core", "name": "Plank", "sets": 3, "reps": 0, "kcal": 10, "durationSec": 60, "gifFileName": "", "description": "Keep hips level." },
+      { "category": "Core", "name": "Bicycle Crunch", "sets": 3, "reps": 20, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Rotate torso to engage obliques." }
+    ]},
+    { "dayNumber": 3, "isRest": false, "title": "Lower Body Blast", "difficulty": "Intermediate", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Lunge", "sets": 3, "reps": 16, "kcal": 55, "durationSec": 0, "gifFileName": "", "description": "Alternate legs, step deep." },
+      { "category": "Legs", "name": "Glute Bridge", "sets": 3, "reps": 20, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Squeeze at top." },
+      { "category": "Cardio", "name": "High Knee", "sets": 3, "reps": 0, "kcal": 35, "durationSec": 60, "gifFileName": "", "description": "Drive knees to hip height." }
+    ]},
+    { "dayNumber": 4, "isRest": false, "title": "Upper Body Endurance", "difficulty": "Intermediate", "muscleGroup": "Upper Body", "workoutExercises": [
+      { "category": "Upper", "name": "Incline Push-Up (chair)", "sets": 3, "reps": 15, "kcal": 45, "durationSec": 0, "gifFileName": "", "description": "Hands on elevated surface." },
+      { "category": "Upper", "name": "Triceps Dip (chair)", "sets": 3, "reps": 15, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "Elbows back, lower with control." },
+      { "category": "Cardio", "name": "Burpee", "sets": 3, "reps": 10, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Full-body explosive movement." }
+    ]},
+    { "dayNumber": 5, "isRest": false, "title": "Core Focus", "difficulty": "Intermediate", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Side Plank", "sets": 3, "reps": 0, "kcal": 15, "durationSec": 45, "gifFileName": "", "description": "Hold each side." },
+      { "category": "Core", "name": "Leg Raise", "sets": 3, "reps": 15, "kcal": 25, "durationSec": 0, "gifFileName": "", "description": "Control on the way down." },
+      { "category": "Cardio", "name": "Jump Rope (imaginary)", "sets": 3, "reps": 0, "kcal": 60, "durationSec": 120, "gifFileName": "", "description": "Simulate rope if none available." }
+    ]},
+    { "dayNumber": 6, "isRest": false, "title": "Lower & Plyo", "difficulty": "Intermediate", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Step-Up (bench)", "sets": 3, "reps": 16, "kcal": 55, "durationSec": 0, "gifFileName": "", "description": "Alternate lead leg." },
+      { "category": "Legs", "name": "Jump Squat", "sets": 3, "reps": 15, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Explosive with soft landing." },
+      { "category": "Cardio", "name": "Mountain Climber", "sets": 3, "reps": 0, "kcal": 40, "durationSec": 45, "gifFileName": "", "description": "High pace." }
+    ]},
+    { "dayNumber": 7, "isRest": true, "title": "Rest & Mobility", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+
+    { "dayNumber": 8, "isRest": false, "title": "Full Body HIIT (Progress)", "difficulty": "Intermediate", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Cardio", "name": "Jumping Jack", "sets": 1, "reps": 0, "kcal": 32, "durationSec": 60, "gifFileName": "", "description": "Warm-up." },
+      { "category": "Full Body", "name": "Push-Up", "sets": 4, "reps": 14, "kcal": 55, "durationSec": 0, "gifFileName": "", "description": "Progression week 2." },
+      { "category": "Legs", "name": "Air Squat", "sets": 4, "reps": 22, "kcal": 65, "durationSec": 0, "gifFileName": "", "description": "Higher volume." }
+    ]},
+    { "dayNumber": 9, "isRest": false, "title": "Core & Cardio (Progress)", "difficulty": "Intermediate", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Cardio", "name": "Burpee", "sets": 3, "reps": 12, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Higher intensity." },
+      { "category": "Core", "name": "Plank", "sets": 3, "reps": 0, "kcal": 12, "durationSec": 75, "gifFileName": "", "description": "Longer holds." },
+      { "category": "Core", "name": "Bicycle Crunch", "sets": 3, "reps": 24, "kcal": 35, "durationSec": 0, "gifFileName": "", "description": "Increase reps." }
+    ]},
+    { "dayNumber": 10, "isRest": false, "title": "Lower Body Strength", "difficulty": "Intermediate", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Reverse Lunge", "sets": 3, "reps": 18, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Slow and controlled." },
+      { "category": "Legs", "name": "Single-Leg Romanian Deadlift (bodyweight)", "sets": 3, "reps": 12, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "Balance and hinge." },
+      { "category": "Cardio", "name": "High Knee", "sets": 3, "reps": 0, "kcal": 40, "durationSec": 60, "gifFileName": "", "description": "Explosive warm-up." }
+    ]},
+
+    { "dayNumber": 11, "isRest": false, "title": "Upper Body Endurance (Progress)", "difficulty": "Intermediate", "muscleGroup": "Upper Body", "workoutExercises": [
+      { "category": "Upper", "name": "Decline Push-Up (feet elevated)", "sets": 3, "reps": 12, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Increase difficulty." },
+      { "category": "Upper", "name": "Bodyweight Row (under table)", "sets": 3, "reps": 12, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Horizontal pull using stable bar." },
+      { "category": "Cardio", "name": "Jump Rope (imaginary)", "sets": 3, "reps": 0, "kcal": 70, "durationSec": 150, "gifFileName": "", "description": "Longer cardio." }
+    ]},
+
+    { "dayNumber": 12, "isRest": false, "title": "Core & Mobility", "difficulty": "Intermediate", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Hollow Hold", "sets": 3, "reps": 0, "kcal": 15, "durationSec": 45, "gifFileName": "", "description": "Tense core." },
+      { "category": "Core", "name": "Russian Twist", "sets": 3, "reps": 24, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Control twist movement." },
+      { "category": "Mobility", "name": "Hip Flexor Stretch", "sets": 2, "reps": 0, "kcal": 5, "durationSec": 60, "gifFileName": "", "description": "Cool down." }
+    ]},
+
+    { "dayNumber": 13, "isRest": false, "title": "Lower & Plyo (Progress)", "difficulty": "Intermediate", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Bulgarian Split Squat (bodyweight)", "sets": 3, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Single leg strength." },
+      { "category": "Cardio", "name": "Jump Squat", "sets": 4, "reps": 16, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Explosive reps." },
+      { "category": "Core", "name": "Plank", "sets": 3, "reps": 0, "kcal": 15, "durationSec": 90, "gifFileName": "", "description": "Long hold." }
+    ]},
+
+    { "dayNumber": 14, "isRest": true, "title": "Rest & Recover", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 15, "isRest": false, "title": "Full Body Strength", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "Hand-Release Push-Up", "sets": 4, "reps": 15, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Pause on chest, release hands." },
+      { "category": "Legs", "name": "Pistol Squat Progression", "sets": 3, "reps": 8, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Assist or supported pistol." },
+      { "category": "Cardio", "name": "Burpee", "sets": 4, "reps": 12, "kcal": 110, "durationSec": 0, "gifFileName": "", "description": "High intensity." }
+    ]},
+
+    { "dayNumber": 16, "isRest": false, "title": "Core Blast", "difficulty": "Advanced", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Dragon Flag Progression", "sets": 3, "reps": 8, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Advanced core move." },
+      { "category": "Core", "name": "Hollow Rock", "sets": 3, "reps": 20, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Controlled rocking motion." },
+      { "category": "Cardio", "name": "Jump Rope (imaginary)", "sets": 3, "reps": 0, "kcal": 80, "durationSec": 180, "gifFileName": "", "description": "Endurance cardio." }
+    ]},
+
+    { "dayNumber": 17, "isRest": false, "title": "Lower Strength", "difficulty": "Advanced", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Nordic Hamstring (assisted)", "sets": 3, "reps": 8, "kcal": 45, "durationSec": 0, "gifFileName": "", "description": "Eccentric hamstring focus." },
+      { "category": "Legs", "name": "Jump Lunge", "sets": 4, "reps": 12, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Plyometric lunges." },
+      { "category": "Mobility", "name": "Calf Stretch", "sets": 2, "reps": 0, "kcal": 2, "durationSec": 60, "gifFileName": "", "description": "Cool down." }
+    ]},
+
+    { "dayNumber": 18, "isRest": false, "title": "Upper Endurance", "difficulty": "Advanced", "muscleGroup": "Upper Body", "workoutExercises": [
+      { "category": "Upper", "name": "Decline Push-Up", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Feet elevated for difficulty." },
+      { "category": "Upper", "name": "Inverted Row", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Horizontal pulling movement." },
+      { "category": "Cardio", "name": "Burpee", "sets": 3, "reps": 15, "kcal": 120, "durationSec": 0, "gifFileName": "", "description": "High intensity." }
+    ]},
+
+    { "dayNumber": 19, "isRest": false, "title": "Core & Balance", "difficulty": "Advanced", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Single-Leg Plank", "sets": 3, "reps": 0, "kcal": 15, "durationSec": 60, "gifFileName": "", "description": "Lift one leg while holding plank." },
+      { "category": "Core", "name": "V-Up", "sets": 3, "reps": 20, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "Full sit-up-to-leg raise." },
+      { "category": "Mobility", "name": "Thoracic Rotation", "sets": 2, "reps": 10, "kcal": 5, "durationSec": 30, "gifFileName": "", "description": "Improve upper back mobility." }
+    ]},
+
+    { "dayNumber": 20, "isRest": false, "title": "Full Body Circuit (Peak)", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "Circuit: Push-Up / Squat / Plank", "sets": 4, "reps": 0, "kcal": 200, "durationSec": 600, "gifFileName": "", "description": "4 rounds, minimal rest." }
+    ]},
+
+    { "dayNumber": 21, "isRest": true, "title": "Rest & Stretch", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 22, "isRest": false, "title": "Repeat Cycle (Moderate)", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Cardio", "name": "Jump Rope (imaginary)", "sets": 3, "reps": 0, "kcal": 80, "durationSec": 180, "gifFileName": "", "description": "Cardio endurance." },
+      { "category": "Upper", "name": "Push-Up", "sets": 4, "reps": 16, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Strong push endurance." },
+      { "category": "Legs", "name": "Air Squat", "sets": 4, "reps": 24, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "High volume." }
+    ]},
+
+    { "dayNumber": 23, "isRest": false, "title": "Core & Conditioning", "difficulty": "Advanced", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Hollow Rock", "sets": 3, "reps": 20, "kcal": 35, "durationSec": 0, "gifFileName": "", "description": "Dynamic core movement." },
+      { "category": "Cardio", "name": "Burpee", "sets": 4, "reps": 12, "kcal": 120, "durationSec": 0, "gifFileName": "", "description": "High intensity intervals." }
+    ]},
+
+    { "dayNumber": 24, "isRest": false, "title": "Lower Endurance", "difficulty": "Advanced", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Walking Lunge", "sets": 4, "reps": 20, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Long distance lunges for endurance." },
+      { "category": "Cardio", "name": "Stationary Bike (bodyweight)", "sets": 1, "reps": 0, "kcal": 120, "durationSec": 600, "gifFileName": "", "description": "Sustained cardio." }
+    ]},
+
+    { "dayNumber": 25, "isRest": false, "title": "Upper Strength", "difficulty": "Advanced", "muscleGroup": "Upper Body", "workoutExercises": [
+      { "category": "Upper", "name": "Bodyweight Row", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Increase pulling strength." },
+      { "category": "Upper", "name": "Diamond Push-Up", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Triceps focused push-ups." }
+    ]},
+
+    { "dayNumber": 26, "isRest": false, "title": "Core & Plyo", "difficulty": "Advanced", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "V-Up", "sets": 4, "reps": 20, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "High rep core movement." },
+      { "category": "Cardio", "name": "Jump Squat", "sets": 4, "reps": 18, "kcal": 100, "durationSec": 0, "gifFileName": "", "description": "Explosive lower body." }
+    ]},
+
+    { "dayNumber": 27, "isRest": false, "title": "Full Body Test", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "Circuit AMRAP 20min", "sets": 1, "reps": 0, "kcal": 220, "durationSec": 1200, "gifFileName": "", "description": "As many rounds as possible." }
+    ]},
+
+    { "dayNumber": 28, "isRest": true, "title": "Rest & Evaluate", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 29, "isRest": false, "title": "Repeat Weakness Work", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "Targeted Weakness Circuit", "sets": 3, "reps": 0, "kcal": 150, "durationSec": 600, "gifFileName": "", "description": "Choose exercises addressing weak points." }
+    ]},
+
+    { "dayNumber": 30, "isRest": false, "title": "Final Challenge", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "30-min AMRAP Challenge", "sets": 1, "reps": 0, "kcal": 300, "durationSec": 1800, "gifFileName": "", "description": "Finish strong." }
+    ]}
+  ]
+}

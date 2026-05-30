@@ -31,9 +31,10 @@ fun PlannerScreen(
     workoutPlan: List<DayPlan>,
     completedDays: Set<Int> = emptySet(),
     currentDay: Int = -1,
-    onDayClick: (Int) -> Unit = {}
+    onDayClick: (Int) -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
-    val groupedByWeek = workoutPlan.groupBy { (it.day - 1) / 7 }
+    val groupedByWeek = workoutPlan.groupBy { (it.dayNumber - 1) / 7 }
 
     Column(
         modifier = Modifier
@@ -58,15 +59,8 @@ fun PlannerScreen(
                 )
                 Row {
                     Text(
-                        "MONTHLY ",
+                        "PLANNER",
                         color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
-                    )
-                    Text(
-                        "TIMELINE",
-                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
                         fontStyle = FontStyle.Italic
@@ -74,7 +68,7 @@ fun PlannerScreen(
                 }
             }
             IconButton(
-                onClick = {},
+                onClick = onOpenSettings,
                 modifier = Modifier
                     .background(
                         MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
@@ -185,7 +179,7 @@ fun DayPlanItem(
     isCompleted: Boolean = false,
     onClick: () -> Unit = {}
 ) {
-    val dayNum = dayPlan.day
+    val dayNum = dayPlan.dayNumber
     val isRest = dayPlan.isRest
     val cardAlpha = if (isCompleted) 0.4f else 1f
 
@@ -257,11 +251,11 @@ fun DayPlanItem(
             if (!isRest) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    dayPlan.exercises.take(3).forEach { exercise ->
+                    dayPlan.workoutExercises.take(3).forEach { exercise ->
                         ExerciseTag(exercise.name)
                     }
-                    if (dayPlan.exercises.size > 3) {
-                        ExerciseTag("+${dayPlan.exercises.size - 3}")
+                    if (dayPlan.workoutExercises.size > 3) {
+                        ExerciseTag("+${dayPlan.workoutExercises.size - 3}")
                     }
                 }
             }

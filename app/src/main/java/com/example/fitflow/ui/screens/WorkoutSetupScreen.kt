@@ -23,7 +23,7 @@ import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.ui.theme.FitflowTheme
 
 @Composable
-fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
+fun WorkoutSetupScreen(onComplete: (FitnessGoal, String) -> Unit) {
     var selectedEquipment by remember { mutableStateOf("bodyweight") }
     var selectedFocus by remember { mutableStateOf(setOf("Full Body")) }
     var daysPerWeek by remember { mutableFloatStateOf(5f) }
@@ -33,81 +33,188 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp)
-            .padding(top = 40.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Text("MANIFEST GENERATION", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
-            Row {
-                Text("WORKOUT ", color = MaterialTheme.colorScheme.onBackground, fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-                Text("SETUP",   color = MaterialTheme.colorScheme.primary,       fontSize = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Text("EQUIPMENT LEVEL", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            EquipmentItem("Bodyweight Only", "No equipment required",       selectedEquipment == "bodyweight") { selectedEquipment = "bodyweight" }
-            EquipmentItem("Minimalist",      "Dumbbells & Resistance bands", selectedEquipment == "minimal")   { selectedEquipment = "minimal" }
-            EquipmentItem("Full Protocol",   "Complete high-end gym access", selectedEquipment == "gym")       { selectedEquipment = "gym" }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-            Text("FREQUENCY", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-            Text("${daysPerWeek.toInt()} DAYS / WEEK", color = MaterialTheme.colorScheme.primary, fontSize = 16.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic)
-        }
-        Slider(
-            value = daysPerWeek,
-            onValueChange = { daysPerWeek = it },
-            valueRange = 1f..7f,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-            )
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text("FITNESS GOAL", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            EquipmentItem("Weight Loss",  "Cardio-focused · Burn calories",    selectedGoal == FitnessGoal.WEIGHT_LOSS)  { selectedGoal = FitnessGoal.WEIGHT_LOSS }
-            EquipmentItem("Muscle Gain",  "Strength-focused · Build muscle",   selectedGoal == FitnessGoal.MUSCLE_GAIN) { selectedGoal = FitnessGoal.MUSCLE_GAIN }
-            EquipmentItem("Endurance",    "Mixed training · Increase stamina", selectedGoal == FitnessGoal.ENDURANCE)   { selectedGoal = FitnessGoal.ENDURANCE }
-            EquipmentItem("Maintenance",  "Balanced workout · Stay fit",       selectedGoal == FitnessGoal.MAINTENANCE) { selectedGoal = FitnessGoal.MAINTENANCE }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = { onComplete(selectedGoal) },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .padding(top = 40.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("FINALIZE PROTOCOL", color = MaterialTheme.colorScheme.onPrimary, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "MANIFEST GENERATION",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 3.sp
+                )
+                Row {
+                    Text(
+                        "WORKOUT ",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Text(
+                        "SETUP",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Text(
+                "EQUIPMENT LEVEL",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                EquipmentItem(
+                    "Bodyweight Only",
+                    "No equipment required",
+                    selectedEquipment == "bodyweight"
+                ) { selectedEquipment = "bodyweight" }
+                EquipmentItem(
+                    "Minimalist",
+                    "Dumbbells & Resistance bands",
+                    selectedEquipment == "minimal"
+                ) { selectedEquipment = "minimal" }
+                EquipmentItem(
+                    "Full Protocol",
+                    "Complete high-end gym access",
+                    selectedEquipment == "gym"
+                ) { selectedEquipment = "gym" }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    "FREQUENCY",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp
+                )
+                Text(
+                    "${daysPerWeek.toInt()} DAYS / WEEK",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic
+                )
+            }
+            Slider(
+                value = daysPerWeek,
+                onValueChange = { daysPerWeek = it },
+                valueRange = 1f..7f,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                "FITNESS GOAL",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                EquipmentItem(
+                    "Weight Loss",
+                    "Cardio-focused · Burn calories",
+                    selectedGoal == FitnessGoal.WEIGHT_LOSS
+                ) { selectedGoal = FitnessGoal.WEIGHT_LOSS }
+                EquipmentItem(
+                    "Muscle Gain",
+                    "Strength-focused · Build muscle",
+                    selectedGoal == FitnessGoal.MUSCLE_GAIN
+                ) { selectedGoal = FitnessGoal.MUSCLE_GAIN }
+                EquipmentItem(
+                    "Endurance",
+                    "Mixed training · Increase stamina",
+                    selectedGoal == FitnessGoal.ENDURANCE
+                ) { selectedGoal = FitnessGoal.ENDURANCE }
+                EquipmentItem(
+                    "Maintenance",
+                    "Balanced workout · Stay fit",
+                    selectedGoal == FitnessGoal.MAINTENANCE
+                ) { selectedGoal = FitnessGoal.MAINTENANCE }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            Button(
+                onClick = { onComplete(selectedGoal, selectedEquipment) },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "FINALIZE PROTOCOL",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
 fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () -> Unit) {
-    val bgColor     = if (isSelected) MaterialTheme.colorScheme.primary                          else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
-    val textColor   = if (isSelected) MaterialTheme.colorScheme.onPrimary                        else MaterialTheme.colorScheme.onBackground
-    val descColor   = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)     else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary                          else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+    val bgColor =
+        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(
+            alpha = 0.05f
+        )
+    val textColor =
+        if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+    val descColor =
+        if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onBackground.copy(
+            alpha = 0.2f
+        )
+    val borderColor =
+        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(
+            alpha = 0.1f
+        )
 
     Box(
         modifier = Modifier
@@ -119,8 +226,20 @@ fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () 
             .padding(20.dp)
     ) {
         Column {
-            Text(title.uppercase(), color = textColor, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-            Text(desc.uppercase(),  color = descColor, fontSize = 9.sp,  fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
+            Text(
+                title.uppercase(),
+                color = textColor,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
+            )
+            Text(
+                desc.uppercase(),
+                color = descColor,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 1.sp
+            )
         }
     }
 }
@@ -128,5 +247,5 @@ fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () 
 @Preview(showBackground = true)
 @Composable
 fun WorkoutSetupScreenPreview() {
-    FitflowTheme { WorkoutSetupScreen({ _ -> }) }
+    FitflowTheme { WorkoutSetupScreen({ _, _ -> }) }
 }
