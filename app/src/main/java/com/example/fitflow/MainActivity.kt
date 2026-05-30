@@ -91,6 +91,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: "dashboard"
+                val settingsViewModel: WorkoutSettingsViewModel by viewModels()
 
                 Scaffold(
                     bottomBar = {
@@ -185,7 +186,8 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("workout_settings") {
                             WorkoutSettingsScreen(
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                viewModel = settingsViewModel
                             )
                         }
                         composable(
@@ -287,12 +289,17 @@ class MainActivity : ComponentActivity() {
                             
                             WorkoutSessionScreen(
                                 exercises = dayPlan.workoutExercises,
-                                onBack = { navController.popBackStack() },
+                                onBack = {
+                                    settingsViewModel.stopMusic()
+                                    navController.popBackStack()
+                                },
                                 onFinish = {
+                                    settingsViewModel.stopMusic()
                                     viewModel.markDayComplete(dayNumber)
                                     navController.popBackStack()
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onOpenSettings = { navController.navigate("workout_settings") },
+                                settingsViewModel = settingsViewModel
                             )
                         }
                     }
