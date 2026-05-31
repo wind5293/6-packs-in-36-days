@@ -1,6 +1,8 @@
 package com.example.fitflow.viewmodel
 
 import android.app.Application
+import android.content.res.AssetFileDescriptor
+import android.media.MediaPlayer
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitflow.FitFlowApplication
@@ -21,10 +23,15 @@ class WorkoutSettingsViewModel(application: Application) : AndroidViewModel(appl
 
     // Available songs
     val songsList = listOf(
-        Song("Dynamic Beats", "FitFlow DJ", 136),
-        Song("Pump Up Rock", "Synthwave Club", 185),
-        Song("Chill Lofi", "Acoustic Cafe", 160),
-        Song("Hyper Speed", "Electronic Tribe", 144)
+        Song("It's Her", "Hallmore", 152),
+        Song("Restless Clocks", "Killrude", 172),
+        Song("Rest My Case", "Killrude", 234),
+    )
+
+    private val assetPaths = listOf(
+        "music/track_01.mp3",
+        "music/track_02.mp3",
+        "music/track_03.mp3"
     )
 
     // Player State
@@ -34,7 +41,7 @@ class WorkoutSettingsViewModel(application: Application) : AndroidViewModel(appl
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    private val _playbackProgress = MutableStateFlow(46) // start at 46 as per screenshot
+    private val _playbackProgress = MutableStateFlow(40)
     val playbackProgress: StateFlow<Int> = _playbackProgress.asStateFlow()
 
     private val _isShuffle = MutableStateFlow(false)
@@ -71,102 +78,146 @@ class WorkoutSettingsViewModel(application: Application) : AndroidViewModel(appl
     private val _countdown = MutableStateFlow(userPreferences.getCountdown())
     val countdown: StateFlow<String> = _countdown.asStateFlow()
 
-    private var playbackJob: Job? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var progressJob: Job? = null
 
-    init {
-        // Start or stop playback emulation coroutine based on isPlaying and isBgMusicEnabled
-        viewModelScope.launch {
-            combineStateFlows()
+    fun startMusicIfEnabled() {
+        android.util.Log.d("MUSIC_DEBUG", "startMusicIfEnabled: isBgEnabled=${_isBgMusicEnabled.value}, mediaPlayer=$mediaPlayer")
+        if (_isBgMusicEnabled.value && mediaPlayer == null) {
+            loadAndPlay(_currentSongIndex.value)
         }
     }
 
-    private suspend fun combineStateFlows() {
-        _isPlaying.collect { playing ->
-            if (playing && _isBgMusicEnabled.value) {
-                startPlaybackTimer()
-            } else {
-                stopPlaybackTimer()
-            }
-        }
+    fun stopMusic() {
+        progressJob?.cancel()
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+        _isPlaying.value = false
+        _playbackProgress.value = 0
     }
 
-    private fun startPlaybackTimer() {
-        playbackJob?.cancel()
-        playbackJob = viewModelScope.launch {
-            while (true) {
-                delay(1000)
-                val currentSong = songsList[_currentSongIndex.value]
-                if (_playbackProgress.value < currentSong.durationSec) {
-                    _playbackProgress.value += 1
-                } else {
-                    if (_isRepeat.value) {
-                        _playbackProgress.value = 0
-                    } else {
-                        nextSong()
-                    }
+    private fun loadAndPlay(index: Int) {
+        progressJob?.cancel()
+        mediaPlayer?.release()
+
+        try {
+            val afd: AssetFileDescriptor =
+                getApplication<Application>().assets.openFd(assetPaths[index])
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                val v = _bgMusicVolume.value
+                setVolume(v, v)
+                isLooping = _isRepeat.value
+                setOnCompletionListener {
+                    if (!_isRepeat.value) nextSong()
                 }
+                prepare()
+                start()
+            }
+            afd.close()
+            _currentSongIndex.value = index
+            _isPlaying.value = true
+            _playbackProgress.value = 0
+            startProgressTracking()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun startProgressTracking() {
+        progressJob?.cancel()
+        progressJob = viewModelScope.launch {
+            while (true) {
+                delay(500)
+                _playbackProgress.value = (mediaPlayer?.currentPosition ?: 0) / 1000
             }
         }
     }
 
-    private fun stopPlaybackTimer() {
-        playbackJob?.cancel()
-        playbackJob = null
+    fun syncWithCurrentPlayback() {
+        val pos = mediaPlayer?.currentPosition ?: -1
+        val playing = mediaPlayer?.isPlaying ?: false
+        android.util.Log.d("MUSIC_DEBUG", "syncWithCurrentPlayback: mediaPlayer=$mediaPlayer, pos=$pos, isPlaying=$playing, _isPlaying=${_isPlaying.value}")
+        if (mediaPlayer != null && _isPlaying.value) {
+            startProgressTracking()
+        }
+        _playbackProgress.value = (mediaPlayer?.currentPosition ?: 0) / 1000
     }
 
-    // Controls
+    // ── Controls ─────────────────────────────────────────────
     fun togglePlayPause() {
         if (!_isBgMusicEnabled.value) return
-        _isPlaying.update { !it }
+        val mp = mediaPlayer ?: run { loadAndPlay(_currentSongIndex.value); return }
+        if (mp.isPlaying) {
+            mp.pause()
+            _isPlaying.value = false
+            progressJob?.cancel()
+        } else {
+            mp.start()
+            _isPlaying.value = true
+            startProgressTracking()
+        }
+    }
+
+    fun pauseMusic() {
+        mediaPlayer?.pause()
+        _isPlaying.value = false
+        progressJob?.cancel()
+    }
+
+    fun resumeMusic() {
+        if (_isBgMusicEnabled.value && mediaPlayer != null) {
+            mediaPlayer?.start()
+            _isPlaying.value = true
+            startProgressTracking()
+        }
     }
 
     fun nextSong() {
-        if (songsList.isEmpty()) return
-        _playbackProgress.value = 0
-        if (_isShuffle.value) {
-            _currentSongIndex.value = Random.nextInt(songsList.size)
-        } else {
-            _currentSongIndex.update { (it + 1) % songsList.size }
-        }
-        if (_isPlaying.value) {
-            startPlaybackTimer()
-        }
+        val next = if (_isShuffle.value)
+            (0 until songsList.size).filter { it != _currentSongIndex.value }
+                .randomOrNull() ?: 0
+        else (_currentSongIndex.value + 1) % songsList.size
+        loadAndPlay(next)
     }
 
     fun prevSong() {
-        if (songsList.isEmpty()) return
-        _playbackProgress.value = 0
-        if (_isShuffle.value) {
-            _currentSongIndex.value = Random.nextInt(songsList.size)
+        // Nếu đã phát > 3 giây thì rewind, không thì về bài trước
+        val currentSec = mediaPlayer?.currentPosition?.div(1000) ?: 0
+        if (currentSec > 3) {
+            mediaPlayer?.seekTo(0)
+            _playbackProgress.value = 0
         } else {
-            _currentSongIndex.update { (it - 1 + songsList.size) % songsList.size }
-        }
-        if (_isPlaying.value) {
-            startPlaybackTimer()
+            val prev = (_currentSongIndex.value - 1 + songsList.size) % songsList.size
+            loadAndPlay(prev)
         }
     }
 
-    fun toggleShuffle() {
-        _isShuffle.update { !it }
-    }
+    fun toggleShuffle() { _isShuffle.update { !it } }
 
     fun toggleRepeat() {
         _isRepeat.update { !it }
+        mediaPlayer?.isLooping = _isRepeat.value
     }
 
-    // Setters
+    // ── Setters ───────────────────────────────────────────────
     fun setBgMusicEnabled(enabled: Boolean) {
         userPreferences.setBgMusicEnabled(enabled)
         _isBgMusicEnabled.value = enabled
-        if (!enabled) {
+        if (enabled) {
+            loadAndPlay(_currentSongIndex.value)
+        } else {
+            mediaPlayer?.pause()
             _isPlaying.value = false
-            stopPlaybackTimer()
+            progressJob?.cancel()
         }
     }
 
     fun setBgMusicVolume(volume: Float) {
         userPreferences.setBgMusicVolume(volume)
         _bgMusicVolume.value = volume
+        mediaPlayer?.setVolume(volume, volume)  // ← apply ngay lập tức
     }
 
     fun setVoiceGuideEnabled(enabled: Boolean) {
@@ -202,5 +253,10 @@ class WorkoutSettingsViewModel(application: Application) : AndroidViewModel(appl
     fun setCountdown(option: String) {
         userPreferences.setCountdown(option)
         _countdown.value = option
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopMusic()
     }
 }

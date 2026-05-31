@@ -1,0 +1,116 @@
+{
+  "planId": "jefit-fullprotocol-weightloss",
+  "title": "Full Protocol Weight Loss - 30 Days",
+  "days": [
+    { "dayNumber": 1, "isRest": false, "title": "Chest & Triceps", "difficulty": "Intermediate", "muscleGroup": "Chest", "workoutExercises": [
+      { "category": "Chest", "name": "Flat Barbell Bench Press", "sets": 3, "reps": 12, "kcal": 55, "durationSec": 0, "gifFileName": "", "description": "Classic compound press." },
+      { "category": "Chest", "name": "Incline Dumbbell Press", "sets": 3, "reps": 12, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Upper chest focus." },
+      { "category": "Triceps", "name": "Cable Triceps Pushdown", "sets": 3, "reps": 15, "kcal": 25, "durationSec": 0, "gifFileName": "", "description": "Controlled pushdowns." }
+    ]},
+    { "dayNumber": 2, "isRest": false, "title": "Back & Biceps", "difficulty": "Intermediate", "muscleGroup": "Back", "workoutExercises": [
+      { "category": "Back", "name": "Pull-Up", "sets": 4, "reps": 8, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Assisted if needed." },
+      { "category": "Back", "name": "Barbell Bent-Over Row", "sets": 4, "reps": 10, "kcal": 75, "durationSec": 0, "gifFileName": "", "description": "Hinge at hips, squeeze." },
+      { "category": "Biceps", "name": "Barbell Curl", "sets": 3, "reps": 12, "kcal": 35, "durationSec": 0, "gifFileName": "", "description": "Strict reps." }
+    ]},
+    { "dayNumber": 3, "isRest": false, "title": "Leg Day", "difficulty": "Intermediate", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Barbell Back Squat", "sets": 4, "reps": 12, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Depth and drive." },
+      { "category": "Legs", "name": "Romanian Deadlift", "sets": 3, "reps": 12, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Hamstring focused." },
+      { "category": "Legs", "name": "Leg Press", "sets": 3, "reps": 15, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "High volume." }
+    ]},
+    { "dayNumber": 4, "isRest": false, "title": "Shoulders & Traps", "difficulty": "Intermediate", "muscleGroup": "Shoulders", "workoutExercises": [
+      { "category": "Shoulders", "name": "Overhead Barbell Press", "sets": 4, "reps": 10, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Strong vertical press." },
+      { "category": "Shoulders", "name": "Dumbbell Lateral Raise", "sets": 3, "reps": 15, "kcal": 35, "durationSec": 0, "gifFileName": "", "description": "Strict form." },
+      { "category": "Traps", "name": "Barbell Shrug", "sets": 3, "reps": 15, "kcal": 25, "durationSec": 0, "gifFileName": "", "description": "Squeeze at top." }
+    ]},
+    { "dayNumber": 5, "isRest": false, "title": "Core & Conditioning", "difficulty": "Intermediate", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Cable Crunch", "sets": 3, "reps": 15, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Controlled crunches." },
+      { "category": "Cardio", "name": "Rowing Machine", "sets": 1, "reps": 0, "kcal": 120, "durationSec": 600, "gifFileName": "", "description": "Sustained cardio session." }
+    ]},
+    { "dayNumber": 6, "isRest": false, "title": "Full Body Circuit", "difficulty": "Intermediate", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Circuit", "name": "Kettlebell Swing", "sets": 4, "reps": 20, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Power from hips." },
+      { "category": "Full Body", "name": "Thruster (Barbell)", "sets": 4, "reps": 12, "kcal": 110, "durationSec": 0, "gifFileName": "", "description": "Squat to press." }
+    ]},
+    { "dayNumber": 7, "isRest": true, "title": "Rest & Recovery", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+
+    { "dayNumber": 8, "isRest": false, "title": "Chest Hypertrophy", "difficulty": "Intermediate", "muscleGroup": "Chest", "workoutExercises": [
+      { "category": "Chest", "name": "Incline Barbell Press", "sets": 4, "reps": 10, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Upper chest focus." },
+      { "category": "Chest", "name": "Cable Fly", "sets": 3, "reps": 15, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Stretch and contraction." }
+    ]},
+    { "dayNumber": 9, "isRest": false, "title": "Back Strength", "difficulty": "Intermediate", "muscleGroup": "Back", "workoutExercises": [
+      { "category": "Back", "name": "Deadlift", "sets": 4, "reps": 6, "kcal": 110, "durationSec": 0, "gifFileName": "", "description": "Heavy strength sets." },
+      { "category": "Back", "name": "Lat Pulldown", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Controlled pull." }
+    ]},
+    { "dayNumber": 10, "isRest": false, "title": "Leg Hypertrophy", "difficulty": "Intermediate", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Front Squat", "sets": 4, "reps": 10, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Quad focused." },
+      { "category": "Legs", "name": "Walking Lunges (DB)", "sets": 3, "reps": 20, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "DB in hands." }
+    ]},
+    { "dayNumber": 11, "isRest": false, "title": "Shoulder Accessory", "difficulty": "Intermediate", "muscleGroup": "Shoulders", "workoutExercises": [
+      { "category": "Shoulders", "name": "Seated Dumbbell Press", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Strict seated press." },
+      { "category": "Shoulders", "name": "Face Pull", "sets": 3, "reps": 15, "kcal": 25, "durationSec": 0, "gifFileName": "", "description": "Rear delts and posture." }
+    ]},
+    { "dayNumber": 12, "isRest": false, "title": "Core & Cardio", "difficulty": "Intermediate", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Hanging Leg Raise", "sets": 3, "reps": 12, "kcal": 35, "durationSec": 0, "gifFileName": "", "description": "Strict core lift." },
+      { "category": "Cardio", "name": "Assault Bike", "sets": 1, "reps": 0, "kcal": 150, "durationSec": 600, "gifFileName": "", "description": "Sustained conditioning." }
+    ]},
+    { "dayNumber": 13, "isRest": false, "title": "Full Body Metcon", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "AMRAP 20min (KB Swing / Box Jump / Row)", "sets": 1, "reps": 0, "kcal": 250, "durationSec": 1200, "gifFileName": "", "description": "Conditioning circuit." }
+    ]},
+    { "dayNumber": 14, "isRest": true, "title": "Rest & Mobility", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 15, "isRest": false, "title": "Push Strength", "difficulty": "Advanced", "muscleGroup": "Chest", "workoutExercises": [
+      { "category": "Chest", "name": "Paused Bench Press", "sets": 4, "reps": 6, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Pause at chest for control." },
+      { "category": "Triceps", "name": "Skull Crusher", "sets": 3, "reps": 10, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Controlled movement." }
+    ]},
+    { "dayNumber": 16, "isRest": false, "title": "Pull Strength", "difficulty": "Advanced", "muscleGroup": "Back", "workoutExercises": [
+      { "category": "Back", "name": "Weighted Pull-Up", "sets": 4, "reps": 6, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Add weight as able." },
+      { "category": "Back", "name": "Chest-Supported Row", "sets": 4, "reps": 8, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Strict rowing movement." }
+    ]},
+    { "dayNumber": 17, "isRest": false, "title": "Leg Power", "difficulty": "Advanced", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Power Clean", "sets": 5, "reps": 3, "kcal": 120, "durationSec": 0, "gifFileName": "", "description": "Explosive lift with technique." },
+      { "category": "Legs", "name": "Front Squat", "sets": 4, "reps": 8, "kcal": 90, "durationSec": 0, "gifFileName": "", "description": "Quad emphasis." }
+    ]},
+    { "dayNumber": 18, "isRest": false, "title": "Shoulder Hypertrophy", "difficulty": "Advanced", "muscleGroup": "Shoulders", "workoutExercises": [
+      { "category": "Shoulders", "name": "Dumbbell Lateral Raise", "sets": 4, "reps": 15, "kcal": 40, "durationSec": 0, "gifFileName": "", "description": "High volume." },
+      { "category": "Shoulders", "name": "Reverse Pec Deck", "sets": 3, "reps": 15, "kcal": 30, "durationSec": 0, "gifFileName": "", "description": "Rear delt focus." }
+    ]},
+    { "dayNumber": 19, "isRest": false, "title": "Core & Conditioning (Peak)", "difficulty": "Advanced", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Hanging Windshield Wiper", "sets": 3, "reps": 10, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Advanced core control." },
+      { "category": "Cardio", "name": "Sled Push", "sets": 6, "reps": 20, "kcal": 200, "durationSec": 0, "gifFileName": "", "description": "High intensity pushes." }
+    ]},
+    { "dayNumber": 20, "isRest": false, "title": "Full Body Conditioning", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "MetCon Ladder", "sets": 1, "reps": 0, "kcal": 300, "durationSec": 1800, "gifFileName": "", "description": "Ladder style conditioning." }
+    ]},
+    { "dayNumber": 21, "isRest": true, "title": "Active Recovery", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+
+    { "dayNumber": 22, "isRest": false, "title": "Hypertrophy Repeat", "difficulty": "Advanced", "muscleGroup": "Chest/Back/Legs", "workoutExercises": [
+      { "category": "Chest", "name": "Dumbbell Bench Press", "sets": 4, "reps": 12, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Alternate grip if needed." },
+      { "category": "Back", "name": "Seated Cable Row", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Full contraction." }
+    ]},
+    { "dayNumber": 23, "isRest": false, "title": "Leg Strength", "difficulty": "Advanced", "muscleGroup": "Legs", "workoutExercises": [
+      { "category": "Legs", "name": "Deadlift", "sets": 4, "reps": 6, "kcal": 110, "durationSec": 0, "gifFileName": "", "description": "Strength focus." },
+      { "category": "Legs", "name": "Bulgarian Split Squat (DB)", "sets": 3, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Single-leg strength." }
+    ]},
+    { "dayNumber": 24, "isRest": false, "title": "Shoulder & Arm Circuit", "difficulty": "Advanced", "muscleGroup": "Shoulders/Arms", "workoutExercises": [
+      { "category": "Arms", "name": "Superset: EZ Curl / Triceps Rope", "sets": 4, "reps": 12, "kcal": 60, "durationSec": 0, "gifFileName": "", "description": "Superset for arms." }
+    ]},
+    { "dayNumber": 25, "isRest": false, "title": "Core & Mobility", "difficulty": "Advanced", "muscleGroup": "Core", "workoutExercises": [
+      { "category": "Core", "name": "Cable Pallof Press", "sets": 3, "reps": 12, "kcal": 20, "durationSec": 0, "gifFileName": "", "description": "Anti-rotation core." },
+      { "category": "Mobility", "name": "Deep Squat Hold", "sets": 2, "reps": 0, "kcal": 5, "durationSec": 60, "gifFileName": "", "description": "Ankle/hip mobility." }
+    ]},
+    { "dayNumber": 26, "isRest": false, "title": "Power & Speed", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Power", "name": "Box Jump", "sets": 5, "reps": 6, "kcal": 80, "durationSec": 0, "gifFileName": "", "description": "Explosive plyometric." },
+      { "category": "Power", "name": "Speed Deadlift (light)", "sets": 6, "reps": 3, "kcal": 70, "durationSec": 0, "gifFileName": "", "description": "Velocity work." }
+    ]},
+    { "dayNumber": 27, "isRest": false, "title": "Full Body Finale", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "30-min AMRAP (Barbell / KB / Row)", "sets": 1, "reps": 0, "kcal": 320, "durationSec": 1800, "gifFileName": "", "description": "Endurance finale." }
+    ]},
+    { "dayNumber": 28, "isRest": true, "title": "Rest & Test", "difficulty": "Easy", "muscleGroup": "Rest", "workoutExercises": [] },
+    { "dayNumber": 29, "isRest": false, "title": "Repeat Week Focus", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "Mixed Hypertrophy Circuit", "sets": 3, "reps": 0, "kcal": 200, "durationSec": 900, "gifFileName": "", "description": "Target weak points." }
+    ]},
+    { "dayNumber": 30, "isRest": false, "title": "Final Strength Test", "difficulty": "Advanced", "muscleGroup": "Full Body", "workoutExercises": [
+      { "category": "Full Body", "name": "1RM Bench / 3RM Deadlift / 1RM Squat (test)", "sets": 1, "reps": 0, "kcal": 50, "durationSec": 0, "gifFileName": "", "description": "Record max lifts safely." }
+    ]}
+  ]
+}

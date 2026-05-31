@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.fitflow.data.PlanRepository
 import com.example.fitflow.ui.components.BottomNavbar
 import com.example.fitflow.ui.screens.DashboardScreen
 import com.example.fitflow.ui.screens.LibraryScreen
@@ -61,7 +62,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val app = application as FitFlowApplication
         val viewModel: UserViewModel by viewModels {
-            UserViewModelFactory(app.userPreferences, app.exerciseRepository)
+            UserViewModelFactory(app.userPreferences, app.exerciseRepository, PlanRepository(applicationContext))
         }
         val plannerViewModel: WorkoutPlannerViewModel by viewModels()
         uiViewModel = viewModel
@@ -90,6 +91,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: "dashboard"
+                val settingsViewModel: WorkoutSettingsViewModel by viewModels()
 
                 Scaffold(
                     bottomBar = {
@@ -184,7 +186,8 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("workout_settings") {
                             WorkoutSettingsScreen(
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                viewModel = settingsViewModel
                             )
                         }
                         composable(
@@ -267,8 +270,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("workout_setup") {
-                            WorkoutSetupScreen(onComplete = { goal ->
-                                viewModel.startPlanProvisioning(applicationContext, goal)
+                            WorkoutSetupScreen(onComplete = { goal, equipment ->
+                                viewModel.startPlanProvisioning(applicationContext, goal, equipment)
                                 navController.navigate("loading") {
                                     popUpTo("workout_setup") { inclusive = true }
                                 }
@@ -286,12 +289,17 @@ class MainActivity : ComponentActivity() {
                             
                             WorkoutSessionScreen(
                                 exercises = dayPlan.workoutExercises,
-                                onBack = { navController.popBackStack() },
+                                onBack = {
+                                    settingsViewModel.stopMusic()
+                                    navController.popBackStack()
+                                },
                                 onFinish = {
+                                    settingsViewModel.stopMusic()
                                     viewModel.markDayComplete(dayNumber)
                                     navController.popBackStack()
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onOpenSettings = { navController.navigate("workout_settings") },
+                                settingsViewModel = settingsViewModel
                             )
                         }
                     }

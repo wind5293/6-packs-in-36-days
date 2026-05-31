@@ -25,7 +25,9 @@ import com.composables.icons.lucide.User
 @Composable
 fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
     Box(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)),
         contentAlignment = Alignment.BottomCenter
     ) {
         Row(

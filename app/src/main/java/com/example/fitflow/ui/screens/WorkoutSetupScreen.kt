@@ -23,7 +23,7 @@ import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.ui.theme.FitflowTheme
 
 @Composable
-fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
+fun WorkoutSetupScreen(onComplete: (FitnessGoal, String) -> Unit) {
     var selectedEquipment by remember { mutableStateOf("bodyweight") }
     var selectedFocus by remember { mutableStateOf(setOf("Full Body")) }
     var daysPerWeek by remember { mutableFloatStateOf(5f) }
@@ -172,7 +172,7 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
                 .background(MaterialTheme.colorScheme.background)
         ) {
             Button(
-                onClick = { onComplete(selectedGoal) },
+                onClick = { onComplete(selectedGoal, selectedEquipment) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(24.dp),
                 modifier = Modifier
@@ -247,5 +247,5 @@ fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () 
 @Preview(showBackground = true)
 @Composable
 fun WorkoutSetupScreenPreview() {
-    FitflowTheme { WorkoutSetupScreen({ _ -> }) }
+    FitflowTheme { WorkoutSetupScreen({ _, _ -> }) }
 }
