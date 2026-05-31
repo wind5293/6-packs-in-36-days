@@ -31,6 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.tooling.preview.Preview
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
@@ -358,6 +360,17 @@ fun CheckInRecordSection(completedCount: Int) {
     }
 }
 
+fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
+    0 -> "Sunday reset — prep your mind for a strong week ahead!"
+    1 -> "Monday energy! Set the tone for the whole week."
+    2 -> "Stay consistent, Tuesday gains are real gains."
+    3 -> "Halfway there — don't slow down now!"
+    4 -> "Thursday push — the weekend is almost here."
+    5 -> "Friday grind. Finish the week strong!"
+    6 -> "Saturday hustle — most people rest, you improve."
+    else -> "Your fitness goals are calling – time to answer!"
+}
+
 @Composable
 fun WeeklyGoalSection(
     weeklyGoal: Int = 3,
@@ -371,7 +384,8 @@ fun WeeklyGoalSection(
 
     val completedCount = completedDays.size
 
-    val onBackground = MaterialTheme.colorScheme.onBackground
+    var todayOffsetX by remember { mutableStateOf(0f) }
+    var rowWidth by remember { mutableStateOf(0f) }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -427,7 +441,11 @@ fun WeeklyGoalSection(
 
             // Days row
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { cords ->
+                        rowWidth = cords.size.width.toFloat()
+                    },
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 for (i in 0..6) {
@@ -448,45 +466,55 @@ fun WeeklyGoalSection(
                         else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(bgColor, CircleShape)
-                            .then(
-                                if (isClickable) Modifier.clickable { onToggleDay(i) }
-                                else Modifier
-                            ),
-                        contentAlignment = Alignment.Center
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = if (isToday) {
+                            Modifier.onGloballyPositioned { coords ->
+                                // tâm của circle ngày hôm nay
+                                todayOffsetX = coords.positionInParent().x + coords.size.width / 2f
+                            }
+                        } else Modifier
                     ) {
-                        Text(
-                            "${date.dayOfMonth}",
-                            fontSize = 14.sp,
-                            fontWeight = if (isToday || isCompleted) FontWeight.Bold else FontWeight.Normal,
-                            color = textColor
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(bgColor, CircleShape)
+                                .then(
+                                    if (isClickable) Modifier.clickable { onToggleDay(i) }
+                                    else Modifier
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "${date.dayOfMonth}",
+                                fontSize = 14.sp,
+                                fontWeight = if (isToday || isCompleted) FontWeight.Bold else FontWeight.Normal,
+                                color = textColor
+                            )
+                        }
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(8.dp))
 
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.TopCenter
-            ) {
+            val arrowColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.04f)
+            if (rowWidth > 0f && todayOffsetX > 0f) {
                 Canvas(
-                    modifier = Modifier.size(width = 16.dp, height = 8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
                 ) {
+                    val arrowW = 16.dp.toPx()
+                    val arrowH = 8.dp.toPx()
+                    val tipX = todayOffsetX.coerceIn(arrowW / 2f, size.width - arrowW / 2f)
                     val path = Path().apply {
-                        moveTo(size.width / 2f, 0f)
-                        lineTo(size.width, size.height)
-                        lineTo(0f, size.height)
+                        moveTo(tipX, 0f)
+                        lineTo(tipX + arrowW / 2f, arrowH)
+                        lineTo(tipX - arrowW / 2f, arrowH)
                         close()
                     }
-                    drawPath(
-                        path = path,
-                        color = onBackground.copy(alpha = 0.04f)
-                    )
+                    drawPath(path = path, color = arrowColor)
                 }
             }
 
@@ -518,7 +546,7 @@ fun WeeklyGoalSection(
 
                     // Quote
                     Text(
-                        text = "Your fitness goals are calling – time to answer with a workout!",
+                        text = quoteForDay(todayIndex),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
