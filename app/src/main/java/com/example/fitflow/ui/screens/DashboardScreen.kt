@@ -1,5 +1,6 @@
 package com.example.fitflow.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
@@ -22,12 +24,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.tooling.preview.Preview
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
@@ -80,6 +85,9 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
         item {
+            WeeklyGoalSection()
+        }
+        item {
             if (userProfile != null) {
                 TodayWeightSection(userProfile = userProfile)
             }
@@ -92,9 +100,6 @@ fun DashboardScreen(
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
-        }
-        item {
-            WeeklyCalendarSection()
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -355,79 +360,198 @@ fun CheckInRecordSection(completedCount: Int) {
     }
 }
 
-@Composable
-fun WeeklyCalendarSection() {
-    val today = LocalDate.now()
-    var weekOffset by remember { mutableIntStateOf(0) }
-    // Sunday = 0, Monday = 1, ..., Saturday = 6
-    val dayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
-    val startOfWeek = today.minusDays(dayIndex.toLong()).plusWeeks(weekOffset.toLong())
-    val dayLetters = listOf("S", "M", "T", "W", "T", "F", "S")
-    val monthYear = startOfWeek.format(DateTimeFormatter.ofPattern("MMMM yyyy")).uppercase()
+fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
+    0 -> "Sunday reset — prep your mind for a strong week ahead!"
+    1 -> "Monday energy! Set the tone for the whole week."
+    2 -> "Stay consistent, Tuesday gains are real gains."
+    3 -> "Halfway there — don't slow down now!"
+    4 -> "Thursday push — the weekend is almost here."
+    5 -> "Friday grind. Finish the week strong!"
+    6 -> "Saturday hustle — most people rest, you improve."
+    else -> "Your fitness goals are calling – time to answer!"
+}
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+@Composable
+fun WeeklyGoalSection(
+    weeklyGoal: Int = 3,
+    completedDays: Set<Int> = emptySet(),
+    onEditGoal: () -> Unit = {},
+    onToggleDay: (Int) -> Unit = {}
+) {
+    val today = LocalDate.now()
+    val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
+    val startOfWeek = today.minusDays(todayIndex.toLong())
+
+    val completedCount = completedDays.size
+
+    var todayOffsetX by remember { mutableStateOf(0f) }
+    var rowWidth by remember { mutableStateOf(0f) }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            IconButton(onClick = { weekOffset-- }) {
-                Icon(
-                    Icons.Default.ChevronLeft,
-                    contentDescription = "Previous week",
-                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
-                )
-            }
-            Text(
-                monthYear,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp
-            )
-            IconButton(onClick = { weekOffset++ }) {
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = "Next week",
-                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            for (i in 0..6) {
-                val date = startOfWeek.plusDays(i.toLong())
-                val isToday = date == today
-                val isPast = date.isBefore(today)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Header row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     Text(
-                        dayLetters[i],
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontSize = 10.sp,
+                        "Weekly Goal",
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+                        color = MaterialTheme.colorScheme.onBackground
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    IconButton(
+                        onClick = onEditGoal,
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit goal",
+                            tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                Text(
+                    "$completedCount/$weeklyGoal workouts",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (completedCount >= weeklyGoal)
+                        MaterialTheme.colorScheme.secondary
+                    else
+                        MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Days row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { cords ->
+                        rowWidth = cords.size.width.toFloat()
+                    },
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                for (i in 0..6) {
+                    val date = startOfWeek.plusDays(i.toLong())
+                    val isToday = i == todayIndex
+                    val isPast = i < todayIndex
+                    val isCompleted = i in completedDays
+                    val isClickable = isPast || isToday
+
+                    val bgColor = when {
+                        isCompleted -> MaterialTheme.colorScheme.primary
+                        isToday -> MaterialTheme.colorScheme.onBackground
+                        else -> Color.Transparent
+                    }
+                    val textColor = when {
+                        isCompleted || isToday -> MaterialTheme.colorScheme.background
+                        isPast -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
+                        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = if (isToday) {
+                            Modifier.onGloballyPositioned { coords ->
+                                // tâm của circle ngày hôm nay
+                                todayOffsetX = coords.positionInParent().x + coords.size.width / 2f
+                            }
+                        } else Modifier
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(bgColor, CircleShape)
+                                .then(
+                                    if (isClickable) Modifier.clickable { onToggleDay(i) }
+                                    else Modifier
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "${date.dayOfMonth}",
+                                fontSize = 14.sp,
+                                fontWeight = if (isToday || isCompleted) FontWeight.Bold else FontWeight.Normal,
+                                color = textColor
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val arrowColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.04f)
+            if (rowWidth > 0f && todayOffsetX > 0f) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                ) {
+                    val arrowW = 16.dp.toPx()
+                    val arrowH = 8.dp.toPx()
+                    val tipX = todayOffsetX.coerceIn(arrowW / 2f, size.width - arrowW / 2f)
+                    val path = Path().apply {
+                        moveTo(tipX, 0f)
+                        lineTo(tipX + arrowW / 2f, arrowH)
+                        lineTo(tipX - arrowW / 2f, arrowH)
+                        close()
+                    }
+                    drawPath(path = path, color = arrowColor)
+                }
+            }
+
+            // Coach quote dialog
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.04f)
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Coach avatar
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(44.dp)
                             .background(
-                                color = if (isToday) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                shape = CircleShape
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                CircleShape
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            "${date.dayOfMonth}",
-                            color = when {
-                                isToday -> MaterialTheme.colorScheme.onPrimary
-                                isPast -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
-                                else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
-                            },
-                            fontSize = 13.sp,
-                            fontWeight = if (isToday) FontWeight.Black else FontWeight.Normal
-                        )
+                        Text("💪", fontSize = 22.sp)
                     }
+
+                    // Quote
+                    Text(
+                        text = quoteForDay(todayIndex),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        lineHeight = 18.sp
+                    )
                 }
             }
         }
@@ -755,5 +879,13 @@ fun DashboardScreenPreview() {
 fun CheckInRecordSectionPreview() {
     FitflowTheme {
         CheckInRecordSection(completedCount = 2)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WeeklyCalendarSectionPreview() {
+    FitflowTheme {
+        WeeklyGoalSection()
     }
 }
