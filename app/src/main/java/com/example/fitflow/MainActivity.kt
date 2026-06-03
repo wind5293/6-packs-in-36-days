@@ -126,8 +126,10 @@ class MainActivity : ComponentActivity() {
                             val todayHealthMetrics by viewModel.todayHealthMetrics.collectAsState()
                             val activityGranted by viewModel.activityRecognitionGranted.collectAsState()
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
+                            val currentStreak by viewModel.currentStreak.collectAsState()
                             DashboardScreen(
                                 completedDays = completedDays,
+                                currentStreak = currentStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
                                 healthMetrics = todayHealthMetrics,
