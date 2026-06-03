@@ -1,0 +1,1608 @@
+{
+  "planId": "jefit-month1",
+  "title": "Weight Loss Journey - 30 Days",
+  "days": [
+    {
+      "dayNumber": 1,
+      "isRest": false,
+      "title": "Day 1 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "isRest": false,
+      "title": "Day 2 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 3,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 4,
+      "isRest": false,
+      "title": "Day 4 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 5,
+      "isRest": false,
+      "title": "Day 5 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 6,
+      "isRest": false,
+      "title": "Day 6 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 7,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 8,
+      "isRest": false,
+      "title": "Day 8 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 9,
+      "isRest": false,
+      "title": "Day 9 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 10,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 11,
+      "isRest": false,
+      "title": "Day 11 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 12,
+      "isRest": false,
+      "title": "Day 12 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 3,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 13,
+      "isRest": false,
+      "title": "Day 13 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 14,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 15,
+      "isRest": false,
+      "title": "Day 15 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 16,
+      "isRest": false,
+      "title": "Day 16 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 17,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 18,
+      "isRest": false,
+      "title": "Day 18 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 19,
+      "isRest": false,
+      "title": "Day 19 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 50,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 20,
+      "isRest": false,
+      "title": "Day 20 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 40,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 21,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 22,
+      "isRest": false,
+      "title": "Day 22 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 52,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 23,
+      "isRest": false,
+      "title": "Day 23 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 52,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 42,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 24,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 25,
+      "isRest": false,
+      "title": "Day 25 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 52,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 26,
+      "isRest": false,
+      "title": "Day 26 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 52,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 27,
+      "isRest": false,
+      "title": "Day 27 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Star Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Star shaped jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 52,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 42,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 28,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 29,
+      "isRest": false,
+      "title": "Day 29 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Burpee",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 80,
+          "durationSec": 0,
+          "description": "Full body explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 42,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 52,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 30,
+      "isRest": false,
+      "title": "Day 30 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Cardio",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 42,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "High intensity jump",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Sprint in Place",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Fast pace sprint",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Rope",
+          "sets": 4,
+          "reps": 52,
+          "kcal": 65,
+          "durationSec": 0,
+          "description": "Continuous jumping",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Skater Jump",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Lateral explosive",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Cardio burner",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 60,
+          "durationSec": 0,
+          "description": "Core and cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Cardio",
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 70,
+          "durationSec": 0,
+          "description": "Leg power",
+          "gifFileName": ""
+        }
+      ]
+    }
+  ]
+}

@@ -270,8 +270,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("workout_setup") {
-                            WorkoutSetupScreen(onComplete = { goal, equipment ->
-                                viewModel.startPlanProvisioning(applicationContext, goal, equipment)
+                            WorkoutSetupScreen(onComplete = { goal ->
+                                viewModel.startPlanProvisioning(applicationContext, goal)
                                 navController.navigate("loading") {
                                     popUpTo("workout_setup") { inclusive = true }
                                 }

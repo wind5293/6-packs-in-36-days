@@ -1,0 +1,1598 @@
+{
+  "planId": "jefit-maintenance",
+  "title": "Fitness Maintenance - 30 Days",
+  "days": [
+    {
+      "dayNumber": 1,
+      "isRest": false,
+      "title": "Day 1 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "isRest": false,
+      "title": "Day 2 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 3,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 4,
+      "isRest": false,
+      "title": "Day 4 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 5,
+      "isRest": false,
+      "title": "Day 5 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 6,
+      "isRest": false,
+      "title": "Day 6 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 7,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 8,
+      "isRest": false,
+      "title": "Day 8 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 9,
+      "isRest": false,
+      "title": "Day 9 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 10,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 11,
+      "isRest": false,
+      "title": "Day 11 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 3,
+          "reps": 20,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 12,
+      "isRest": false,
+      "title": "Day 12 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 13,
+      "isRest": false,
+      "title": "Day 13 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 3,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 3,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 14,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 15,
+      "isRest": false,
+      "title": "Day 15 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 16,
+      "isRest": false,
+      "title": "Day 16 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 17,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 18,
+      "isRest": false,
+      "title": "Day 18 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 19,
+      "isRest": false,
+      "title": "Day 19 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 25,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 20,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 45,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 20,
+      "isRest": false,
+      "title": "Day 20 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 30,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 21,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 22,
+      "isRest": false,
+      "title": "Day 22 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 60,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 23,
+      "isRest": false,
+      "title": "Day 23 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 24,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 25,
+      "isRest": false,
+      "title": "Day 25 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 60,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 26,
+      "isRest": false,
+      "title": "Day 26 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 60,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 27,
+      "isRest": false,
+      "title": "Day 27 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Leg maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 27,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 60,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 28,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 29,
+      "isRest": false,
+      "title": "Day 29 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 27,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Mountain Climber",
+          "sets": 4,
+          "reps": 22,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Core cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 60,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 30,
+      "isRest": false,
+      "title": "Day 30 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Maintenance",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 25,
+          "durationSec": 60,
+          "description": "Core maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Dip",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Arm maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Maintenance squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip maintenance",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Jumping Jack",
+          "sets": 4,
+          "reps": 32,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Light cardio",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "High Knee",
+          "sets": 4,
+          "reps": 27,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Light knee raises",
+          "gifFileName": ""
+        },
+        {
+          "category": "Maintenance",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Maintenance reps",
+          "gifFileName": ""
+        }
+      ]
+    }
+  ]
+}

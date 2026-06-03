@@ -25,22 +25,13 @@ class PlanRepository(private val context: Context) {
         }
     }
 
-    fun getPlanForGoal(goal: FitnessGoal, equipment: String? = null): List<DayPlan>? {
-        // Map goal + equipment to a specific plan asset. Equipment values expected: "bodyweight", "minimal", "gym"
+    fun getPlanForGoal(goal: FitnessGoal): List<DayPlan>? {
+        // Map goal to a specific plan asset.
         val planId = when (goal) {
-            FitnessGoal.WEIGHT_LOSS -> when (equipment) {
-                "bodyweight" -> "jefit-bodyweight-weightloss"
-                "gym", "full" , "fullprotocol" -> "jefit-fullprotocol-weightloss"
-                else -> "jefit-month1"
-            }
-            FitnessGoal.MUSCLE_GAIN -> when (equipment) {
-                "minimal", "minimalist" -> "jefit-minimal-muscle"
-                "gym", "full", "fullprotocol" -> "jefit-fullprotocol-muscle"
-                else -> "jefit-month1"
-            }
-            FitnessGoal.ENDURANCE -> "jefit-endurance"
-            FitnessGoal.MAINTENANCE -> "jefit-maintenance"
-            FitnessGoal.ABS_CORE_STRENGTH -> "jefit-abs-core"
+            FitnessGoal.WEIGHT_LOSS -> "weight-loss"
+            FitnessGoal.MUSCLE_GAIN -> "muscle-gain"
+            FitnessGoal.ENDURANCE -> "endurance"
+            FitnessGoal.MAINTENANCE -> "maintenance"
         }
 
         return planId?.let { loadPlan(it) }
