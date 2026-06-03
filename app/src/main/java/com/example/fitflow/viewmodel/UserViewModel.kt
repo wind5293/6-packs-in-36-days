@@ -119,7 +119,7 @@ class UserViewModel(
         // ✅ generatePlan là suspend → cần viewModelScope
         viewModelScope.launch {
             val basePlan = if (profile != null) {
-                workoutPlanGenerator.generatePlan(profile.goal, profile.equipment)
+                workoutPlanGenerator.generatePlan(profile.goal)
             } else {
                 emptyList()
             }
@@ -159,7 +159,7 @@ class UserViewModel(
         loadUserProfile()
     }
 
-    fun startPlanProvisioning(context: Context, goal: FitnessGoal, equipment: String = "bodyweight") {
+    fun startPlanProvisioning(context: Context, goal: FitnessGoal) {
         if (planProvisioningJob?.isActive == true) return
 
         pendingGoal = goal
@@ -178,11 +178,10 @@ class UserViewModel(
         planProvisioningJob = viewModelScope.launch {
             try {
                 userPreferences.saveGoal(goal)
-                userPreferences.saveEquipment(equipment)
                 userPreferences.clearCustomDayPlans()
                 _userProfile.value = userPreferences.getUserProfile()
 
-                val generatedPlan = workoutPlanGenerator.generatePlan(goal, equipment)
+                val generatedPlan = workoutPlanGenerator.generatePlan(goal)
                 val mergedPlan = generatedPlan.map { day ->
                     val custom = userPreferences.getCustomDayPlan(day.dayNumber)
                     if (custom != null) day.copy(workoutExercises = custom) else day
@@ -236,8 +235,7 @@ class UserViewModel(
         }
 
         val goal = pendingGoal ?: _userProfile.value?.goal ?: FitnessGoal.WEIGHT_LOSS
-        val equipment = _userProfile.value?.equipment ?: "bodyweight"
-        startPlanProvisioning(context.applicationContext, goal, equipment)
+        startPlanProvisioning(context.applicationContext, goal)
     }
 
     fun markDayComplete(dayNumber: Int) {

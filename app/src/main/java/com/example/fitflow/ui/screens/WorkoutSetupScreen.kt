@@ -23,8 +23,7 @@ import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.ui.theme.FitflowTheme
 
 @Composable
-fun WorkoutSetupScreen(onComplete: (FitnessGoal, String) -> Unit) {
-    var selectedEquipment by remember { mutableStateOf("bodyweight") }
+fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
     var selectedFocus by remember { mutableStateOf(setOf("Full Body")) }
     var daysPerWeek by remember { mutableFloatStateOf(5f) }
     var selectedGoal by remember { mutableStateOf(FitnessGoal.WEIGHT_LOSS) }
@@ -71,34 +70,6 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal, String) -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(48.dp))
-
-            Text(
-                "EQUIPMENT LEVEL",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                EquipmentItem(
-                    "Bodyweight Only",
-                    "No equipment required",
-                    selectedEquipment == "bodyweight"
-                ) { selectedEquipment = "bodyweight" }
-                EquipmentItem(
-                    "Minimalist",
-                    "Dumbbells & Resistance bands",
-                    selectedEquipment == "minimal"
-                ) { selectedEquipment = "minimal" }
-                EquipmentItem(
-                    "Full Protocol",
-                    "Complete high-end gym access",
-                    selectedEquipment == "gym"
-                ) { selectedEquipment = "gym" }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -172,7 +143,7 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal, String) -> Unit) {
                 .background(MaterialTheme.colorScheme.background)
         ) {
             Button(
-                onClick = { onComplete(selectedGoal, selectedEquipment) },
+                onClick = { onComplete(selectedGoal) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(24.dp),
                 modifier = Modifier
@@ -247,5 +218,5 @@ fun EquipmentItem(title: String, desc: String, isSelected: Boolean, onClick: () 
 @Preview(showBackground = true)
 @Composable
 fun WorkoutSetupScreenPreview() {
-    FitflowTheme { WorkoutSetupScreen({ _, _ -> }) }
+    FitflowTheme { WorkoutSetupScreen({ _ -> }) }
 }
