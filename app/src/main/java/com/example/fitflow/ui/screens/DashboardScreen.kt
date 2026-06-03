@@ -49,6 +49,7 @@ import java.time.format.DateTimeFormatter
 fun DashboardScreen(
     paddingValues: PaddingValues = PaddingValues(0.dp),
     completedDays: Set<Int> = emptySet(),
+    currentStreak: Int = 0,
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
     healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, StepSource.MANUAL),
@@ -96,7 +97,7 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
         item {
-            CheckInRecordSection(completedCount = completedCount)
+            CheckInRecordSection(currentStreak = currentStreak)
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -252,7 +253,7 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
 }
 
 @Composable
-fun CheckInRecordSection(completedCount: Int) {
+fun CheckInRecordSection(currentStreak: Int) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(24.dp),
@@ -283,7 +284,7 @@ fun CheckInRecordSection(completedCount: Int) {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "$completedCount DAY STREAK",
+                        text = "$currentStreak DAY STREAK",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         fontStyle = FontStyle.Italic
@@ -312,7 +313,7 @@ fun CheckInRecordSection(completedCount: Int) {
             // Progress Bar with milestones
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 val maxDays = 7
-                val progress = (completedCount.toFloat() / maxDays).coerceIn(0f, 1f)
+                val progress = (currentStreak.toFloat() / maxDays).coerceIn(0f, 1f)
 
                 Box(
                     modifier = Modifier
@@ -348,7 +349,7 @@ fun CheckInRecordSection(completedCount: Int) {
                                 text = "$i",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = if (i <= completedCount)
+                                color = if (i <= currentStreak)
                                     MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
                             )
@@ -878,7 +879,7 @@ fun DashboardScreenPreview() {
 @Composable
 fun CheckInRecordSectionPreview() {
     FitflowTheme {
-        CheckInRecordSection(completedCount = 2)
+        CheckInRecordSection(currentStreak = 2)
     }
 }
 

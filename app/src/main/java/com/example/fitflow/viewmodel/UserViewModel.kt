@@ -71,6 +71,9 @@ class UserViewModel(
     private val _completedDays = MutableStateFlow<Set<Int>>(emptySet())
     val completedDays: StateFlow<Set<Int>> = _completedDays.asStateFlow()
 
+    private val _currentStreak = MutableStateFlow(0)
+    val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
+
     private val _startDate = MutableStateFlow<LocalDate?>(null)
     val startDate: StateFlow<LocalDate?> = _startDate.asStateFlow()
 
@@ -112,6 +115,7 @@ class UserViewModel(
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
+        _currentStreak.value = userPreferences.getCurrentStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
         refreshHealthMetrics()
@@ -239,9 +243,33 @@ class UserViewModel(
     }
 
     fun markDayComplete(dayNumber: Int) {
-        val updated = _completedDays.value + dayNumber
-        _completedDays.value = updated
-        userPreferences.saveCompletedDays(updated)
+        val current = _completedDays.value.toMutableSet()
+        if (!current.contains(dayNumber)) {
+            current.add(dayNumber)
+            userPreferences.saveCompletedDays(current)
+            _completedDays.value = current
+
+            val today = LocalDate.now()
+            val lastWorkout = userPreferences.getLastWorkoutDate()
+            var streak = userPreferences.getCurrentStreak()
+
+            if (lastWorkout == null) {
+                streak = 1
+            } else {
+                val daysBetween = java.time.temporal.ChronoUnit.DAYS.between(lastWorkout, today)
+                if (daysBetween == 1L) {
+                    streak += 1
+                } else if (daysBetween > 1L) {
+                    streak = 1
+                }
+            }
+
+            if (lastWorkout != today) {
+                userPreferences.setCurrentStreak(streak)
+                userPreferences.setLastWorkoutDate(today)
+                _currentStreak.value = streak
+            }
+        }
     }
 
     fun recordWeight(weight: Float) {

@@ -17,6 +17,8 @@ class UserPreferences(context: Context) {
     private val gson = Gson()
 
     companion object {
+        const val KEY_CURRENT_STREAK = "current_streak"
+        const val KEY_LAST_WORKOUT_DATE = "last_workout_date"
         const val KEY_HEIGHT = "height"
         const val KEY_WEIGHT = "weight"
         const val KEY_BIRTH_YEAR = "birth_year"
@@ -124,6 +126,15 @@ class UserPreferences(context: Context) {
         if (raw.isEmpty()) return emptySet()
         return raw.split(",").mapNotNull { it.toIntOrNull() }.toSet()
     }
+
+    fun getCurrentStreak(): Int = prefs.getInt(KEY_CURRENT_STREAK, 0)
+    fun setCurrentStreak(streak: Int) = prefs.edit().putInt(KEY_CURRENT_STREAK, streak).apply()
+
+    fun getLastWorkoutDate(): LocalDate? {
+        val epoch = prefs.getLong(KEY_LAST_WORKOUT_DATE, -1L)
+        return if (epoch == -1L) null else LocalDate.ofEpochDay(epoch)
+    }
+    fun setLastWorkoutDate(date: LocalDate) = prefs.edit().putLong(KEY_LAST_WORKOUT_DATE, date.toEpochDay()).apply()
 
     fun recordWeight(weight: Float, date: LocalDate = LocalDate.now()) {
         prefs.edit().putFloat(KEY_WEIGHT, weight).apply()
