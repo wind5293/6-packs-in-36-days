@@ -55,6 +55,7 @@ fun DashboardScreen(
     healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, StepSource.MANUAL),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
+    isStepTrackingActive: Boolean = false,
     onUnlockStepSensor: () -> Unit = {},
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
@@ -121,6 +122,7 @@ fun DashboardScreen(
                 metrics = healthMetrics,
                 isActivityRecognitionGranted = isActivityRecognitionGranted,
                 isStepSensorEnabled = isStepSensorEnabled,
+                isStepTrackingActive = isStepTrackingActive,
                 onUnlockStepSensor = onUnlockStepSensor,
                 onAddWater = onAddWater,
                 onSetWaterGoal = onSetWaterGoal
@@ -158,7 +160,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "TODAY'S WEIGHT",
+                    stringResource(R.string.dashboard_today_weight),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -166,7 +168,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "${String.format("%.1f", userProfile.weight)} kg",
+                        stringResource(R.string.dashboard_weight_kg_format, userProfile.weight),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Black,
@@ -179,7 +181,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
                     )
                 }
                 Text(
-                    "${String.format("%.1f", weightLeft)} kg to goal",
+                    stringResource(R.string.dashboard_weight_to_goal_format, weightLeft),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -194,7 +196,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
-                    "Updated Today!",
+                    stringResource(R.string.dashboard_updated_today),
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -214,7 +216,7 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
     ) {
         Column {
             Text(
-                text = "STATUS REPORT",
+                text = stringResource(R.string.dashboard_status_report),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
@@ -222,7 +224,7 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
             )
             Row {
                 Text(
-                    "DASHBOARD",
+                    stringResource(R.string.dashboard_title),
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
@@ -245,7 +247,7 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
         ) {
             Icon(
                 Icons.Default.Settings,
-                contentDescription = "Settings",
+                contentDescription = stringResource(R.string.common_settings),
                 tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
             )
         }
@@ -276,7 +278,7 @@ fun CheckInRecordSection(currentStreak: Int) {
             ) {
                 Column {
                     Text(
-                        text = "CHECK-IN RECORD",
+                        text = stringResource(R.string.dashboard_checkin_record),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Black,
@@ -284,7 +286,7 @@ fun CheckInRecordSection(currentStreak: Int) {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "$currentStreak DAY STREAK",
+                        text = stringResource(R.string.dashboard_day_streak_format, currentStreak),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         fontStyle = FontStyle.Italic
@@ -304,7 +306,7 @@ fun CheckInRecordSection(currentStreak: Int) {
             }
 
             Text(
-                "Make today 1% better than yesterday!",
+                stringResource(R.string.dashboard_motivation_message),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
@@ -361,15 +363,16 @@ fun CheckInRecordSection(currentStreak: Int) {
     }
 }
 
+@Composable
 fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
-    0 -> "Sunday reset — prep your mind for a strong week ahead!"
-    1 -> "Monday energy! Set the tone for the whole week."
-    2 -> "Stay consistent, Tuesday gains are real gains."
-    3 -> "Halfway there — don't slow down now!"
-    4 -> "Thursday push — the weekend is almost here."
-    5 -> "Friday grind. Finish the week strong!"
-    6 -> "Saturday hustle — most people rest, you improve."
-    else -> "Your fitness goals are calling – time to answer!"
+    0 -> stringResource(R.string.dashboard_quote_sunday)
+    1 -> stringResource(R.string.dashboard_quote_monday)
+    2 -> stringResource(R.string.dashboard_quote_tuesday)
+    3 -> stringResource(R.string.dashboard_quote_wednesday)
+    4 -> stringResource(R.string.dashboard_quote_thursday)
+    5 -> stringResource(R.string.dashboard_quote_friday)
+    6 -> stringResource(R.string.dashboard_quote_saturday)
+    else -> stringResource(R.string.dashboard_quote_default)
 }
 
 @Composable
@@ -410,7 +413,7 @@ fun WeeklyGoalSection(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        "Weekly Goal",
+                        stringResource(R.string.dashboard_weekly_goal),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
@@ -421,14 +424,14 @@ fun WeeklyGoalSection(
                     ) {
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = "Edit goal",
+                            contentDescription = stringResource(R.string.dashboard_edit_goal),
                             tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
                 }
                 Text(
-                    "$completedCount/$weeklyGoal workouts",
+                    stringResource(R.string.dashboard_weekly_goal_progress, completedCount, weeklyGoal),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = if (completedCount >= weeklyGoal)
@@ -568,7 +571,7 @@ fun WorkoutsSummarySection(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            "WORKOUTS",
+            stringResource(R.string.dashboard_workouts),
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Black,
@@ -592,14 +595,14 @@ fun WorkoutsSummarySection(
                         fontStyle = FontStyle.Italic
                     )
                     Text(
-                        "/ $totalWorkoutDays DAYS",
+                        stringResource(R.string.dashboard_days_suffix_format, totalWorkoutDays),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
                     Text(
-                        "COMPLETED",
+                        stringResource(R.string.dashboard_completed),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Medium,
@@ -623,14 +626,14 @@ fun WorkoutsSummarySection(
                         fontStyle = FontStyle.Italic
                     )
                     Text(
-                        "KCAL",
+                        stringResource(R.string.dashboard_kcal),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
                     Text(
-                        "BURNED",
+                        stringResource(R.string.dashboard_burned),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Medium,
@@ -649,7 +652,7 @@ fun WorkoutsSummarySection(
                 .heightIn(min = 52.dp)
         ) {
             Text(
-                "START A WORKOUT",
+                stringResource(R.string.dashboard_start_workout),
                 color = MaterialTheme.colorScheme.background,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Black,
@@ -664,6 +667,7 @@ fun HealthMetricsSection(
     metrics: DailyHealthMetrics,
     isActivityRecognitionGranted: Boolean,
     isStepSensorEnabled: Boolean,
+    isStepTrackingActive: Boolean,
     onUnlockStepSensor: () -> Unit,
     onAddWater: (Int) -> Unit,
     onSetWaterGoal: (Int) -> Unit
@@ -691,9 +695,10 @@ fun HealthMetricsSection(
             value = metrics.steps.toString(),
             unit = stringResource(R.string.dashboard_steps).uppercase(),
             buttonText = when {
-                !isActivityRecognitionGranted -> "UNLOCK"
-                metrics.stepSource == StepSource.SENSOR -> "LIVE SENSOR"
-                else -> "MANUAL MODE"
+                !isActivityRecognitionGranted -> stringResource(R.string.dashboard_unlock)
+                !isStepSensorEnabled -> stringResource(R.string.dashboard_manual_mode)
+                isStepTrackingActive -> stringResource(R.string.dashboard_live_sensor)
+                else -> stringResource(R.string.dashboard_sensor_ready)
             },
             onClick = if (!isActivityRecognitionGranted) onUnlockStepSensor else null
         )
@@ -702,37 +707,28 @@ fun HealthMetricsSection(
             icon = Lucide.GlassWater,
             iconTint = MaterialTheme.colorScheme.secondary,
             value = metrics.waterIntakeMl.toString(),
-            unit = "${stringResource(R.string.dashboard_water).uppercase()} / ${metrics.waterGoalMl} ML",
-            buttonText = "+250 ML",
+            unit = stringResource(
+                R.string.dashboard_water_with_goal_format,
+                stringResource(R.string.dashboard_water).uppercase(),
+                metrics.waterGoalMl
+            ),
+            buttonText = stringResource(R.string.dashboard_add_250_ml),
             onClick = { onAddWater(250) }
         )
     }
 
     Spacer(modifier = Modifier.height(10.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        AssistChip(
-            onClick = { onAddWater(500) },
-            label = { Text("+500 ML") }
-        )
-        AssistChip(
-            onClick = {
-                goalInput = metrics.waterGoalMl.toString()
-                showGoalDialog = true
-            },
-            label = { Text("SET GOAL") }
-        )
-    }
 
     if (showGoalDialog) {
         AlertDialog(
             onDismissRequest = { showGoalDialog = false },
-            title = { Text("Water Goal (ml)") },
+            title = { Text(stringResource(R.string.dashboard_water_goal_title)) },
             text = {
                 OutlinedTextField(
                     value = goalInput,
                     onValueChange = { goalInput = it.filter { c -> c.isDigit() } },
                     singleLine = true,
-                    label = { Text("Goal") }
+                    label = { Text(stringResource(R.string.dashboard_goal_label)) }
                 )
             },
             confirmButton = {
@@ -744,10 +740,10 @@ fun HealthMetricsSection(
                             showGoalDialog = false
                         }
                     }
-                ) { Text("SAVE") }
+                ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
-                TextButton(onClick = { showGoalDialog = false }) { Text("CANCEL") }
+                TextButton(onClick = { showGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
@@ -755,9 +751,10 @@ fun HealthMetricsSection(
     Spacer(modifier = Modifier.height(8.dp))
     Text(
         text = when {
-            !isActivityRecognitionGranted -> "Step sensor permission is off. Using manual mode."
-            !isStepSensorEnabled -> "Step sensor unavailable on this device. Manual mode enabled."
-            else -> "Live step tracking is active."
+            !isActivityRecognitionGranted -> stringResource(R.string.dashboard_steps_permission_off)
+            !isStepSensorEnabled -> stringResource(R.string.dashboard_steps_unavailable)
+            !isStepTrackingActive -> stringResource(R.string.dashboard_steps_tracking_paused)
+            else -> stringResource(R.string.dashboard_steps_live_active)
         },
         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
         fontSize = 10.sp,

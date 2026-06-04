@@ -17,11 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.ui.theme.FitflowTheme
 
@@ -51,7 +53,7 @@ fun PlannerScreen(
         ) {
             Column {
                 Text(
-                    "MASTER MANIFEST",
+                    stringResource(R.string.planner_master_manifest),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,
@@ -59,7 +61,7 @@ fun PlannerScreen(
                 )
                 Row {
                     Text(
-                        "PLANNER",
+                        stringResource(R.string.planner_title),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
@@ -82,7 +84,7 @@ fun PlannerScreen(
             ) {
                 Icon(
                     Icons.Default.Settings,
-                    contentDescription = "Settings",
+                    contentDescription = stringResource(R.string.common_settings),
                     tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
             }
@@ -101,7 +103,7 @@ fun PlannerScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            "WEEK ${weekNum.toString().padStart(2, '0')}",
+                            stringResource(R.string.planner_week_format, weekNum),
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black,
@@ -144,14 +146,14 @@ fun PlannerScreen(
                     ) {
                         Column {
                             Text(
-                                "NEW CYCLE",
+                                stringResource(R.string.planner_new_cycle),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black,
                                 fontStyle = FontStyle.Italic
                             )
                             Text(
-                                "RE-GENERATE ENTIRE LOGIC",
+                                stringResource(R.string.planner_regenerate_logic),
                                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -233,9 +235,15 @@ fun DayPlanItem(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("DAY $dayNum", color = labelColor, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
                         Text(
-                            if (isRest) "REST & RECOVERY" else "SCHEDULED ACTIVITY",
+                            stringResource(R.string.planner_day_format, dayNum),
+                            color = labelColor,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
+                        )
+                        Text(
+                            if (isRest) stringResource(R.string.planner_rest_recovery) else stringResource(R.string.planner_scheduled_activity),
                             color = if (isCompleted)
                                 MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                             else

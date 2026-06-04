@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,11 +30,10 @@ import coil.request.CachePolicy
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.fitflow.FitFlowApplication
+import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
-import com.example.fitflow.ui.theme.OrangeGlow
-import com.example.fitflow.ui.theme.OrangePrimary
 import com.example.fitflow.utils.GifUrlHelper
 
 @Composable
@@ -117,7 +116,7 @@ fun WorkoutDayDetailScreen(
                     .height(56.dp)
             ) {
                 Text(
-                    text = "START",
+                    text = stringResource(R.string.workout_detail_start),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 2.sp
@@ -152,7 +151,10 @@ fun HeaderAndSummarySection(
                 .height(220.dp)
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(OrangePrimary, OrangeGlow)
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.primaryContainer
+                        )
                     )
                 )
         ) {
@@ -169,15 +171,15 @@ fun HeaderAndSummarySection(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFFFFFFFF),
-                            contentDescription = "back")
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            contentDescription = stringResource(R.string.workout_detail_back))
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Day ${dayPlan.dayNumber}",
-                    color = Color.White,
+                    text = stringResource(R.string.workout_detail_day_format, dayPlan.dayNumber),
+                    color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.headlineMedium,
                     fontSize = 35.sp,
                     modifier = Modifier.padding(start = 8.dp)
@@ -186,7 +188,7 @@ fun HeaderAndSummarySection(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = dayPlan.title,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
@@ -201,7 +203,7 @@ fun HeaderAndSummarySection(
                 }
                 Text(
                     text = "$dots ${dayPlan.difficulty}",
-                    color = Color(0xFFFFFFFF),
+                    color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(start = 8.dp)
                 )
@@ -217,7 +219,7 @@ fun HeaderAndSummarySection(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = dayPlan.muscleGroup.ifEmpty { "Image Space" },
+                    text = dayPlan.muscleGroup.ifEmpty { stringResource(R.string.workout_detail_image_space) },
                     color = MaterialTheme.colorScheme.background,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -239,13 +241,13 @@ fun HeaderAndSummarySection(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    SummaryItem(value = "${exercises.size}", label = "Exercises")
-                    SummaryItem(value = "$duration min", label = "Time")
-                    SummaryItem(value = "$totalKcal", label = "Calories")
+                    SummaryItem(value = "${exercises.size}", label = stringResource(R.string.workout_detail_exercises))
+                    SummaryItem(value = stringResource(R.string.workout_detail_time_min_format, duration), label = stringResource(R.string.workout_detail_time))
+                    SummaryItem(value = "$totalKcal", label = stringResource(R.string.workout_detail_calories))
                 }
                 
                 Spacer(modifier = Modifier.height(14.dp))
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Row(
@@ -259,21 +261,21 @@ fun HeaderAndSummarySection(
                 ) {
                     Column {
                         Text(
-                            "Edit Workout",
+                            stringResource(R.string.workout_detail_edit_workout),
                             style = MaterialTheme.typography.headlineMedium,
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            "Add, remove or reorder exercises",
+                            stringResource(R.string.workout_detail_edit_workout_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
                         Icons.Default.Edit,
-                        contentDescription = "Edit Plan",
-                        tint = Color.Gray
+                        contentDescription = stringResource(R.string.workout_detail_edit_plan),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -367,7 +369,7 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
                     val s = exercise.durationSec % 60
                     String.format("%02d:%02d", m, s)
                 } else {
-                    "x ${exercise.reps}"
+                    stringResource(R.string.workout_detail_reps_format, exercise.reps)
                 }
                 Text(
                     text = subText,
@@ -387,22 +389,22 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
             ) {
                 val textColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 Text(
-                    text = "Category: ${exercise.category}",
+                    text = stringResource(R.string.workout_detail_category_format, exercise.category),
                     fontSize = 12.sp,
                     color = textColor
                 )
-                Text(text = "Sets: ${exercise.sets}", fontSize = 12.sp, color = textColor)
-                Text(text = "Burn: ${exercise.kcal} kcal", fontSize = 12.sp, color = textColor)
+                Text(text = stringResource(R.string.workout_detail_sets_format, exercise.sets), fontSize = 12.sp, color = textColor)
+                Text(text = stringResource(R.string.workout_detail_burn_format, exercise.kcal), fontSize = 12.sp, color = textColor)
                 if (exercise.description.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Description: ${exercise.description}",
+                        text = stringResource(R.string.workout_detail_description_format, exercise.description),
                         fontSize = 12.sp,
                         color = textColor
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
             }
         }
     }
