@@ -199,6 +199,15 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - ~~`MainActivity.kt` line 123: `composable("workout_setup")` bị thụt lề sai (dùng tab thay vì spaces)~~
 - **Đã sửa** (2026-05-08): Căn về đúng indent cùng cấp với các `composable()` khác
 
+### ~~17. Màn hình kết thúc buổi tập (Workout Completed) còn thiếu chức năng và thiết kế sơ sài~~ ✅ ĐÃ SỬA (2026-06-04)
+- ~~Chưa có theo dõi thời gian thực, chưa có UI thống kê hoàn chỉnh, calo không chính xác~~
+- **Đã sửa**:
+   - Thêm bộ đếm thời gian thực `totalActiveSeconds` trong `WorkoutSessionScreen` với `LaunchedEffect` tích lũy từng 100ms để đảm bảo chính xác khi skip.
+   - Thêm cơ chế `FLAG_KEEP_SCREEN_ON` để giữ sáng màn hình trong lúc tập.
+   - Xây dựng `WorkoutCompletedScreen.kt` theo chuẩn thiết kế mới (Gradient Header, Stats Card, Feedback Emojis, Weight & BMI Canvas Slider).
+   - Logic đếm Calories đồng bộ chính xác với tổng `kcal` của danh sách bài tập từ `DayPlan`.
+   - Cập nhật NavHost trong `MainActivity.kt` chuyển hướng chuẩn xác và tự động đóng `WorkoutSessionScreen`.
+
 ---
 
 ## Design References (folder `/design/`)
