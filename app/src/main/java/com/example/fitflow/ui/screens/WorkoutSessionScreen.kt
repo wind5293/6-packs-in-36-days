@@ -1,6 +1,8 @@
     package com.example.fitflow.ui.screens
     
+    import android.app.Activity
     import android.util.Log
+    import android.view.WindowManager
     import androidx.activity.compose.BackHandler
     import androidx.compose.foundation.background
     import androidx.compose.foundation.layout.*
@@ -42,7 +44,7 @@
     fun WorkoutSessionScreen(
         exercises: List<WorkoutExercise> = sampleExercises(),
         onBack: () -> Unit = {},
-        onFinish: () -> Unit = {},
+        onFinish: (Int) -> Unit = {},
         onOpenSettings: () -> Unit = {},
         viewModel: WorkoutSessionViewModel = viewModel(),
         settingsViewModel: WorkoutSettingsViewModel
@@ -55,6 +57,8 @@
         var phase by remember { mutableStateOf(SessionPhase.PREPARING) }
         var countdownStarted by remember { mutableStateOf(false) }
         var isFirstLoad by remember { mutableStateOf(true) }
+        var totalActiveMillis by remember { mutableStateOf(0L) }
+        val totalActiveSeconds = (totalActiveMillis / 1000).toInt()
     
         val gifUrls by viewModel.gifUrls.collectAsState()
         Log.d("GIF_DEBUG", "gifUrls in UI: ${gifUrls.size}, keys: ${gifUrls.keys}")
@@ -72,7 +76,10 @@
         val ttsHelper = remember { TextToSpeechHelper(context) }
     
         DisposableEffect(Unit) {
+            val window = (context as? Activity)?.window
+            window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             onDispose {
+                window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 ttsHelper.shutdown()
             }
         }
@@ -104,7 +111,7 @@
                 isRunning = false
                 phase = SessionPhase.PREPARING
             } else {
-                onFinish()
+                onFinish(totalActiveSeconds)
             }
         }
     
@@ -156,7 +163,16 @@
                 if (index < exercises.lastIndex) {
                     phase = SessionPhase.RESTING
                 } else {
-                    onFinish()
+                    onFinish(totalActiveSeconds)
+                }
+            }
+        }
+    
+        LaunchedEffect(Unit) {
+            while (isActive) {
+                delay(100L)
+                if (phase != SessionPhase.PREPARING) {
+                    totalActiveMillis += 100L
                 }
             }
         }
@@ -422,12 +438,12 @@
                                     // Xong bài rep → nghỉ (nếu còn bài tiếp)
                                     if (index < exercises.lastIndex) {
                                         phase = SessionPhase.RESTING
-                                    } else onFinish()
+                                    } else onFinish(totalActiveSeconds)
                                 } else {
                                     if (remaining == 0) {
                                         if (index < exercises.lastIndex) {
                                             phase = SessionPhase.RESTING
-                                        } else onFinish()
+                                        } else onFinish(totalActiveSeconds)
                                     } else {
                                         isRunning = !isRunning
                                     }
@@ -453,7 +469,7 @@
                             onClick = {
                                 if (index < exercises.lastIndex) {
                                     phase = SessionPhase.RESTING
-                                } else onFinish()
+                                } else onFinish(totalActiveSeconds)
                             },
                             modifier = Modifier.size(64.dp), shape = CircleShape
                         ) {

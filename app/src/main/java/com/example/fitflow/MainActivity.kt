@@ -37,6 +37,7 @@ import com.example.fitflow.ui.screens.WorkoutSessionScreen
 import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.screens.EditPlanScreen
+import com.example.fitflow.ui.screens.WorkoutCompletedScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
@@ -344,13 +345,40 @@ class MainActivity : ComponentActivity() {
                                     settingsViewModel.stopMusic()
                                     navController.popBackStack()
                                 },
-                                onFinish = {
+                                onFinish = { totalActiveSeconds ->
                                     settingsViewModel.stopMusic()
                                     viewModel.markDayComplete(dayNumber)
-                                    navController.popBackStack()
+                                    navController.navigate("workout_completed/$dayNumber/$totalActiveSeconds") {
+                                        popUpTo("workout_session/$dayNumber") { inclusive = true }
+                                    }
                                 },
                                 onOpenSettings = { navController.navigate("workout_settings_session") },
                                 settingsViewModel = settingsViewModel
+                            )
+                        }
+                        composable(
+                            route = "workout_completed/{dayNumber}/{totalActiveSeconds}",
+                            arguments = listOf(
+                                navArgument("dayNumber") { type = NavType.IntType },
+                                navArgument("totalActiveSeconds") { type = NavType.IntType }
+                            )
+                        ) { backStackEntry ->
+                            val dayNumber = backStackEntry.arguments?.getInt("dayNumber") ?: 1
+                            val totalActiveSeconds = backStackEntry.arguments?.getInt("totalActiveSeconds") ?: 0
+                            
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val dayPlan = workoutPlan.find { it.dayNumber == dayNumber }
+                            val userProfile by viewModel.userProfile.collectAsState()
+                            
+                            WorkoutCompletedScreen(
+                                dayPlan = dayPlan,
+                                totalActiveSeconds = totalActiveSeconds,
+                                userProfile = userProfile,
+                                onNext = {
+                                    navController.navigate("planner") {
+                                        popUpTo("dashboard")
+                                    }
+                                }
                             )
                         }
                     }
