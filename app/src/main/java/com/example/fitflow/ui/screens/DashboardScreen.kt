@@ -34,6 +34,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
 import com.composables.icons.lucide.Lucide
@@ -60,6 +62,7 @@ fun DashboardScreen(
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
     onStartWorkout: () -> Unit = {},
+    onOpenNextWorkout: (Int) -> Unit = {},
     onOpenSettings: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
@@ -87,7 +90,10 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
         item {
-            WeeklyGoalSection()
+            WeeklyGoalSection(
+                workoutPlan = workoutPlan,
+                completedDays = completedDays
+            )
         }
         item {
             if (userProfile != null) {
@@ -98,7 +104,22 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
         item {
-            CheckInRecordSection(currentStreak = currentStreak)
+            NextWorkoutSection(
+                workoutPlan = workoutPlan,
+                completedDays = completedDays,
+                onOpenNextWorkout = onOpenNextWorkout,
+                onOpenPlanner = onStartWorkout
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            CheckInRecordSection(
+                workoutPlan = workoutPlan,
+                completedDays = completedDays,
+                currentStreak = currentStreak
+            )
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -208,6 +229,167 @@ fun TodayWeightSection(userProfile: UserProfile) {
 }
 
 @Composable
+fun NextWorkoutSection(
+    workoutPlan: List<DayPlan>,
+    completedDays: Set<Int>,
+    onOpenNextWorkout: (Int) -> Unit,
+    onOpenPlanner: () -> Unit
+) {
+    val completedWorkoutCount = workoutPlan.count { !it.isRest && it.dayNumber in completedDays }
+    val totalWorkoutCount = workoutPlan.count { !it.isRest }
+    val nextWorkoutDay = workoutPlan.firstOrNull { !it.isRest && it.dayNumber !in completedDays }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                RoundedCornerShape(24.dp)
+            )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.dashboard_next_workout_label),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 2.sp
+            )
+
+            if (nextWorkoutDay != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(
+                                R.string.dashboard_next_workout_day_format,
+                                nextWorkoutDay.dayNumber
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            fontStyle = FontStyle.Italic
+                        )
+                        Text(
+                            text = if (nextWorkoutDay.title.isNotBlank()) nextWorkoutDay.title else nextWorkoutDay.muscleGroup.ifBlank { stringResource(R.string.dashboard_next_workout_default_title) },
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.dashboard_next_workout_progress_format,
+                                completedWorkoutCount,
+                                totalWorkoutCount
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (nextWorkoutDay.isRest) "R" else nextWorkoutDay.dayNumber.toString(),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                }
+
+                Text(
+                    text = stringResource(
+                        R.string.dashboard_next_workout_meta_format,
+                        nextWorkoutDay.workoutExercises.sumOf { it.durationSec } / 60,
+                        nextWorkoutDay.workoutExercises.sumOf { it.kcal }
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Button(
+                    onClick = { onOpenNextWorkout(nextWorkoutDay.dayNumber) },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        stringResource(R.string.dashboard_next_workout_open_day_format, nextWorkoutDay.dayNumber),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                }
+            } else {
+                Text(
+                    text = if (totalWorkoutCount == 0) {
+                        stringResource(R.string.dashboard_next_workout_empty_title)
+                    } else {
+                        stringResource(R.string.dashboard_plan_complete_title)
+                    },
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic
+                )
+                Text(
+                    text = if (totalWorkoutCount == 0) {
+                        stringResource(R.string.dashboard_next_workout_empty_body)
+                    } else {
+                        stringResource(
+                            R.string.dashboard_plan_complete_body,
+                            completedWorkoutCount,
+                            totalWorkoutCount
+                        )
+                    },
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Button(
+                    onClick = onOpenPlanner,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = if (totalWorkoutCount == 0) {
+                            stringResource(R.string.dashboard_next_workout_empty_button)
+                        } else {
+                            stringResource(R.string.dashboard_plan_complete_button)
+                        },
+                        color = MaterialTheme.colorScheme.background,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun HeaderSection(onOpenSettings: () -> Unit = {}) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -255,7 +437,20 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
 }
 
 @Composable
-fun CheckInRecordSection(currentStreak: Int) {
+fun CheckInRecordSection(
+    workoutPlan: List<DayPlan>,
+    completedDays: Set<Int>,
+    currentStreak: Int
+) {
+    val workoutDays = workoutPlan.filter { !it.isRest }
+    val currentWorkoutDay = workoutDays.firstOrNull { it.dayNumber !in completedDays }?.dayNumber
+        ?: workoutDays.lastOrNull()?.dayNumber
+    val currentWorkoutIndex = workoutDays.indexOfFirst { it.dayNumber == currentWorkoutDay }.coerceAtLeast(0)
+    val recentWorkoutDays = workoutDays
+        .drop(maxOf(0, currentWorkoutIndex - 3))
+        .take(7)
+    val nextMilestone = listOf(3, 5, 7, 14, 21, 30).firstOrNull { currentStreak < it }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(24.dp),
@@ -312,6 +507,52 @@ fun CheckInRecordSection(currentStreak: Int) {
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
 
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.dashboard_checkin_recent),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
+                )
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    recentWorkoutDays.forEach { day ->
+                        val isDone = day.dayNumber in completedDays
+                        val isNext = day.dayNumber == currentWorkoutDay
+                        CheckInDayChip(
+                            dayNumber = day.dayNumber,
+                            isDone = isDone,
+                            isNext = isNext
+                        )
+                    }
+                }
+            }
+
+            if (nextMilestone != null) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.dashboard_checkin_next_milestone_format,
+                            nextMilestone - currentStreak,
+                            nextMilestone
+                        ),
+                        modifier = Modifier.padding(12.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
             // Progress Bar with milestones
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 val maxDays = 7
@@ -364,6 +605,53 @@ fun CheckInRecordSection(currentStreak: Int) {
 }
 
 @Composable
+private fun CheckInDayChip(
+    dayNumber: Int,
+    isDone: Boolean,
+    isNext: Boolean
+) {
+    val backgroundColor = when {
+        isDone -> MaterialTheme.colorScheme.primary
+        isNext -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
+        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+    }
+    val textColor = when {
+        isDone -> MaterialTheme.colorScheme.onPrimary
+        isNext -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f)
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(backgroundColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = dayNumber.toString(),
+                color = textColor,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = when {
+                isDone -> stringResource(R.string.dashboard_checkin_done)
+                isNext -> stringResource(R.string.dashboard_checkin_next)
+                else -> stringResource(R.string.dashboard_checkin_pending)
+            },
+            color = textColor,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        )
+    }
+}
+
+@Composable
 fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
     0 -> stringResource(R.string.dashboard_quote_sunday)
     1 -> stringResource(R.string.dashboard_quote_monday)
@@ -378,18 +666,24 @@ fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
 @Composable
 fun WeeklyGoalSection(
     weeklyGoal: Int = 3,
+    workoutPlan: List<DayPlan> = emptyList(),
     completedDays: Set<Int> = emptySet(),
     onEditGoal: () -> Unit = {},
     onToggleDay: (Int) -> Unit = {}
 ) {
-    val today = LocalDate.now()
-    val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
-    val startOfWeek = today.minusDays(todayIndex.toLong())
+    val workoutDays = workoutPlan.filter { !it.isRest }
+    val activeDay = workoutDays.firstOrNull { it.dayNumber !in completedDays } ?: workoutDays.lastOrNull()
+    val activeWeekIndex = ((activeDay?.dayNumber ?: 1) - 1) / 7
+    val weekStartDay = (activeWeekIndex * 7) + 1
+    val weekEndDay = minOf(weekStartDay + 6, workoutPlan.maxOfOrNull { it.dayNumber } ?: weekStartDay)
+    val weekPlans = if (workoutPlan.isNotEmpty()) {
+        workoutPlan.filter { it.dayNumber in weekStartDay..weekEndDay }
+    } else {
+        emptyList()
+    }
+    val weeklyWorkoutTarget = weeklyGoal.coerceAtLeast(1)
 
-    val completedCount = completedDays.size
-
-    var todayOffsetX by remember { mutableStateOf(0f) }
-    var rowWidth by remember { mutableStateOf(0f) }
+    val completedCount = weekPlans.count { !it.isRest && it.dayNumber in completedDays }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -430,11 +724,12 @@ fun WeeklyGoalSection(
                         )
                     }
                 }
+
                 Text(
-                    stringResource(R.string.dashboard_weekly_goal_progress, completedCount, weeklyGoal),
+                    stringResource(R.string.dashboard_weekly_goal_progress, completedCount, weeklyWorkoutTarget),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (completedCount >= weeklyGoal)
+                    color = if (completedCount >= weeklyWorkoutTarget)
                         MaterialTheme.colorScheme.secondary
                     else
                         MaterialTheme.colorScheme.primary
@@ -443,84 +738,78 @@ fun WeeklyGoalSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Days row
+            Text(
+                text = stringResource(R.string.planner_week_format, activeWeekIndex + 1),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 2.sp
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned { cords ->
-                        rowWidth = cords.size.width.toFloat()
-                    },
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                for (i in 0..6) {
-                    val date = startOfWeek.plusDays(i.toLong())
-                    val isToday = i == todayIndex
-                    val isPast = i < todayIndex
-                    val isCompleted = i in completedDays
-                    val isClickable = isPast || isToday
-
-                    val bgColor = when {
-                        isCompleted -> MaterialTheme.colorScheme.primary
-                        isToday -> MaterialTheme.colorScheme.onBackground
-                        else -> Color.Transparent
-                    }
-                    val textColor = when {
-                        isCompleted || isToday -> MaterialTheme.colorScheme.background
-                        isPast -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
-                        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                    }
+                weekPlans.forEach { dayPlan ->
+                    val isCompleted = dayPlan.dayNumber in completedDays
+                    val isCurrent = !dayPlan.isRest && dayPlan.dayNumber == activeDay?.dayNumber
+                    val isClickable = !dayPlan.isRest && dayPlan.dayNumber <= (activeDay?.dayNumber ?: dayPlan.dayNumber)
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = if (isToday) {
-                            Modifier.onGloballyPositioned { coords ->
-                                // tâm của circle ngày hôm nay
-                                todayOffsetX = coords.positionInParent().x + coords.size.width / 2f
-                            }
-                        } else Modifier
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
-                                .background(bgColor, CircleShape)
+                                .background(
+                                    when {
+                                        isCompleted -> MaterialTheme.colorScheme.primary
+                                        isCurrent -> MaterialTheme.colorScheme.onBackground
+                                        dayPlan.isRest -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f)
+                                        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+                                    },
+                                    CircleShape
+                                )
                                 .then(
-                                    if (isClickable) Modifier.clickable { onToggleDay(i) }
+                                    if (isClickable) Modifier.clickable { onToggleDay(dayPlan.dayNumber) }
                                     else Modifier
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "${date.dayOfMonth}",
-                                fontSize = 14.sp,
-                                fontWeight = if (isToday || isCompleted) FontWeight.Bold else FontWeight.Normal,
-                                color = textColor
+                                text = if (dayPlan.isRest) "R" else dayPlan.dayNumber.toString(),
+                                fontSize = 12.sp,
+                                fontWeight = if (isCompleted || isCurrent) FontWeight.Bold else FontWeight.Normal,
+                                color = when {
+                                    isCompleted || isCurrent -> MaterialTheme.colorScheme.background
+                                    dayPlan.isRest -> MaterialTheme.colorScheme.secondary
+                                    else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f)
+                                }
                             )
                         }
+                        Text(
+                            text = when {
+                                isCompleted -> stringResource(R.string.dashboard_checkin_done)
+                                isCurrent -> stringResource(R.string.dashboard_checkin_next)
+                                dayPlan.isRest -> stringResource(R.string.planner_status_rest)
+                                else -> stringResource(R.string.dashboard_checkin_pending)
+                            },
+                            color = when {
+                                isCompleted || isCurrent -> MaterialTheme.colorScheme.onBackground
+                                dayPlan.isRest -> MaterialTheme.colorScheme.secondary
+                                else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                            },
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
                     }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-
-            val arrowColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.04f)
-            if (rowWidth > 0f && todayOffsetX > 0f) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                ) {
-                    val arrowW = 16.dp.toPx()
-                    val arrowH = 8.dp.toPx()
-                    val tipX = todayOffsetX.coerceIn(arrowW / 2f, size.width - arrowW / 2f)
-                    val path = Path().apply {
-                        moveTo(tipX, 0f)
-                        lineTo(tipX + arrowW / 2f, arrowH)
-                        lineTo(tipX - arrowW / 2f, arrowH)
-                        close()
-                    }
-                    drawPath(path = path, color = arrowColor)
-                }
-            }
 
             // Coach quote dialog
             Card(
@@ -550,7 +839,7 @@ fun WeeklyGoalSection(
 
                     // Quote
                     Text(
-                        text = quoteForDay(todayIndex),
+                        text = quoteForDay(LocalDate.now().dayOfWeek.value % 7),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
@@ -719,6 +1008,20 @@ fun HealthMetricsSection(
 
     Spacer(modifier = Modifier.height(10.dp))
 
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        TextButton(onClick = { showGoalDialog = true }) {
+            Text(
+                stringResource(R.string.dashboard_set_goal),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+        }
+            }
+
     if (showGoalDialog) {
         AlertDialog(
             onDismissRequest = { showGoalDialog = false },
@@ -876,7 +1179,15 @@ fun DashboardScreenPreview() {
 @Composable
 fun CheckInRecordSectionPreview() {
     FitflowTheme {
-        CheckInRecordSection(currentStreak = 2)
+        CheckInRecordSection(
+            workoutPlan = listOf(
+                DayPlan(dayNumber = 1, isRest = false, workoutExercises = emptyList()),
+                DayPlan(dayNumber = 2, isRest = false, workoutExercises = emptyList()),
+                DayPlan(dayNumber = 3, isRest = false, workoutExercises = emptyList())
+            ),
+            completedDays = setOf(1, 2),
+            currentStreak = 2
+        )
     }
 }
 

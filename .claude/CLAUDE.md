@@ -249,6 +249,7 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - Chỉ xem task là hoàn tất khi đã đối chiếu kết quả review và xử lý các điểm lệch quan trọng (nếu có).
 - Nếu yêu cầu có điểm mơ hồ, thiếu dữ liệu, hoặc có nhiều cách hiểu, **bắt buộc dùng subagent `specify` để tạo câu hỏi làm rõ và hỏi lại người dùng trước khi làm**.
 - Không tự suy đoán yêu cầu nghiệp vụ và không tự quyết định các thay đổi chưa được người dùng xác nhận.
+- Sau khi hoàn thành một thay đổi, **bắt buộc** trình bày một bảng so sánh trước / sau để người dùng thấy rõ trải nghiệm hoặc hành vi đã đổi như thế nào.
 
 ### Khi thêm màn hình mới
 1. Tạo file trong `ui/screens/`

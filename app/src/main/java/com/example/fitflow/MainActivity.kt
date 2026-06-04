@@ -157,6 +157,9 @@ class MainActivity : ComponentActivity() {
                                         restoreState = true
                                     }
                                 },
+                                onOpenNextWorkout = { dayNumber ->
+                                    navController.navigate("day_detail/$dayNumber")
+                                },
                                 onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
@@ -239,8 +242,7 @@ class MainActivity : ComponentActivity() {
                                 weightHistory = weightHistory,
                                 healthMetricsHistory = healthHistory,
                                 onRecordWeight = { viewModel.recordWeight(it) },
-                                onReCalibrate = { navController.navigate("onboarding") },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onReCalibrate = { navController.navigate("onboarding") }
                             )
                         }
                         composable("onboarding") {
