@@ -1,10 +1,10 @@
 package com.example.fitflow.ui.screens
 
-import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -16,14 +16,13 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,9 +34,10 @@ import com.example.fitflow.data.model.BmiCategory
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.domain.calculateBmi
 import com.example.fitflow.domain.getBmiCategory
-import com.example.fitflow.notification.WorkoutReminderReceiver
 import com.example.fitflow.ui.theme.FitflowTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import java.time.Year
 import kotlin.math.abs
 
 @Composable
@@ -54,8 +54,6 @@ fun OnboardingScreen(
     val totalSteps = 6
     val pagerState = rememberPagerState(pageCount = { totalSteps })
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current // Lấy context để gửi Broadcast
-
     // State chung
     val selectedGoal = FitnessGoal.WEIGHT_LOSS
     var height by remember { mutableFloatStateOf(160f) }
@@ -97,9 +95,6 @@ fun OnboardingScreen(
                     if (pagerState.currentPage < totalSteps - 1) {
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                     } else {
-                        val testIntent = Intent(context, WorkoutReminderReceiver::class.java)
-                        context.sendBroadcast(testIntent)
-
                         onComplete(
                             selectedGoal,
                             height,
@@ -121,7 +116,7 @@ fun OnboardingScreen(
                     letterSpacing = 2.sp
                 )
                 Spacer(Modifier.width(8.dp))
-                Icon(Icons.Default.ArrowForward, contentDescription = null)
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
             }
         }
     }
@@ -211,10 +206,11 @@ fun GoalStep(selectedGoal: FitnessGoal, onGoalSelected: (FitnessGoal) -> Unit) {
 
 @Composable
 fun BirthYearStep(birthYear: Int, onYearChange: (Int) -> Unit) {
+    val currentYear = Year.now().value
     StepLayout(title = "WHEN WERE YOU BORN?", subtitle = "BIRTH YEAR") {
         YearWheelPicker(
             selectedYear = birthYear,
-            years = (1950..2024).toList(),
+            years = (1950..currentYear).toList(),
             onYearChange = onYearChange
         )
         Text(
@@ -634,6 +630,7 @@ fun RulerPicker(
 ) {
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val tickSlotWidth = 16.dp
@@ -642,15 +639,7 @@ fun RulerPicker(
         val selectedIndex = values.indexOf(selectedValue).coerceAtLeast(0)
 
         LaunchedEffect(selectedIndex) {
-            val nearestCenteredIndex = listState.layoutInfo.visibleItemsInfo
-                .minByOrNull { item ->
-                    val viewportCenter =
-                        (listState.layoutInfo.viewportStartOffset + listState.layoutInfo.viewportEndOffset) / 2
-                    abs((item.offset + item.size / 2) - viewportCenter)
-                }
-                ?.index
-
-            if (nearestCenteredIndex != selectedIndex) {
+            if (selectedIndex != listState.firstVisibleItemIndex) {
                 listState.scrollToItem(selectedIndex)
             }
         }
@@ -667,7 +656,9 @@ fun RulerPicker(
                         abs((item.offset + item.size / 2) - viewportCenter)
                     }?.index
                 }
-            }.collect { centeredIndex ->
+            }
+                .distinctUntilChanged()
+                .collect { centeredIndex ->
                 if (centeredIndex == null || centeredIndex !in values.indices) return@collect
                 val valueAtCenter = values[centeredIndex]
                 if (valueAtCenter != selectedValue) {
@@ -679,6 +670,7 @@ fun RulerPicker(
         Box(modifier = Modifier.fillMaxWidth()) {
             LazyRow(
                 state = listState,
+                flingBehavior = snapFlingBehavior,
                 contentPadding = PaddingValues(horizontal = horizontalPadding),
                 horizontalArrangement = Arrangement.spacedBy(tickSpacing),
                 modifier = Modifier.fillMaxWidth()
@@ -751,11 +743,37 @@ fun YearWheelPicker(
     years: List<Int>,
     onYearChange: (Int) -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val selectedIndex = years.indexOf(selectedYear).coerceAtLeast(0)
+    val clampedSelectedYear = selectedYear.coerceIn(years.first(), years.last())
+    val selectedIndex = years.indexOf(clampedSelectedYear).coerceAtLeast(0)
+    val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     LaunchedEffect(selectedIndex) {
         listState.scrollToItem(selectedIndex)
+    }
+
+    LaunchedEffect(listState, years) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val visibleItems = layoutInfo.visibleItemsInfo
+            if (visibleItems.isEmpty()) {
+                null
+            } else {
+                val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+                visibleItems.minByOrNull { item ->
+                    abs((item.offset + item.size / 2) - viewportCenter)
+                }?.index
+            }
+        }
+            .distinctUntilChanged()
+            .collect { centeredIndex ->
+            if (centeredIndex == null || centeredIndex !in years.indices) return@collect
+            val yearAtCenter = years[centeredIndex]
+            if (yearAtCenter != selectedYear) {
+                onYearChange(yearAtCenter)
+            }
+        }
     }
 
     Card(
@@ -768,6 +786,7 @@ fun YearWheelPicker(
     ) {
         LazyColumn(
             state = listState,
+            flingBehavior = snapFlingBehavior,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             contentPadding = PaddingValues(vertical = 56.dp)
@@ -777,7 +796,13 @@ fun YearWheelPicker(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onYearChange(year) }
+                        .clickable {
+                            onYearChange(year)
+                            val index = years.indexOf(year)
+                            if (index >= 0) {
+                                scope.launch { listState.animateScrollToItem(index) }
+                            }
+                        }
                         .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {

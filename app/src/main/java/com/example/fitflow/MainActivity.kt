@@ -345,7 +345,19 @@ class MainActivity : ComponentActivity() {
                                         restoreState = true
                                     }
                                 },
-                                onNavigateDay = { selectedDate = it }
+                                onNavigateDay = { selectedDate = it },
+                                onOpenPlanner = {
+                                    navController.navigate("planner") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                onOpenWorkoutDay = { targetDayNumber ->
+                                    navController.navigate("day_detail/$targetDayNumber") {
+                                        popUpTo("planner")
+                                    }
+                                }
                             )
                         }
                     }

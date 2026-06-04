@@ -63,6 +63,12 @@
     <string name="planner_day_format">DAY %1$d</string>
     <string name="planner_rest_recovery">REST &amp; RECOVERY</string>
     <string name="planner_scheduled_activity">SCHEDULED ACTIVITY</string>
+    <string name="planner_status_done">DONE</string>
+    <string name="planner_status_start">START</string>
+    <string name="planner_status_locked">LOCKED</string>
+    <string name="planner_status_rest">REST</string>
+    <string name="planner_status_open">OPEN</string>
+    <string name="planner_workout_meta_format">%1$d min · %2$d kcal</string>
 
     <string name="workout_detail_start">START</string>
     <string name="workout_detail_back">back</string>
@@ -80,5 +86,18 @@
     <string name="workout_detail_sets_format">Sets: %1$d</string>
     <string name="workout_detail_burn_format">Burn: %1$d kcal</string>
     <string name="workout_detail_description_format">Description: %1$s</string>
+
+    <string name="day_summary_title_complete">Session locked in</string>
+    <string name="day_summary_title_pending">Still time to finish</string>
+    <string name="day_summary_title_rest_day">Recovery still counts</string>
+    <string name="day_summary_title_out_of_plan">Outside the 30-day cycle</string>
+    <string name="day_summary_body_complete">Good work. Keep the momentum and move straight into your next scheduled training day.</string>
+    <string name="day_summary_body_pending">You have not completed this workout yet. Jump back in and finish the plan while the session is still fresh.</string>
+    <string name="day_summary_body_rest_day">Use today to recover, stay hydrated, and check your next planned workout before tomorrow.</string>
+    <string name="day_summary_body_out_of_plan">This date is outside your current 30-day plan. Head back to the planner to stay on the active schedule.</string>
+    <string name="day_summary_primary_next_day_format">OPEN DAY %1$d</string>
+    <string name="day_summary_primary_resume_today">RESUME TODAY</string>
+    <string name="day_summary_primary_view_planner">VIEW PLANNER</string>
+    <string name="day_summary_secondary_back_to_planner">BACK TO PLANNER</string>
 
 </resources>
