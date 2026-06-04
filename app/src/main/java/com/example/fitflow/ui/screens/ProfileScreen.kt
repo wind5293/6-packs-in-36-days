@@ -45,8 +45,7 @@ fun ProfileScreen(
     weightHistory: List<Pair<LocalDate, Float>> = emptyList(),
     healthMetricsHistory: List<DailyHealthMetrics> = emptyList(),
     onRecordWeight: (Float) -> Unit = {},
-    onReCalibrate: () -> Unit = {},
-    onOpenSettings: () -> Unit = {}
+    onReCalibrate: () -> Unit = {}
 ) {
     val completedCount = completedDays.size
     val totalKcal = workoutPlan
@@ -129,25 +128,6 @@ fun ProfileScreen(
                         fontStyle = FontStyle.Italic
                     )
                 }
-            }
-            IconButton(
-                onClick = onOpenSettings,
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                        RoundedCornerShape(16.dp)
-                    )
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                        RoundedCornerShape(16.dp)
-                    )
-            ) {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
-                )
             }
         }
 

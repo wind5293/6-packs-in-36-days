@@ -441,6 +441,7 @@ private fun ReplaceExerciseDialog(
     onDismiss: () -> Unit,
     onSelect: (Exercise) -> Unit
 ) {
+    val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
     val filtered = remember(searchQuery, allDatabaseExercises) {
         allDatabaseExercises.filter { dbEx ->
@@ -537,12 +538,30 @@ private fun ReplaceExerciseDialog(
                                         .background(itemAccentColor.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        Icons.Default.FitnessCenter,
-                                        null,
-                                        tint = itemAccentColor,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                    val gifName = dbEx.local_gifs.firstOrNull() ?: ""
+                                    val dialogGifUrl = remember(gifName) {
+                                        gifName.takeIf { it.isNotEmpty() }?.let { GifUrlHelper.getUrl(it) }
+                                    }
+                                    if (dialogGifUrl != null) {
+                                        val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(context)
+                                                .data(dialogGifUrl)
+                                                .crossfade(true)
+                                                .build(),
+                                            imageLoader = imageLoader,
+                                            contentDescription = dbEx.name,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))
+                                        )
+                                    } else {
+                                        Icon(
+                                            Icons.Default.FitnessCenter,
+                                            null,
+                                            tint = itemAccentColor,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
 
                                 Spacer(Modifier.width(12.dp))

@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -42,7 +43,8 @@ fun WorkoutDayDetailScreen(
     dayPlan: DayPlan,
     onBack: () -> Unit,
     onStartSession: () -> Unit = {},
-    onEditPlan: () -> Unit = {}
+    onEditPlan: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
@@ -82,8 +84,32 @@ fun WorkoutDayDetailScreen(
                 HeaderAndSummarySection(
                     dayPlan = dayPlan,
                     onBack = onBack,
-                    onEditPlan = onEditPlan
+                    onOpenSettings = onOpenSettings
                 )
+            }
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Exercise",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Plan",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { onEditPlan() }
+                    )
+                }
             }
             items(dayPlan.workoutExercises) { exercise ->
                 ExerciseExpandableItem(exercise)
@@ -132,7 +158,7 @@ fun WorkoutDayDetailScreen(
 fun HeaderAndSummarySection(
     dayPlan: DayPlan,
     onBack: () -> Unit,
-    onEditPlan: () -> Unit
+    onOpenSettings: () -> Unit
 ) {
     val exercises = dayPlan.workoutExercises
     val totalKcal = exercises.sumOf { it.kcal }
@@ -241,7 +267,7 @@ fun HeaderAndSummarySection(
                 ) {
                     SummaryItem(value = "${exercises.size}", label = "Exercises")
                     SummaryItem(value = "$duration min", label = "Time")
-                    SummaryItem(value = "$totalKcal", label = "Calories")
+                    SummaryItem(value = "$totalKcal kcal(≈)", label = "Calories")
                 }
                 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -252,27 +278,27 @@ fun HeaderAndSummarySection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { onEditPlan() }
+                        .clickable { onOpenSettings() }
                         .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
                         Text(
-                            "Edit Workout",
+                            "Workout Settings",
                             style = MaterialTheme.typography.headlineMedium,
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            "Add, remove or reorder exercises",
+                            "Music & Coach & Timer, etc.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Edit Plan",
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Workout Settings",
                         tint = Color.Gray
                     )
                 }
@@ -435,7 +461,7 @@ fun HeaderAndSummarySectionPreview() {
         HeaderAndSummarySection(
             dayPlan = DayPlan(1, false, sampleExercises),
             onBack = {  },
-            onEditPlan = {  }
+            onOpenSettings = {  }
         )
     }
 }

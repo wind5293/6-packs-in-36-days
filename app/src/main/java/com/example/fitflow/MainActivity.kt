@@ -9,6 +9,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
@@ -102,6 +107,7 @@ class MainActivity : ComponentActivity() {
                                 || (currentRoute.startsWith("workout_session"))
                                 || (currentRoute.startsWith("edit_plan"))
                                 || currentRoute == "workout_settings"
+                                || currentRoute == "workout_settings_session"
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
@@ -117,9 +123,27 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
-                        modifier = Modifier.padding(paddingValues)
+                        modifier = Modifier.padding(paddingValues),
+                        enterTransition = {
+                            slideInHorizontally(animationSpec = tween(280)) { it }
+                        },
+                        exitTransition = {
+                            slideOutHorizontally(animationSpec = tween(280)) { -it / 3 }
+                        },
+                        popEnterTransition = {
+                            slideInHorizontally(animationSpec = tween(280)) { -it / 3 }
+                        },
+                        popExitTransition = {
+                            slideOutHorizontally(animationSpec = tween(280)) { it }
+                        }
                     ) {
-                        composable("dashboard") {
+                        composable(
+                            route = "dashboard",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None },
+                            popEnterTransition = { EnterTransition.None },
+                            popExitTransition = { ExitTransition.None }
+                        ) {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             val userProfile by viewModel.userProfile.collectAsState()
@@ -152,7 +176,13 @@ class MainActivity : ComponentActivity() {
                                 onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
-                        composable("planner") {
+                        composable(
+                            route = "planner",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None },
+                            popEnterTransition = { EnterTransition.None },
+                            popExitTransition = { ExitTransition.None }
+                        ) {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             // Ngày tiếp theo cần tập = ngày workout đầu tiên chưa hoàn thành
@@ -166,8 +196,7 @@ class MainActivity : ComponentActivity() {
                                 currentDay = currentDay,
                                 onDayClick = { dayNumber ->
                                     navController.navigate("day_detail/$dayNumber")
-                                },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                }
                             )
                         }
                         composable(
@@ -183,13 +212,22 @@ class MainActivity : ComponentActivity() {
                                 dayPlan = dayPlan,
                                 onBack = { navController.popBackStack() },
                                 onStartSession = { navController.navigate("workout_session/$dayNumber") },
-                                onEditPlan = { navController.navigate("edit_plan/$dayNumber") }
+                                onEditPlan = { navController.navigate("edit_plan/$dayNumber") },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable("workout_settings") {
                             WorkoutSettingsScreen(
                                 onBack = { navController.popBackStack() },
-                                viewModel = settingsViewModel
+                                viewModel = settingsViewModel,
+                                isInWorkoutSession = false
+                            )
+                        }
+                        composable("workout_settings_session") {
+                            WorkoutSettingsScreen(
+                                onBack = { navController.popBackStack() },
+                                viewModel = settingsViewModel,
+                                isInWorkoutSession = true
                             )
                         }
                         composable(
@@ -216,7 +254,13 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable("profile") {
+                        composable(
+                            route = "profile",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None },
+                            popEnterTransition = { EnterTransition.None },
+                            popExitTransition = { ExitTransition.None }
+                        ) {
                             val userProfile by viewModel.userProfile.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
@@ -231,8 +275,7 @@ class MainActivity : ComponentActivity() {
                                 weightHistory = weightHistory,
                                 healthMetricsHistory = healthHistory,
                                 onRecordWeight = { viewModel.recordWeight(it) },
-                                onReCalibrate = { navController.navigate("onboarding") },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onReCalibrate = { navController.navigate("onboarding") }
                             )
                         }
                         composable("onboarding") {
@@ -250,7 +293,13 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("workout_setup")
                             })
                         }
-                        composable("library") {
+                        composable(
+                            route = "library",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None },
+                            popEnterTransition = { EnterTransition.None },
+                            popExitTransition = { ExitTransition.None }
+                        ) {
                             LibraryScreen()
                         }
                         composable("loading") {
@@ -300,7 +349,7 @@ class MainActivity : ComponentActivity() {
                                     viewModel.markDayComplete(dayNumber)
                                     navController.popBackStack()
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") },
+                                onOpenSettings = { navController.navigate("workout_settings_session") },
                                 settingsViewModel = settingsViewModel
                             )
                         }
