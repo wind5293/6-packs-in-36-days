@@ -100,6 +100,9 @@ class UserViewModel(
     private val _stepSensorEnabled = MutableStateFlow(false)
     val stepSensorEnabled: StateFlow<Boolean> = _stepSensorEnabled.asStateFlow()
 
+    private val _stepTrackingActive = MutableStateFlow(false)
+    val stepTrackingActive: StateFlow<Boolean> = _stepTrackingActive.asStateFlow()
+
     private val _planProvisioningState = MutableStateFlow(PlanProvisioningState())
     val planProvisioningState: StateFlow<PlanProvisioningState> = _planProvisioningState.asStateFlow()
 
@@ -302,6 +305,7 @@ class UserViewModel(
     fun setActivityRecognitionGranted(granted: Boolean) {
         _activityRecognitionGranted.value = granted
         if (!granted) {
+            stopStepTracking()
             userPreferences.setStepSensorEnabled(false)
             _stepSensorEnabled.value = false
         }
@@ -311,10 +315,14 @@ class UserViewModel(
         if (!_activityRecognitionGranted.value) {
             userPreferences.setStepSensorEnabled(false)
             _stepSensorEnabled.value = false
+            _stepTrackingActive.value = false
             return
         }
 
-        if (stepCounterManager != null) return
+        if (stepCounterManager != null) {
+            _stepTrackingActive.value = true
+            return
+        }
 
         stepCounterManager = StepCounterManager(context.applicationContext, object : StepCounterManager.Listener {
             override fun onCounterValue(counterValue: Int) {
@@ -342,17 +350,25 @@ class UserViewModel(
             }
 
             override fun onSensorUnavailable() {
+                _stepTrackingActive.value = false
                 userPreferences.setStepSensorEnabled(false)
                 refreshHealthMetrics()
             }
         })
 
-        stepCounterManager?.start()
+        val started = stepCounterManager?.start() == true
+        _stepTrackingActive.value = started
+        _stepSensorEnabled.value = started
+        userPreferences.setStepSensorEnabled(started)
+        if (!started) {
+            stepCounterManager = null
+        }
     }
 
     fun stopStepTracking() {
         stepCounterManager?.stop()
         stepCounterManager = null
+        _stepTrackingActive.value = false
     }
 
     fun scheduleWorkoutReminder(context: Context, hour: Int, minute: Int) {

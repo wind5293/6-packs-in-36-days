@@ -1,5 +1,6 @@
 package com.example.fitflow.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -27,11 +29,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.ui.theme.FitflowTheme
@@ -50,8 +54,12 @@ fun DayWorkoutSummaryScreen(
     currentStreak: Int = 0,
     startDate: LocalDate? = null,
     onBack: () -> Unit = {},
-    onNavigateDay: (LocalDate) -> Unit = {}
+    onNavigateDay: (LocalDate) -> Unit = {},
+    onOpenPlanner: () -> Unit = {},
+    onOpenWorkoutDay: (Int) -> Unit = {}
 ) {
+    BackHandler(onBack = onBack)
+
     // Tính dayNumber tương ứng với selectedDate
     val dayNumber: Int? = if (startDate != null) {
         val diff = selectedDate.toEpochDay() - startDate.toEpochDay()
@@ -60,6 +68,9 @@ fun DayWorkoutSummaryScreen(
 
     val dayPlan = dayNumber?.let { dn -> workoutPlan.find { it.dayNumber == dn } }
     val isCompleted = dayNumber != null && dayNumber in completedDays
+    val nextPlannedDay = workoutPlan
+        .filter { !it.isRest }
+        .firstOrNull { it.dayNumber !in completedDays }
 
     val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
 
@@ -116,6 +127,20 @@ fun DayWorkoutSummaryScreen(
                 currentStreak = currentStreak
             )
         }
+
+        item {
+            Spacer(Modifier.height(28.dp))
+            NextStepSection(
+                isCompleted = isCompleted,
+                isRestDay = dayPlan?.isRest == true,
+                noPlan = dayPlan == null,
+                currentDayNumber = dayNumber,
+                nextPlannedDayNumber = nextPlannedDay?.dayNumber,
+                onOpenPlanner = onOpenPlanner,
+                onOpenWorkoutDay = onOpenWorkoutDay,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+        }
     }
 }
 
@@ -153,7 +178,7 @@ private fun DayWorkoutTopBar(
                     )
             ) {
                 Icon(
-                    Icons.Default.ArrowBack,
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(20.dp)
@@ -400,6 +425,104 @@ private fun OverviewSection(
                 icon = Icons.Default.Whatshot,
                 iconTint = MaterialTheme.colorScheme.primary
             )
+        }
+    }
+}
+
+@Composable
+private fun NextStepSection(
+    isCompleted: Boolean,
+    isRestDay: Boolean,
+    noPlan: Boolean,
+    currentDayNumber: Int?,
+    nextPlannedDayNumber: Int?,
+    onOpenPlanner: () -> Unit,
+    onOpenWorkoutDay: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val titleRes = when {
+        noPlan -> R.string.day_summary_title_out_of_plan
+        isRestDay -> R.string.day_summary_title_rest_day
+        isCompleted -> R.string.day_summary_title_complete
+        else -> R.string.day_summary_title_pending
+    }
+    val bodyRes = when {
+        noPlan -> R.string.day_summary_body_out_of_plan
+        isRestDay -> R.string.day_summary_body_rest_day
+        isCompleted -> R.string.day_summary_body_complete
+        else -> R.string.day_summary_body_pending
+    }
+
+    val primaryAction = when {
+        nextPlannedDayNumber != null && nextPlannedDayNumber != currentDayNumber -> {
+            Pair(
+                stringResource(R.string.day_summary_primary_next_day_format, nextPlannedDayNumber),
+                { onOpenWorkoutDay(nextPlannedDayNumber) }
+            )
+        }
+        !noPlan && currentDayNumber != null && !isCompleted && !isRestDay -> {
+            Pair(
+                stringResource(R.string.day_summary_primary_resume_today),
+                { onOpenWorkoutDay(currentDayNumber) }
+            )
+        }
+        else -> {
+            Pair(stringResource(R.string.day_summary_primary_view_planner), onOpenPlanner)
+        }
+    }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(24.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = stringResource(titleRes),
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic,
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = stringResource(bodyRes),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f)
+            )
+            Button(
+                onClick = primaryAction.second,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(18.dp)
+            ) {
+                Text(
+                    text = primaryAction.first,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+            }
+            OutlinedButton(
+                onClick = onOpenPlanner,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(18.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.day_summary_secondary_back_to_planner),
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp
+                )
+            }
         }
     }
 }
