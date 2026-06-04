@@ -102,7 +102,7 @@ fun WorkoutCompletedScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     StatItem("Exercises", totalExercises.toString(), primaryColor, textColor)
-                    StatItem("Calorie", String.format("%.1f", estimatedCalories), primaryColor, textColor)
+                    StatItem("Calories", String.format("%.1f", estimatedCalories), primaryColor, textColor)
                     StatItem("Time", timeFormatted, primaryColor, textColor)
                 }
             }
