@@ -71,6 +71,9 @@ class UserViewModel(
     private val _completedDays = MutableStateFlow<Set<Int>>(emptySet())
     val completedDays: StateFlow<Set<Int>> = _completedDays.asStateFlow()
 
+    private val _completedDateMap = MutableStateFlow<Map<LocalDate, Int>>(emptyMap())
+    val completedDateMap: StateFlow<Map<LocalDate, Int>> = _completedDateMap.asStateFlow()
+
     private val _currentStreak = MutableStateFlow(0)
     val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
 
@@ -118,6 +121,7 @@ class UserViewModel(
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
+        _completedDateMap.value = userPreferences.getCompletedDateMap()
         _currentStreak.value = userPreferences.getCurrentStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
@@ -146,6 +150,10 @@ class UserViewModel(
                 day
             }
         }
+    }
+
+    suspend fun getSupplementaryWorkout(id: String): com.example.fitflow.data.model.SupplementaryWorkout? {
+        return com.example.fitflow.domain.PushYourLimitsCatalog.findEnrichedById(id, exerciseRepository)
     }
 
     fun saveProfile(
@@ -251,6 +259,11 @@ class UserViewModel(
             current.add(dayNumber)
             userPreferences.saveCompletedDays(current)
             _completedDays.value = current
+
+            val dateMap = _completedDateMap.value.toMutableMap()
+            dateMap[LocalDate.now()] = dayNumber
+            userPreferences.saveCompletedDateMap(dateMap)
+            _completedDateMap.value = dateMap
 
             val today = LocalDate.now()
             val lastWorkout = userPreferences.getLastWorkoutDate()
