@@ -129,6 +129,7 @@ class MainActivity : ComponentActivity() {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             val userProfile by viewModel.userProfile.collectAsState()
+                            val startDate by viewModel.startDate.collectAsState()
                             val todayHealthMetrics by viewModel.todayHealthMetrics.collectAsState()
                             val activityGranted by viewModel.activityRecognitionGranted.collectAsState()
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
@@ -139,6 +140,7 @@ class MainActivity : ComponentActivity() {
                                 currentStreak = currentStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
+                                startDate = startDate,
                                 healthMetrics = todayHealthMetrics,
                                 isActivityRecognitionGranted = activityGranted,
                                 isStepSensorEnabled = stepSensorEnabled,
@@ -164,6 +166,10 @@ class MainActivity : ComponentActivity() {
                                         launchSingleTop = true
                                         restoreState = true
                                     }
+                                }
+                                ,
+                                onOpenDaySummary = { dayNumber ->
+                                    navController.navigate("day_workout_summary/$dayNumber")
                                 }
                             )
                         }
@@ -246,8 +252,7 @@ class MainActivity : ComponentActivity() {
                                 weightHistory = weightHistory,
                                 healthMetricsHistory = healthHistory,
                                 onRecordWeight = { viewModel.recordWeight(it) },
-                                onReCalibrate = { navController.navigate("onboarding") },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onReCalibrate = { navController.navigate("onboarding") }
                             )
                         }
                         composable("onboarding") {
@@ -345,11 +350,14 @@ class MainActivity : ComponentActivity() {
                                 currentStreak = currentStreak,
                                 startDate = startDate,
                                 onBack = {
-                                    // Summary is a post-session endpoint; back returns to planner overview.
-                                    navController.navigate("planner") {
-                                        popUpTo("dashboard") { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                                    // Try to pop back to an existing dashboard in the backstack.
+                                    val popped = navController.popBackStack("dashboard", false)
+                                    if (!popped) {
+                                        // If dashboard isn't on the backstack, navigate there.
+                                        navController.navigate("dashboard") {
+                                            popUpTo(0) { inclusive = true }
+                                            launchSingleTop = true
+                                        }
                                     }
                                 },
                                 onNavigateDay = { selectedDate = it },

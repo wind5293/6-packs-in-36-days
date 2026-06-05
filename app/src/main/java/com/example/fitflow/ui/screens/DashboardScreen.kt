@@ -62,6 +62,7 @@ fun DashboardScreen(
     currentStreak: Int = 0,
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
+    startDate: LocalDate? = null,
     healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, StepSource.MANUAL),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
@@ -72,6 +73,8 @@ fun DashboardScreen(
     onStartWorkout: () -> Unit = {},
     onOpenChatbot: () -> Unit = {},
     onOpenPlanner: () -> Unit = {}
+    ,
+    onOpenDaySummary: (Int) -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -101,7 +104,22 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
         item {
-            WeeklyGoalSection()
+            WeeklyGoalSection(
+                completedDays = completedDays,
+                onToggleDay = { weekIndex ->
+                    // Map weekIndex (0..6 relative to this week) to absolute dayNumber using startDate
+                    val today = LocalDate.now()
+                    val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
+                    val startOfWeek = today.minusDays(todayIndex.toLong())
+                    val date = startOfWeek.plusDays(weekIndex.toLong())
+                    if (startDate != null) {
+                        val dayNum = java.time.temporal.ChronoUnit.DAYS.between(startDate, date).toInt() + 1
+                        if (dayNum >= 1 && dayNum <= workoutPlan.size) {
+                            onOpenDaySummary(dayNum)
+                        }
+                    }
+                }
+            )
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -278,6 +296,7 @@ fun HeaderSection(
     }
 }
 
+@Composable
 fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
     0 -> stringResource(R.string.dashboard_quote_sunday)
     1 -> stringResource(R.string.dashboard_quote_monday)
