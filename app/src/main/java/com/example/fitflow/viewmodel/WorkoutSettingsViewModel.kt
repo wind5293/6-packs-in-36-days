@@ -208,9 +208,7 @@ class WorkoutSettingsViewModel(application: Application) : AndroidViewModel(appl
         if (enabled) {
             loadAndPlay(_currentSongIndex.value)
         } else {
-            mediaPlayer?.pause()
-            _isPlaying.value = false
-            progressJob?.cancel()
+            stopMusic()
         }
     }
 

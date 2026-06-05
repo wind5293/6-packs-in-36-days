@@ -71,6 +71,9 @@ class UserViewModel(
     private val _completedDays = MutableStateFlow<Set<Int>>(emptySet())
     val completedDays: StateFlow<Set<Int>> = _completedDays.asStateFlow()
 
+    private val _completedDateMap = MutableStateFlow<Map<LocalDate, Int>>(emptyMap())
+    val completedDateMap: StateFlow<Map<LocalDate, Int>> = _completedDateMap.asStateFlow()
+
     private val _currentStreak = MutableStateFlow(0)
     val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
 
@@ -100,6 +103,9 @@ class UserViewModel(
     private val _stepSensorEnabled = MutableStateFlow(false)
     val stepSensorEnabled: StateFlow<Boolean> = _stepSensorEnabled.asStateFlow()
 
+    private val _stepTrackingActive = MutableStateFlow(false)
+    val stepTrackingActive: StateFlow<Boolean> = _stepTrackingActive.asStateFlow()
+
     private val _planProvisioningState = MutableStateFlow(PlanProvisioningState())
     val planProvisioningState: StateFlow<PlanProvisioningState> = _planProvisioningState.asStateFlow()
 
@@ -115,6 +121,7 @@ class UserViewModel(
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
+        _completedDateMap.value = userPreferences.getCompletedDateMap()
         _currentStreak.value = userPreferences.getCurrentStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
@@ -143,6 +150,10 @@ class UserViewModel(
                 day
             }
         }
+    }
+
+    suspend fun getSupplementaryWorkout(id: String): com.example.fitflow.data.model.SupplementaryWorkout? {
+        return com.example.fitflow.domain.PushYourLimitsCatalog.findEnrichedById(id, exerciseRepository)
     }
 
     fun saveProfile(
@@ -249,6 +260,11 @@ class UserViewModel(
             userPreferences.saveCompletedDays(current)
             _completedDays.value = current
 
+            val dateMap = _completedDateMap.value.toMutableMap()
+            dateMap[LocalDate.now()] = dayNumber
+            userPreferences.saveCompletedDateMap(dateMap)
+            _completedDateMap.value = dateMap
+
             val today = LocalDate.now()
             val lastWorkout = userPreferences.getLastWorkoutDate()
             var streak = userPreferences.getCurrentStreak()
@@ -302,6 +318,7 @@ class UserViewModel(
     fun setActivityRecognitionGranted(granted: Boolean) {
         _activityRecognitionGranted.value = granted
         if (!granted) {
+            stopStepTracking()
             userPreferences.setStepSensorEnabled(false)
             _stepSensorEnabled.value = false
         }
@@ -311,10 +328,14 @@ class UserViewModel(
         if (!_activityRecognitionGranted.value) {
             userPreferences.setStepSensorEnabled(false)
             _stepSensorEnabled.value = false
+            _stepTrackingActive.value = false
             return
         }
 
-        if (stepCounterManager != null) return
+        if (stepCounterManager != null) {
+            _stepTrackingActive.value = true
+            return
+        }
 
         stepCounterManager = StepCounterManager(context.applicationContext, object : StepCounterManager.Listener {
             override fun onCounterValue(counterValue: Int) {
@@ -342,17 +363,25 @@ class UserViewModel(
             }
 
             override fun onSensorUnavailable() {
+                _stepTrackingActive.value = false
                 userPreferences.setStepSensorEnabled(false)
                 refreshHealthMetrics()
             }
         })
 
-        stepCounterManager?.start()
+        val started = stepCounterManager?.start() == true
+        _stepTrackingActive.value = started
+        _stepSensorEnabled.value = started
+        userPreferences.setStepSensorEnabled(started)
+        if (!started) {
+            stepCounterManager = null
+        }
     }
 
     fun stopStepTracking() {
         stepCounterManager?.stop()
         stepCounterManager = null
+        _stepTrackingActive.value = false
     }
 
     fun scheduleWorkoutReminder(context: Context, hour: Int, minute: Int) {

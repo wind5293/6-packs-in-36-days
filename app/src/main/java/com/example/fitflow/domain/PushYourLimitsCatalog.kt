@@ -38,6 +38,7 @@ object PushYourLimitsCatalog {
             muscleGroup = "Core",
             gradientStart = Color(0xFF6B4EFF),
             gradientEnd = Color(0xFF00B4D8),
+            imageRes = com.example.fitflow.R.drawable.abs,
             exercises = listOf(
                 ex("Core", "Crunch", sets = 3, reps = 20, kcal = 35, durationSec = 45,
                     description = "Lift shoulder blades off the floor. Exhale on the way up."),
@@ -60,6 +61,7 @@ object PushYourLimitsCatalog {
             muscleGroup = "Upper Push",
             gradientStart = Color(0xFFFF5F07),
             gradientEnd = Color(0xFFFFB347),
+            imageRes = com.example.fitflow.R.drawable.chest,
             exercises = listOf(
                 ex("Strength", "Push-Up", sets = 4, reps = 12, kcal = 55, durationSec = 0,
                     description = "Chest to floor, full lockout. Scale on knees if needed."),
@@ -82,6 +84,7 @@ object PushYourLimitsCatalog {
             muscleGroup = "Lower Body",
             gradientStart = Color(0xFF00A86B),
             gradientEnd = Color(0xFF7AE582),
+            imageRes = com.example.fitflow.R.drawable.glutes,
             exercises = listOf(
                 ex("Strength", "Squat", sets = 4, reps = 15, kcal = 50, durationSec = 0,
                     description = "Sit hips back, knees track over toes, chest up."),
@@ -104,6 +107,7 @@ object PushYourLimitsCatalog {
             muscleGroup = "Back",
             gradientStart = Color(0xFF5C6BC0),
             gradientEnd = Color(0xFF9FA8DA),
+            imageRes = com.example.fitflow.R.drawable.back,
             exercises = listOf(
                 ex("Strength", "Superman", sets = 3, reps = 15, kcal = 35, durationSec = 40,
                     description = "Lift chest and legs slightly off the floor. Hold briefly at top."),
@@ -126,6 +130,7 @@ object PushYourLimitsCatalog {
             muscleGroup = "Full Body",
             gradientStart = Color(0xFFE91E8C),
             gradientEnd = Color(0xFFFF5722),
+            imageRes = com.example.fitflow.R.drawable.body,
             exercises = listOf(
                 ex("Cardio", "Burpee", sets = 4, reps = 10, kcal = 80, durationSec = 0,
                     description = "Chest to floor, jump at top. Pace for sustainability."),

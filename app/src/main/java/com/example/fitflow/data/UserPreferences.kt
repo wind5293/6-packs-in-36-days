@@ -25,6 +25,7 @@ class UserPreferences(context: Context) {
         const val KEY_TARGET_WEIGHT = "target_weight"
         const val KEY_IS_ONBOARDED = "is_onboarded"
         const val KEY_COMPLETED_DAYS = "completed_days"
+        const val KEY_COMPLETED_DATE_MAP = "completed_date_map"
         const val KEY_GOAL           = "goal"
         const val KEY_EQUIPMENT      = "equipment"
         const val KEY_START_DATE     = "start_date"
@@ -125,6 +126,26 @@ class UserPreferences(context: Context) {
         val raw = prefs.getString(KEY_COMPLETED_DAYS, "") ?: return emptySet()
         if (raw.isEmpty()) return emptySet()
         return raw.split(",").mapNotNull { it.toIntOrNull() }.toSet()
+    }
+
+    fun saveCompletedDateMap(map: Map<LocalDate, Int>) {
+        val encoded = map.entries.joinToString(",") { "${it.key.toEpochDay()}:${it.value}" }
+        prefs.edit().putString(KEY_COMPLETED_DATE_MAP, encoded).apply()
+    }
+
+    fun getCompletedDateMap(): Map<LocalDate, Int> {
+        val raw = prefs.getString(KEY_COMPLETED_DATE_MAP, "") ?: return emptyMap()
+        if (raw.isEmpty()) return emptyMap()
+        return raw.split(",").mapNotNull { token ->
+            val parts = token.split(":")
+            if (parts.size == 2) {
+                val epoch = parts[0].toLongOrNull()
+                val dayNum = parts[1].toIntOrNull()
+                if (epoch != null && dayNum != null) {
+                    LocalDate.ofEpochDay(epoch) to dayNum
+                } else null
+            } else null
+        }.toMap()
     }
 
     fun getCurrentStreak(): Int = prefs.getInt(KEY_CURRENT_STREAK, 0)

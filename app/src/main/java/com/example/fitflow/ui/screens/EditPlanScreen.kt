@@ -74,6 +74,7 @@ fun EditPlanScreen(
     LaunchedEffect(savedExercises) {
         savedExercises?.let {
             onSave(it)
+            plannerViewModel.consumeSavedExercises()
         }
     }
 

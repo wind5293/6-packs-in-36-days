@@ -129,7 +129,7 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 ### ~~4. Giao diện chưa đồng nhất giữa các màn hình~~ ✅ ĐÃ SỬA
 - ~~`DashboardScreen` và `PlannerScreen` dùng màu trực tiếp~~
 - **Đã sửa**: Tất cả screens đã dùng `MaterialTheme.colorScheme` — bao gồm `WorkoutSessionScreen` (2026-05-09)
-- ⚠️ Còn vi phạm strings: Một số strings vẫn hardcode trong PlannerScreen và WorkoutDayDetailScreen
+- ✅ Đã hoàn tất migrate text người dùng trong `DashboardScreen`, `PlannerScreen`, `WorkoutDayDetailScreen` sang `strings.xml` (2026-06-04)
 
 ### ~~5. Import & code hygiene trong MainActivity.kt~~ ✅ ĐÃ SỬA
 - ~~Commented import thừa L34, fully-qualified names thừa ở L114/L123, indentation sai L122~~
@@ -175,25 +175,17 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
    - `ProfileScreen` có form record + chart lịch sử cân nặng
    - Bổ sung thêm chart tuần cho `STEPS` và `WATER` dựa trên `healthMetricsHistory`
 
-### 13. strings.xml còn lỗi hygiene tiềm ẩn parse issue ⚠️ CẦN DỌN SỚM
-- **Vấn đề**: Có ký tự `"` thừa sau string `dashboard_water`
-- **Ảnh hưởng**: Tăng rủi ro lỗi resource parsing ở lần chỉnh sửa/i18n tiếp theo
-- **Cần làm**: Dọn sạch lỗi cú pháp và tiếp tục chuyển hardcoded strings theo lộ trình
-
-### 14. Text mới trong Health Metrics còn hardcoded ⚠️ CẦN DỌN
-- **Vấn đề**: Một số text mới trong `DashboardScreen` vẫn hardcode (`"LIVE"`, status message sensor/permission, label dialog)
-- **Ảnh hưởng**: Tăng debt i18n, khó mở rộng đa ngôn ngữ
-- **Cần làm**: Chuyển các text này vào `strings.xml` và dùng `stringResource(...)`
-
 ### 15. Tracking lifecycle cần harden thêm theo app lifecycle thực tế ⚠️ CẦN THEO DÕI
 - **Vấn đề**: Đã thêm `onResume/onStop` để start/stop tracking, nhưng chưa có chiến lược background tracking hoặc WorkManager
 - **Ảnh hưởng**: Nếu yêu cầu tracking liên tục khi app background sẽ chưa đáp ứng
-- **Cần làm**: Chốt scope MVP (foreground-only hay background-capable), nếu cần background thì thiết kế thêm service/worker + battery policy
+- **Hiện trạng**: Đã harden foreground lifecycle + tách rõ sensor availability/tracking active để tránh trạng thái UI sai (2026-06-04)
+- **Cần làm**: Nếu cần background tracking thật thì thiết kế thêm service/worker + battery policy
 
-### 16. Hygiene repo: file lỗi IDE bị commit nhầm ⚠️ CẦN DỌN
-- **Vấn đề**: File `.kotlin/errors/errors-1779632416724.log` được add trong commit `c61b557`
-- **Ảnh hưởng**: Tăng noise trong git history, dễ làm bẩn PR về sau
-- **Cần làm**: Xóa file khỏi repo và thêm rule ignore phù hợp để tránh lặp lại
+### ~~16. Hygiene repo: file lỗi IDE bị commit nhầm~~ ✅ ĐÃ SỬA (2026-06-04)
+- ~~**Vấn đề**: Các file lỗi IDE `.kotlin/errors/errors-1779632416724.log` (commit `c61b557`) và `.kotlin/errors/errors-1780040377201.log` (commit `8ec0988`) đã bị add vào repo~~
+- **Đã sửa**:
+   - Xóa 2 file log khỏi repo
+   - Thêm ignore rule `.kotlin/errors/` để tránh tái diễn
 
 ### ~~8. Indentation không nhất quán~~ ✅ ĐÃ SỬA
 - ~~`MainActivity.kt` line 123: `composable("workout_setup")` bị thụt lề sai (dùng tab thay vì spaces)~~
@@ -251,6 +243,12 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - Dùng `MaterialTheme.colorScheme` thay vì reference trực tiếp color tokens (để support dark/light theme)
 - Tất cả text hiển thị nên dùng `stringResource(R.string.xxx)` thay vì hardcode string
 - Padding: dùng `Modifier.padding()` nhất quán, tránh nested padding
+
+### Quy tắc làm việc với AI Agent
+- Sau khi hoàn thành code, **bắt buộc** chạy subagent (ưu tiên `QA-Testcode`) để review lại toàn bộ thay đổi so với yêu cầu ban đầu.
+- Chỉ xem task là hoàn tất khi đã đối chiếu kết quả review và xử lý các điểm lệch quan trọng (nếu có).
+- Nếu yêu cầu có điểm mơ hồ, thiếu dữ liệu, hoặc có nhiều cách hiểu, **bắt buộc dùng subagent `specify` để tạo câu hỏi làm rõ và hỏi lại người dùng trước khi làm**.
+- Không tự suy đoán yêu cầu nghiệp vụ và không tự quyết định các thay đổi chưa được người dùng xác nhận.
 
 ### Khi thêm màn hình mới
 1. Tạo file trong `ui/screens/`
@@ -331,7 +329,7 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 | StepCounterManager | `data/StepCounterManager.kt` | ✅ Bọc `SensorManager` (TYPE_STEP_COUNTER / TYPE_STEP_DETECTOR) với callback listener |
 | WorkoutPlanGenerator | `domain/WorkoutPlanGenerator.kt` | ✅ WEIGHT_LOSS dùng `JefitFatToFitPlan` + các goal còn lại dùng pool theo `FitnessGoal`; map GIF runtime qua repository |
 | JefitFatToFitPlan | `domain/JefitFatToFitPlan.kt` | ✅ Month-1 plan 30 ngày có metadata `title/difficulty/muscleGroup` |
-| strings.xml | `res/values/strings.xml` | ⚠️ Còn thiếu string migration cho Planner/WorkoutDayDetail và text mới của Health Metrics |
+| strings.xml | `res/values/strings.xml` | ✅ Đã migrate text người dùng mới cho Dashboard/Planner/WorkoutDayDetail + health metrics/loading states |
 
 ---
 
@@ -469,10 +467,8 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 | # | Task | File(s) | Chi tiết |
 |---|------|---------|----------|
 | P1.1 | **Hardening onboarding parity** | `OnboardingScreen.kt` | Fine-tune behavior (ruler inertia, validation edge cases) để parity gần hơn reference |
-| P1.2 | **i18n migration cho text mới** | `DashboardScreen.kt`, `PlannerScreen.kt`, `WorkoutDayDetailScreen.kt`, `strings.xml` | Chuyển toàn bộ hardcoded strings mới (đặc biệt Health Metrics status/actions) sang resource |
-| P1.3 | **Health tracking test matrix** | `UserPreferences.kt`, `UserViewModel.kt`, `MainActivity.kt` | Kiểm thử các case đổi ngày, deny permission, sensor unavailable, process recreate |
-| P1.4 | **Repo hygiene cleanup (.kotlin/errors)** | `.kotlin/errors/`, `.gitignore` | Xóa file log IDE đã commit nhầm và thêm guard để không tái diễn |
-| P1.5 | **Edit Plan & Workout Settings regression check** | `EditPlanScreen.kt`, `WorkoutSettingsScreen.kt`, `WorkoutPlannerViewModel.kt`, `WorkoutSettingsViewModel.kt` | Kiểm thử flow save/back/re-open state + validate persistence sau process recreate |
+| P1.2 | **Health tracking test matrix** | `UserPreferences.kt`, `UserViewModel.kt`, `MainActivity.kt` | Kiểm thử các case đổi ngày, deny permission, sensor unavailable, process recreate |
+| P1.3 | **Process recreate regression pass cho Edit Plan & Workout Settings** | `EditPlanScreen.kt`, `WorkoutSettingsScreen.kt`, `WorkoutPlannerViewModel.kt`, `WorkoutSettingsViewModel.kt` | Sau khi đã fix stale event/playback cleanup, cần kiểm thử thêm case kill/recreate process |
 
 ### 🟠 Priority 2 — Sprint 4 (Enhancement)
 
@@ -604,6 +600,61 @@ Dự án sử dụng hệ thống multi-agent trong `.claude/agents/`:
 ---
 
 ## Changelog
+
+### 2026-06-04 — Remote Sync Batch #49 -> #61 (commits 461ea64 -> 7fda846)
+
+#### 1) Plan provisioning + asset-driven plan generation (`f137ec9`, `6b50baa`, `6f67de4`, `8f57dbb`, `d78f6fe`)
+- Thêm `PlanRepository` đọc plan JSON từ `app/src/main/assets/plans/*.json` và map theo `FitnessGoal`
+- Bổ sung bộ plan assets mới: `weight-loss`, `muscle-gain`, `endurance`, `maintenance` (+ các file Jefit legacy)
+- `WorkoutPlanGenerator` ưu tiên lấy plan từ assets qua `PlanRepository`, fallback sang registry/pool nếu thiếu
+- `UserViewModel` thêm flow provisioning kế hoạch với state tiến trình 2 phase (`PlanProvisioningState`) và điều phối retry/consent
+- `MainActivity` cập nhật wiring: `WorkoutSetupScreen` -> `LoadingScreen` -> `dashboard` sau khi provisioning hoàn tất
+
+#### 2) Loading/provisioning UX + network gate (`3011487`)
+- Thêm `NetworkStateHelper` để phân biệt trạng thái no-network và mobile-data consent trước khi prefetch media
+- `LoadingScreen` mở rộng hành vi CTA theo trạng thái (`CONTINUE WITH MOBILE DATA` / `RETRY`)
+- `UserPreferences` thêm cờ chữ ký cache hybrid GIF (`KEY_HYBRID_GIF_CACHE_READY`, `KEY_HYBRID_GIF_CACHE_SIGNATURE`)
+
+#### 3) Workout session voice/music & phase hardening (`d521b4a`, `8ec0988`, `bfdc39e`, `4797589`)
+- Thêm `TextToSpeechHelper` và tích hợp voice guide trong `WorkoutSessionScreen`
+- Fix bug lặp câu "go" khi bắt đầu exercise phase
+- Thêm background music runtime (assets `music/track_01..03.mp3`) và control từ `WorkoutSettingsViewModel`/`WorkoutSettingsScreen`
+- Chỉnh logic countdown ban đầu để tránh skip nhầm phase PREPARING
+
+#### 4) UI/flow polish trên dashboard & planner (`461ea64`, `7d7be32`, `f674201`, `5620ef7`, `7087d2d`, `e08fe3e`)
+- Tích hợp entry mở `workout_settings` từ nhiều màn hình chính (dashboard/planner/profile/day detail/session)
+- `EditPlanScreen` thêm drag-and-drop reorder
+- `ExerciseInstructionOverlayScreen` và chi tiết workout được redesign
+- Bottom nav bỏ nút add/workout setup trung tâm, giữ 4 tab `Home | Plan | Library | Me`
+- Dashboard cập nhật vị trí `Weekly Goal` và thêm coach quote theo ngày
+
+#### 5) Streak logic + màn hình tổng kết ngày tập (`8f1e80f`, `e1a2148`)
+- Refactor logic streak (tăng streak theo ngày liên tiếp, reset khi ngắt quãng > 1 ngày)
+- Persist + expose `currentStreak` qua `UserPreferences`/`UserViewModel` và hiển thị trên dashboard
+- Thêm file màn hình mới `DayWorkoutSummaryScreen.kt` (đã có UI file, chưa thấy route trong `NavHost` ở nhánh `main` hiện tại)
+
+#### 6) Merge timeline
+- Các nhánh/PR đã được merge vào `main`: #49, #50, #51, #52, #53, #54, #55, #57, #58, #59, #60, #61
+
+### 2026-06-04 — Local Hardening Sessions A -> F (current workspace)
+
+#### 1) i18n + summary flow + repo hygiene
+- Migrate text người dùng ở `DashboardScreen`, `PlannerScreen`, `WorkoutDayDetailScreen` sang `strings.xml`
+- Wire `DayWorkoutSummaryScreen` vào `MainActivity` với route `day_workout_summary/{dayNumber}` và finish-flow từ `WorkoutSessionScreen`
+- Xóa 2 file `.kotlin/errors/*.log` khỏi repo và thêm ignore rule `.kotlin/errors/`
+
+#### 2) Health tracking lifecycle hardening
+- `UserViewModel` thêm state `stepTrackingActive` để tách lifecycle-tracking khỏi sensor availability
+- `StepCounterManager.start()` trả về kết quả đăng ký listener để xác định availability ngay từ lúc start
+- `DashboardScreen` chỉnh badge/message để không còn mâu thuẫn giữa `LIVE SENSOR`, `SENSOR READY`, paused và manual mode
+
+#### 3) Provisioning/loading + settings/edit-plan regression fixes
+- `LoadingScreen` luôn hiển thị status copy và cho retry cả ở case no-network lẫn generic provisioning error
+- `WorkoutSettingsViewModel` đổi nhánh tắt background music sang `stopMusic()` để release player/state triệt để
+- `WorkoutPlannerViewModel` + `EditPlanScreen` consume `savedExercises` như one-shot event để tránh replay save khi reopen màn hình
+
+#### 4) Day detail theme consistency
+- `WorkoutDayDetailScreen` bỏ các token màu cũ còn sót (`OrangePrimary`, `OrangeGlow`, hardcoded white/gray) để dùng `MaterialTheme.colorScheme` nhất quán
 
 ### 2026-05-24 — Planner & Settings Expansion (commits c61b557 → 542cd77)
 

@@ -1,6 +1,7 @@
 package com.example.fitflow.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,19 +12,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.fitflow.data.model.UserProfile
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -31,8 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
@@ -41,6 +51,8 @@ import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.StepSource
+import com.example.fitflow.domain.PushYourLimitsCatalog
+import com.example.fitflow.ui.components.PushYourLimitsSection
 import com.example.fitflow.ui.theme.FitflowTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -49,17 +61,23 @@ import java.time.format.DateTimeFormatter
 fun DashboardScreen(
     paddingValues: PaddingValues = PaddingValues(0.dp),
     completedDays: Set<Int> = emptySet(),
+    completedDateMap: Map<LocalDate, Int> = emptyMap(),
     currentStreak: Int = 0,
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
+    startDate: LocalDate? = null,
     healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, StepSource.MANUAL),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
+    isStepTrackingActive: Boolean = false,
     onUnlockStepSensor: () -> Unit = {},
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
     onStartWorkout: () -> Unit = {},
-    onOpenSettings: () -> Unit = {}
+    onOpenChatbot: () -> Unit = {},
+    onOpenPlanner: () -> Unit = {},
+    onOpenSupplementary: (String) -> Unit = {},
+    onOpenDaySummary: (Int, Long) -> Unit = { _, _ -> }
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -67,6 +85,9 @@ fun DashboardScreen(
         .filter { it.dayNumber in completedDays }
         .flatMap { it.workoutExercises }
         .sumOf { it.kcal }
+    val currentDayPlan = workoutPlan
+        .filter { !it.isRest }
+        .firstOrNull { it.dayNumber !in completedDays }
 
     LazyColumn(
         modifier = Modifier
@@ -80,27 +101,59 @@ fun DashboardScreen(
         )
     ) {
         item {
-            HeaderSection(onOpenSettings = onOpenSettings)
+            HeaderSection(onOpenChatbot = onOpenChatbot)
         }
         item {
             Spacer(modifier = Modifier.height(32.dp))
         }
         item {
-            WeeklyGoalSection()
+            WeeklyGoalSection(
+                completedDays = completedDays,
+                startDate = startDate,
+                completedDateMap = completedDateMap,
+                onToggleDay = { weekIndex ->
+                    val today = LocalDate.now()
+                    val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
+                    val startOfWeek = today.minusDays(todayIndex.toLong())
+                    val date = startOfWeek.plusDays(weekIndex.toLong())
+                    
+                    val dayNum = completedDateMap[date] ?: -1
+                    onOpenDaySummary(dayNum, date.toEpochDay())
+                }
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            if (currentDayPlan != null) {
+                DailyChallengeSection(
+                    currentDay = currentDayPlan.dayNumber,
+                    totalDays = workoutPlan.count { !it.isRest },
+                    dayTitle = currentDayPlan.title,
+                    exercises = currentDayPlan.workoutExercises.map { it.name },
+                    onClick = onOpenPlanner
+                )
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(18.dp))
+        }
+        item {
+            // Push Your Limits horizontal scroller — uses local catalog
+            PushYourLimitsSection(
+                workouts = PushYourLimitsCatalog.all(),
+                onWorkoutClick = onOpenSupplementary,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
         }
         item {
             if (userProfile != null) {
                 TodayWeightSection(userProfile = userProfile)
             }
-        }
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-        item {
-            CheckInRecordSection(currentStreak = currentStreak)
-        }
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -121,6 +174,7 @@ fun DashboardScreen(
                 metrics = healthMetrics,
                 isActivityRecognitionGranted = isActivityRecognitionGranted,
                 isStepSensorEnabled = isStepSensorEnabled,
+                isStepTrackingActive = isStepTrackingActive,
                 onUnlockStepSensor = onUnlockStepSensor,
                 onAddWater = onAddWater,
                 onSetWaterGoal = onSetWaterGoal
@@ -158,7 +212,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "TODAY'S WEIGHT",
+                    stringResource(R.string.dashboard_today_weight),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -166,7 +220,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "${String.format("%.1f", userProfile.weight)} kg",
+                        stringResource(R.string.dashboard_weight_kg_format, userProfile.weight),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Black,
@@ -179,7 +233,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
                     )
                 }
                 Text(
-                    "${String.format("%.1f", weightLeft)} kg to goal",
+                    stringResource(R.string.dashboard_weight_to_goal_format, weightLeft),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -194,7 +248,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
-                    "Updated Today!",
+                    stringResource(R.string.dashboard_updated_today),
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -206,7 +260,9 @@ fun TodayWeightSection(userProfile: UserProfile) {
 }
 
 @Composable
-fun HeaderSection(onOpenSettings: () -> Unit = {}) {
+fun HeaderSection(
+    onOpenChatbot: () -> Unit = {}
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -214,7 +270,7 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
     ) {
         Column {
             Text(
-                text = "STATUS REPORT",
+                text = stringResource(R.string.dashboard_status_report),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
@@ -222,7 +278,7 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
             )
             Row {
                 Text(
-                    "DASHBOARD",
+                    stringResource(R.string.dashboard_title),
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
@@ -231,151 +287,45 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
             }
         }
         IconButton(
-            onClick = onOpenSettings,
+            onClick = onOpenChatbot,
             modifier = Modifier
                 .background(
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
                     RoundedCornerShape(50)
                 )
                 .border(
                     1.dp,
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
                     RoundedCornerShape(50)
                 )
         ) {
             Icon(
-                Icons.Default.Settings,
-                contentDescription = "Settings",
-                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                Icons.Default.Chat,
+                contentDescription = "AI Coach",
+                tint = MaterialTheme.colorScheme.surfaceVariant
             )
         }
     }
 }
 
 @Composable
-fun CheckInRecordSection(currentStreak: Int) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                RoundedCornerShape(24.dp)
-            )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "CHECK-IN RECORD",
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "$currentStreak DAY STREAK",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🔥", fontSize = 24.sp)
-                }
-            }
-
-            Text(
-                "Make today 1% better than yesterday!",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
-
-            // Progress Bar with milestones
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                val maxDays = 7
-                val progress = (currentStreak.toFloat() / maxDays).coerceIn(0f, 1f)
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(progress)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    val milestones = listOf(2, 5, 7)
-                    for (i in 1..maxDays) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.width(24.dp)
-                        ) {
-                            Text(
-                                text = if (i in milestones) "🔥" else "",
-                                fontSize = 12.sp,
-                                modifier = Modifier.height(16.dp)
-                            )
-                            Text(
-                                text = "$i",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = if (i <= currentStreak)
-                                    MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
-    0 -> "Sunday reset — prep your mind for a strong week ahead!"
-    1 -> "Monday energy! Set the tone for the whole week."
-    2 -> "Stay consistent, Tuesday gains are real gains."
-    3 -> "Halfway there — don't slow down now!"
-    4 -> "Thursday push — the weekend is almost here."
-    5 -> "Friday grind. Finish the week strong!"
-    6 -> "Saturday hustle — most people rest, you improve."
-    else -> "Your fitness goals are calling – time to answer!"
+    0 -> stringResource(R.string.dashboard_quote_sunday)
+    1 -> stringResource(R.string.dashboard_quote_monday)
+    2 -> stringResource(R.string.dashboard_quote_tuesday)
+    3 -> stringResource(R.string.dashboard_quote_wednesday)
+    4 -> stringResource(R.string.dashboard_quote_thursday)
+    5 -> stringResource(R.string.dashboard_quote_friday)
+    6 -> stringResource(R.string.dashboard_quote_saturday)
+    else -> stringResource(R.string.dashboard_quote_default)
 }
 
 @Composable
 fun WeeklyGoalSection(
     weeklyGoal: Int = 3,
     completedDays: Set<Int> = emptySet(),
+    completedDateMap: Map<LocalDate, Int> = emptyMap(),
+    startDate: LocalDate? = null,
     onEditGoal: () -> Unit = {},
     onToggleDay: (Int) -> Unit = {}
 ) {
@@ -410,7 +360,7 @@ fun WeeklyGoalSection(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        "Weekly Goal",
+                        stringResource(R.string.dashboard_weekly_goal),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
@@ -421,14 +371,14 @@ fun WeeklyGoalSection(
                     ) {
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = "Edit goal",
+                            contentDescription = stringResource(R.string.dashboard_edit_goal),
                             tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
                 }
                 Text(
-                    "$completedCount/$weeklyGoal workouts",
+                    stringResource(R.string.dashboard_weekly_goal_progress, completedCount, weeklyGoal),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = if (completedCount >= weeklyGoal)
@@ -453,8 +403,8 @@ fun WeeklyGoalSection(
                     val date = startOfWeek.plusDays(i.toLong())
                     val isToday = i == todayIndex
                     val isPast = i < todayIndex
-                    val isCompleted = i in completedDays
-                    val isClickable = isPast || isToday
+
+                    val isCompleted = date in completedDateMap
 
                     val bgColor = when {
                         isCompleted -> MaterialTheme.colorScheme.primary
@@ -481,10 +431,7 @@ fun WeeklyGoalSection(
                             modifier = Modifier
                                 .size(36.dp)
                                 .background(bgColor, CircleShape)
-                                .then(
-                                    if (isClickable) Modifier.clickable { onToggleDay(i) }
-                                    else Modifier
-                                ),
+                                .clickable { onToggleDay(i) },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -560,6 +507,163 @@ fun WeeklyGoalSection(
 }
 
 @Composable
+fun DailyChallengeSection(
+    currentDay: Int,
+    totalDays: Int,
+    dayTitle: String,
+    exercises: List<String>,
+    onClick: () -> Unit
+) {
+    val completedDays = currentDay - 1
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Daily Challenge",
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        IconButton(
+            onClick = { /* Hành động bộ lọc tinh chỉnh */ },
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Tune,
+                contentDescription = "Filter",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFF6D00),
+                            Color(0xFFFF3D00)
+                        )
+                    )
+                )
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 16.dp, end = 8.dp)
+                    .size(width = 140.dp, height = 150.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.co_bung_2),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(
+                            topStart = 32.dp,
+                            bottomStart = 32.dp,
+                            topEnd = 16.dp,
+                            bottomEnd = 16.dp
+                        ))
+                        .alpha(0.9f)
+                )
+            }
+
+            // ── Foreground content ──
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Program name + difficulty
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        dayTitle.uppercase(),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                // Day number — big
+                Text(
+                    "Day $currentDay",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Black,
+                    lineHeight = 48.sp
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                // Progress counter
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        "$completedDays",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        "/$totalDays Days",
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // START button
+                Button(
+                    onClick = onClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(
+                        "START",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun WorkoutsSummarySection(
     completedCount: Int,
     totalWorkoutDays: Int,
@@ -568,7 +672,7 @@ fun WorkoutsSummarySection(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            "WORKOUTS",
+            stringResource(R.string.dashboard_workouts),
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Black,
@@ -592,14 +696,14 @@ fun WorkoutsSummarySection(
                         fontStyle = FontStyle.Italic
                     )
                     Text(
-                        "/ $totalWorkoutDays DAYS",
+                        stringResource(R.string.dashboard_days_suffix_format, totalWorkoutDays),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
                     Text(
-                        "COMPLETED",
+                        stringResource(R.string.dashboard_completed),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Medium,
@@ -623,14 +727,14 @@ fun WorkoutsSummarySection(
                         fontStyle = FontStyle.Italic
                     )
                     Text(
-                        "KCAL",
+                        stringResource(R.string.dashboard_kcal),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
                     Text(
-                        "BURNED",
+                        stringResource(R.string.dashboard_burned),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Medium,
@@ -649,7 +753,7 @@ fun WorkoutsSummarySection(
                 .heightIn(min = 52.dp)
         ) {
             Text(
-                "START A WORKOUT",
+                stringResource(R.string.dashboard_start_workout),
                 color = MaterialTheme.colorScheme.background,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Black,
@@ -664,6 +768,7 @@ fun HealthMetricsSection(
     metrics: DailyHealthMetrics,
     isActivityRecognitionGranted: Boolean,
     isStepSensorEnabled: Boolean,
+    isStepTrackingActive: Boolean,
     onUnlockStepSensor: () -> Unit,
     onAddWater: (Int) -> Unit,
     onSetWaterGoal: (Int) -> Unit
@@ -691,9 +796,10 @@ fun HealthMetricsSection(
             value = metrics.steps.toString(),
             unit = stringResource(R.string.dashboard_steps).uppercase(),
             buttonText = when {
-                !isActivityRecognitionGranted -> "UNLOCK"
-                metrics.stepSource == StepSource.SENSOR -> "LIVE SENSOR"
-                else -> "MANUAL MODE"
+                !isActivityRecognitionGranted -> stringResource(R.string.dashboard_unlock)
+                !isStepSensorEnabled -> stringResource(R.string.dashboard_manual_mode)
+                isStepTrackingActive -> stringResource(R.string.dashboard_live_sensor)
+                else -> stringResource(R.string.dashboard_sensor_ready)
             },
             onClick = if (!isActivityRecognitionGranted) onUnlockStepSensor else null
         )
@@ -702,37 +808,28 @@ fun HealthMetricsSection(
             icon = Lucide.GlassWater,
             iconTint = MaterialTheme.colorScheme.secondary,
             value = metrics.waterIntakeMl.toString(),
-            unit = "${stringResource(R.string.dashboard_water).uppercase()} / ${metrics.waterGoalMl} ML",
-            buttonText = "+250 ML",
+            unit = stringResource(
+                R.string.dashboard_water_with_goal_format,
+                stringResource(R.string.dashboard_water).uppercase(),
+                metrics.waterGoalMl
+            ),
+            buttonText = stringResource(R.string.dashboard_add_250_ml),
             onClick = { onAddWater(250) }
         )
     }
 
     Spacer(modifier = Modifier.height(10.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        AssistChip(
-            onClick = { onAddWater(500) },
-            label = { Text("+500 ML") }
-        )
-        AssistChip(
-            onClick = {
-                goalInput = metrics.waterGoalMl.toString()
-                showGoalDialog = true
-            },
-            label = { Text("SET GOAL") }
-        )
-    }
 
     if (showGoalDialog) {
         AlertDialog(
             onDismissRequest = { showGoalDialog = false },
-            title = { Text("Water Goal (ml)") },
+            title = { Text(stringResource(R.string.dashboard_water_goal_title)) },
             text = {
                 OutlinedTextField(
                     value = goalInput,
                     onValueChange = { goalInput = it.filter { c -> c.isDigit() } },
                     singleLine = true,
-                    label = { Text("Goal") }
+                    label = { Text(stringResource(R.string.dashboard_goal_label)) }
                 )
             },
             confirmButton = {
@@ -744,10 +841,10 @@ fun HealthMetricsSection(
                             showGoalDialog = false
                         }
                     }
-                ) { Text("SAVE") }
+                ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
-                TextButton(onClick = { showGoalDialog = false }) { Text("CANCEL") }
+                TextButton(onClick = { showGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
@@ -755,9 +852,10 @@ fun HealthMetricsSection(
     Spacer(modifier = Modifier.height(8.dp))
     Text(
         text = when {
-            !isActivityRecognitionGranted -> "Step sensor permission is off. Using manual mode."
-            !isStepSensorEnabled -> "Step sensor unavailable on this device. Manual mode enabled."
-            else -> "Live step tracking is active."
+            !isActivityRecognitionGranted -> stringResource(R.string.dashboard_steps_permission_off)
+            !isStepSensorEnabled -> stringResource(R.string.dashboard_steps_unavailable)
+            !isStepTrackingActive -> stringResource(R.string.dashboard_steps_tracking_paused)
+            else -> stringResource(R.string.dashboard_steps_live_active)
         },
         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
         fontSize = 10.sp,
@@ -875,18 +973,33 @@ fun DashboardScreenPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Daily Challenge - Light Mode")
 @Composable
-fun CheckInRecordSectionPreview() {
-    FitflowTheme {
-        CheckInRecordSection(currentStreak = 2)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WeeklyCalendarSectionPreview() {
-    FitflowTheme {
-        WeeklyGoalSection()
+fun DailyChallengeSectionPreview() {
+    // Ép buộc preview sử dụng hệ màu nền sáng (Light Color Scheme) để đồng bộ với app mẫu
+    MaterialTheme(
+        colorScheme = lightColorScheme(
+            background = Color(0xFFF8F9FA), // Nền trắng xám nhạt cao cấp của app mẫu
+            onBackground = Color(0xFF1A1A1A), // Chữ màu đen xám đậm dễ đọc
+            primary = Color(0xFFFF5722), // Màu cam thương hiệu
+            onPrimary = Color.White
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column {
+                DailyChallengeSection(
+                    currentDay = 1,
+                    totalDays = 30,
+                    dayTitle = "Rock Hard Abs",
+                    exercises = listOf("Crunch", "Plank", "Leg Raise"),
+                    onClick = { /* Không xử lý hành động trong preview */ }
+                )
+            }
+        }
     }
 }

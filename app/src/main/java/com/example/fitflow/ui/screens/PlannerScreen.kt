@@ -1,6 +1,5 @@
 package com.example.fitflow.ui.screens
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,279 +10,343 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.LocalCafe
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.foundation.ExperimentalFoundationApi
+import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.ui.theme.FitflowTheme
-import com.example.fitflow.viewmodel.UserViewModel
-import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.Zap
-import com.composables.icons.lucide.Coffee
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
     workoutPlan: List<DayPlan>,
     completedDays: Set<Int> = emptySet(),
-    currentDay: Int = -1, // Ignored, we calculate it ourselves to include rest days
-    onDayClick: (Int) -> Unit = {}
+    currentDay: Int = -1,
+    onDayClick: (Int) -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val userViewModel: UserViewModel = viewModel(context as ComponentActivity)
-    val userProfile by userViewModel.userProfile.collectAsState()
-    
-    // Tự tính currentDay thực sự (ngày đầu tiên chưa hoàn thành)
-    val realCurrentDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }?.dayNumber ?: -1
-    
-    val daysLeft = (workoutPlan.size - completedDays.size).coerceAtLeast(0)
-    val progress = if (workoutPlan.isNotEmpty()) completedDays.size.toFloat() / workoutPlan.size else 0f
+    val groupedByWeek = workoutPlan.groupBy { (it.dayNumber - 1) / 7 }
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 80.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
     ) {
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                // Background Gradient
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                                )
-                            )
-                        )
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 32.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    stringResource(R.string.planner_master_manifest),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 3.sp
                 )
-                
-                // Content
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(start = 24.dp, end = 24.dp, bottom = 48.dp)
-                ) {
-                    // Flash icons & Level
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Lucide.Zap, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        Icon(Lucide.Zap, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        Icon(Lucide.Zap, contentDescription = null, tint = Color.White.copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Beginner", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    // Goal title
+                Row {
                     Text(
-                        text = userProfile?.goal?.title ?: "Workout Plan",
-                        color = Color.White,
+                        stringResource(R.string.planner_title),
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
                         fontStyle = FontStyle.Italic
                     )
                 }
-
-                // Overlapping rounded surface at the bottom of the header
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(32.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.background,
-                            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
-                        )
+            }
+            IconButton(
+                onClick = onOpenSettings,
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                        RoundedCornerShape(16.dp)
+                    )
+            ) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = stringResource(R.string.common_settings),
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
             }
         }
 
-        stickyHeader {
-            val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 24.dp)
-                    .padding(top = topPadding + 16.dp)
-            ) {
-                // Progress Bar
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = "$daysLeft",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "days left",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 3.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            groupedByWeek.forEach { (weekIndex, daysInWeek) ->
+                val weekNum = weekIndex + 1
+                item {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.planner_week_format, weekNum),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp,
+                            fontStyle = FontStyle.Italic
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .height(1.dp)
+                                .weight(1f)
+                                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+                        )
+                    }
+                }
+                items(daysInWeek) { dayPlan ->
+                    val isLocked = currentDay != -1 && dayPlan.dayNumber > currentDay && dayPlan.dayNumber !in completedDays
+                    DayPlanItem(
+                        dayPlan = dayPlan,
+                        isCurrentDay = dayPlan.dayNumber == currentDay,
+                        isCompleted = dayPlan.dayNumber in completedDays,
+                        isLocked = isLocked,
+                        onClick = { onDayClick(dayPlan.dayNumber) }
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(CircleShape),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
             }
-        }
-        
-        items(workoutPlan) { dayPlan ->
-            val isCompleted = dayPlan.dayNumber in completedDays
-            val isCurrent = dayPlan.dayNumber == realCurrentDay
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 24.dp, vertical = 6.dp)
-            ) {
-                DayPlanItemRedesigned(
-                    dayPlan = dayPlan,
-                    isCompleted = isCompleted,
-                    isCurrent = isCurrent,
-                    onClick = { onDayClick(dayPlan.dayNumber) },
-                    onRestClick = { userViewModel.markDayComplete(dayPlan.dayNumber) }
-                )
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(32.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {}
+                ) {
+                    Row(
+                        modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                stringResource(R.string.planner_new_cycle),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Black,
+                                fontStyle = FontStyle.Italic
+                            )
+                            Text(
+                                stringResource(R.string.planner_regenerate_logic),
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
 }
 
 @Composable
-fun DayPlanItemRedesigned(
+fun DayPlanItem(
     dayPlan: DayPlan,
-    isCompleted: Boolean,
-    isCurrent: Boolean,
-    onClick: () -> Unit,
-    onRestClick: () -> Unit
+    isCurrentDay: Boolean = false,
+    isCompleted: Boolean = false,
+    isLocked: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
-    val bgColor = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-    val textColor = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
-    val subTextColor = if (isCurrent) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-    
+    val dayNum = dayPlan.dayNumber
+    val isRest = dayPlan.isRest
+    val totalMinutes = dayPlan.workoutExercises.sumOf { it.durationSec } / 60
+    val totalKcal = dayPlan.workoutExercises.sumOf { it.kcal }
+    val cardAlpha = when {
+        isCompleted -> 0.45f
+        isLocked -> 0.72f
+        else -> 1f
+    }
+
+    val borderColor = when {
+        isCurrentDay -> MaterialTheme.colorScheme.primary
+        else         -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+    }
+    val cardBg = when {
+        isCurrentDay -> MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
+        else         -> MaterialTheme.colorScheme.surface
+    }
+    val badgeBg = when {
+        isCurrentDay -> MaterialTheme.colorScheme.primary
+        isCompleted  -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+        else         -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+    }
+    val badgeText = when {
+        isCurrentDay -> MaterialTheme.colorScheme.onPrimary
+        else         -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+    }
+    val labelColor = when {
+        isCurrentDay -> MaterialTheme.colorScheme.primary
+        isCompleted  -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
+        else         -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+    }
+
+    val statusLabelRes = when {
+        isCompleted -> R.string.planner_status_done
+        isCurrentDay -> R.string.planner_status_start
+        isLocked -> R.string.planner_status_locked
+        isRest -> R.string.planner_status_rest
+        else -> R.string.planner_status_open
+    }
+    val statusBg = when {
+        isCompleted -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f)
+        isCurrentDay -> MaterialTheme.colorScheme.primary
+        isLocked -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.07f)
+        isRest -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f)
+        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    }
+    val statusTextColor = when {
+        isCurrentDay -> MaterialTheme.colorScheme.onPrimary
+        isRest -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+    }
+
     Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                1.dp,
-                if (isCurrent) Color.Transparent else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                RoundedCornerShape(16.dp)
-            )
-            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp)
+            .alpha(cardAlpha)
+            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
+            .clickable(enabled = !isLocked, onClick = onClick)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    text = "Day ${dayPlan.dayNumber}",
-                    color = textColor,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 18.sp,
-                    fontStyle = FontStyle.Italic
-                )
-                Text(
-                    text = if (isCompleted) "Finished" else if (dayPlan.isRest) "Rest" else "${dayPlan.workoutExercises.size} Exercises",
-                    color = subTextColor,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            
-            if (isCompleted) {
-                // Completed Checkmark
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(badgeBg, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("$dayNum", color = badgeText, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            stringResource(R.string.planner_day_format, dayNum),
+                            color = labelColor,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
+                        )
+                        Text(
+                            if (isRest) stringResource(R.string.planner_rest_recovery) else stringResource(R.string.planner_scheduled_activity),
+                            color = if (isCompleted)
+                                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                            else
+                                MaterialTheme.colorScheme.onBackground,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Italic
+                        )
+                    }
+                }
+
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
-                    contentAlignment = Alignment.Center
+                        .background(statusBg, RoundedCornerShape(10.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Check,
-                        contentDescription = "Finished",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                    Text(
+                        text = stringResource(statusLabelRes),
+                        color = statusTextColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
                     )
                 }
-            } else if (isCurrent) {
-                // Current Day Buttons
-                if (dayPlan.isRest) {
-                    Button(
-                        onClick = onRestClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.onPrimary,
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Icon(Lucide.Coffee, contentDescription = "Rest", modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("REST", fontWeight = FontWeight.Black)
+            }
+
+            if (!isRest) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.planner_workout_meta_format, totalMinutes, totalKcal),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    dayPlan.workoutExercises.take(3).forEach { exercise ->
+                        ExerciseTag(exercise.name)
                     }
-                } else {
-                    Button(
-                        onClick = onClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.onPrimary,
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Text("START", fontWeight = FontWeight.Black)
+                    if (dayPlan.workoutExercises.size > 3) {
+                        ExerciseTag("+${dayPlan.workoutExercises.size - 3}")
                     }
-                }
-            } else {
-                // Upcoming Day
-                if (dayPlan.isRest) {
-                    Icon(
-                        Lucide.Coffee,
-                        contentDescription = "Rest",
-                        tint = subTextColor,
-                        modifier = Modifier.size(24.dp)
-                    )
                 }
             }
         }
     }
+}
+
+@Composable
+fun ExerciseTag(name: String) {
+    Box(
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                RoundedCornerShape(8.dp)
+            )
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            name.uppercase(),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Black
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PlannerScreenPreview() {
+    FitflowTheme { PlannerScreen(emptyList()) }
 }

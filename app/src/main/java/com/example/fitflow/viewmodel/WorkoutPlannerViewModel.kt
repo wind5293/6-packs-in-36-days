@@ -37,6 +37,7 @@ class WorkoutPlannerViewModel : ViewModel() {
     fun exitEditMode() {
         _isEditMode.value = false
         _editablePlan.value = emptyList()
+        _savedExercises.value = null
     }
 
 
@@ -71,5 +72,9 @@ class WorkoutPlannerViewModel : ViewModel() {
     fun saveChanges() {
         _savedExercises.value = _editablePlan.value.toList()
         _isEditMode.value = false
+    }
+
+    fun consumeSavedExercises() {
+        _savedExercises.value = null
     }
 }

@@ -23,19 +23,20 @@ class StepCounterManager(
 
     private var activeSensorType: Int? = null
 
-    fun start() {
+    fun start(): Boolean {
         when {
             stepCounterSensor != null -> {
                 activeSensorType = Sensor.TYPE_STEP_COUNTER
-                sensorManager.registerListener(this, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                return sensorManager.registerListener(this, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL)
             }
             stepDetectorSensor != null -> {
                 activeSensorType = Sensor.TYPE_STEP_DETECTOR
-                sensorManager.registerListener(this, stepDetectorSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                return sensorManager.registerListener(this, stepDetectorSensor, SensorManager.SENSOR_DELAY_NORMAL)
             }
             else -> {
                 activeSensorType = null
                 listener.onSensorUnavailable()
+                return false
             }
         }
     }
