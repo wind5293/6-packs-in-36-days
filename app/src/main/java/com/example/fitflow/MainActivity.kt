@@ -110,7 +110,7 @@ class MainActivity : ComponentActivity() {
                                 || (currentRoute.startsWith("workout_session"))
                             || (currentRoute.startsWith("day_workout_summary"))
                                 || (currentRoute.startsWith("edit_plan"))
-                                || currentRoute == "workout_settings"
+                                || (currentRoute.startsWith("workout_settings"))
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
@@ -214,10 +214,18 @@ class MainActivity : ComponentActivity() {
                                 onEditPlan = { navController.navigate("edit_plan/$dayNumber") }
                             )
                         }
-                        composable("workout_settings") {
+                        composable(
+                            route = "workout_settings?inSession={inSession}",
+                            arguments = listOf(navArgument("inSession") { 
+                                type = NavType.BoolType
+                                defaultValue = false
+                            })
+                        ) { backStackEntry ->
+                            val inSession = backStackEntry.arguments?.getBoolean("inSession") ?: false
                             WorkoutSettingsScreen(
                                 onBack = { navController.popBackStack() },
-                                viewModel = settingsViewModel
+                                viewModel = settingsViewModel,
+                                isInWorkoutSession = inSession
                             )
                         }
                         composable(
@@ -331,7 +339,7 @@ class MainActivity : ComponentActivity() {
                                         restoreState = true
                                     }
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") },
+                                onOpenSettings = { navController.navigate("workout_settings?inSession=true") },
                                 settingsViewModel = settingsViewModel
                             )
                         }
@@ -445,7 +453,7 @@ class MainActivity : ComponentActivity() {
                                         settingsViewModel.stopMusic()
                                         navController.popBackStack()
                                     },
-                                    onOpenSettings = { navController.navigate("workout_settings") },
+                                    onOpenSettings = { navController.navigate("workout_settings?inSession=true") },
                                     settingsViewModel = settingsViewModel
                                 )
                             }
