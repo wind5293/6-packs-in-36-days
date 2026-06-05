@@ -1,0 +1,1578 @@
+{
+  "planId": "jefit-minimal-muscle",
+  "title": "Muscle Gain - 30 Days",
+  "days": [
+    {
+      "dayNumber": 1,
+      "isRest": false,
+      "title": "Day 1 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "isRest": false,
+      "title": "Day 2 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 3,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 3,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 4,
+      "isRest": false,
+      "title": "Day 4 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 5,
+      "isRest": false,
+      "title": "Day 5 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 3,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 6,
+      "isRest": false,
+      "title": "Day 6 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 3,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 7,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 8,
+      "isRest": false,
+      "title": "Day 8 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 3,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 9,
+      "isRest": false,
+      "title": "Day 9 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 3,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 10,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 11,
+      "isRest": false,
+      "title": "Day 11 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 3,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 12,
+      "isRest": false,
+      "title": "Day 12 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 3,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 13,
+      "isRest": false,
+      "title": "Day 13 Training",
+      "difficulty": "Intermediate",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 3,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 3,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 3,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 3,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 14,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 15,
+      "isRest": false,
+      "title": "Day 15 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 16,
+      "isRest": false,
+      "title": "Day 16 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 17,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 18,
+      "isRest": false,
+      "title": "Day 18 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 19,
+      "isRest": false,
+      "title": "Day 19 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 4,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 20,
+      "isRest": false,
+      "title": "Day 20 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": 10,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 60,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 15,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 4,
+          "reps": 45,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 21,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 22,
+      "isRest": false,
+      "title": "Day 22 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 4,
+          "reps": 47,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 75,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 23,
+      "isRest": false,
+      "title": "Day 23 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 24,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 25,
+      "isRest": false,
+      "title": "Day 25 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 75,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 26,
+      "isRest": false,
+      "title": "Day 26 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 4,
+          "reps": 47,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Tricep focus push-up",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 27,
+      "isRest": false,
+      "title": "Day 27 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 4,
+          "reps": 47,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 28,
+      "isRest": true,
+      "title": "Rest & Recovery",
+      "difficulty": "Easy",
+      "muscleGroup": "Rest",
+      "workoutExercises": []
+    },
+    {
+      "dayNumber": 29,
+      "isRest": false,
+      "title": "Day 29 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Back",
+          "name": "Superman",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 30,
+          "durationSec": 0,
+          "description": "Lower back extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Lunge",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Alternating lunges",
+          "gifFileName": ""
+        },
+        {
+          "category": "Arms",
+          "name": "Tricep Dip",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 45,
+          "durationSec": 0,
+          "description": "Chair dips",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 75,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Wall Sit",
+          "sets": 4,
+          "reps": 47,
+          "kcal": 25,
+          "durationSec": 0,
+          "description": "Isometric leg hold",
+          "gifFileName": ""
+        }
+      ]
+    },
+    {
+      "dayNumber": 30,
+      "isRest": false,
+      "title": "Day 30 Training",
+      "difficulty": "Advanced",
+      "muscleGroup": "Full Body",
+      "workoutExercises": [
+        {
+          "category": "Legs",
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 35,
+          "durationSec": 0,
+          "description": "Hip extension",
+          "gifFileName": ""
+        },
+        {
+          "category": "Core",
+          "name": "Plank",
+          "sets": 4,
+          "reps": 0,
+          "kcal": 30,
+          "durationSec": 75,
+          "description": "Core stability hold",
+          "gifFileName": ""
+        },
+        {
+          "category": "Shoulders",
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": 12,
+          "kcal": 40,
+          "durationSec": 0,
+          "description": "Shoulder press push-ups",
+          "gifFileName": ""
+        },
+        {
+          "category": "Legs",
+          "name": "Squat",
+          "sets": 4,
+          "reps": 17,
+          "kcal": 50,
+          "durationSec": 0,
+          "description": "Bodyweight squats",
+          "gifFileName": ""
+        },
+        {
+          "category": "Chest",
+          "name": "Push-up",
+          "sets": 4,
+          "reps": 14,
+          "kcal": 55,
+          "durationSec": 0,
+          "description": "Standard push-ups",
+          "gifFileName": ""
+        }
+      ]
+    }
+  ]
+}

@@ -49,13 +49,13 @@ fun LoadingScreen(
     val statusText = when {
         provisioningState.requiresMobileDataConsent -> "Using mobile data may consume data to prepare workouts."
         provisioningState.isNoNetwork -> "Network is required for first-time workout media setup."
-        provisioningState.hasError -> "Unable to complete setup."
+        provisioningState.hasError -> provisioningState.statusMessage.ifBlank { "Unable to complete setup." }
         else -> provisioningState.statusMessage
     }
 
     val actionMode = when {
         provisioningState.requiresMobileDataConsent -> "accept"
-        provisioningState.isNoNetwork -> "retry"
+        provisioningState.isNoNetwork || provisioningState.hasError -> "retry"
         else -> "none"
     }
 
@@ -130,6 +130,13 @@ fun LoadingScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = statusText,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
+        )
 
         if (actionMode != "none") {
             Spacer(modifier = Modifier.height(20.dp))

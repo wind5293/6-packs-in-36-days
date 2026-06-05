@@ -7,11 +7,10 @@ enum class BmiCategory {
 }
 
 enum class FitnessGoal(val title: String, val description: String) {
-    WEIGHT_LOSS("Weight Loss", "Burn fat and get leaner"),
-    MUSCLE_GAIN("Muscle Gain", "Build strength and volume"),
-    ENDURANCE("Endurance", "Improve stamina and cardio"),
-    MAINTENANCE("Maintenance", "Stay fit and healthy"),
-    ABS_CORE_STRENGTH("Abs & Core Strength", "Improve abs and core strength")
+    WEIGHT_LOSS("Weight Loss", "Cardio-focused · Burn calories"),
+    MUSCLE_GAIN("Muscle Gain", "Strength-focused · Build muscle"),
+    ENDURANCE("Endurance", "Mixed training · Increase stamina"),
+    MAINTENANCE("Maintenance", "Balanced workout · Stay fit")
 }
 
 data class UserProfile(

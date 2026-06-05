@@ -1,10 +1,10 @@
 package com.example.fitflow.ui.screens
 
-import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -16,14 +16,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,13 +31,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.fitflow.R
 import com.example.fitflow.data.model.BmiCategory
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.domain.calculateBmi
 import com.example.fitflow.domain.getBmiCategory
-import com.example.fitflow.notification.WorkoutReminderReceiver
 import com.example.fitflow.ui.theme.FitflowTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import java.time.Year
+import java.util.Locale
 import kotlin.math.abs
 
 @Composable
@@ -54,8 +57,6 @@ fun OnboardingScreen(
     val totalSteps = 6
     val pagerState = rememberPagerState(pageCount = { totalSteps })
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current // Lấy context để gửi Broadcast
-
     // State chung
     val selectedGoal = FitnessGoal.WEIGHT_LOSS
     var height by remember { mutableFloatStateOf(160f) }
@@ -97,9 +98,6 @@ fun OnboardingScreen(
                     if (pagerState.currentPage < totalSteps - 1) {
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                     } else {
-                        val testIntent = Intent(context, WorkoutReminderReceiver::class.java)
-                        context.sendBroadcast(testIntent)
-
                         onComplete(
                             selectedGoal,
                             height,
@@ -116,12 +114,15 @@ fun OnboardingScreen(
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Text(
-                    if (pagerState.currentPage == totalSteps - 1) "ACTIVATE JOURNEY" else "CONTINUE",
+                    if (pagerState.currentPage == totalSteps - 1)
+                        stringResource(R.string.onboarding_action_activate_journey)
+                    else
+                        stringResource(R.string.onboarding_action_continue),
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp
                 )
                 Spacer(Modifier.width(8.dp))
-                Icon(Icons.Default.ArrowForward, contentDescription = null)
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
             }
         }
     }
@@ -134,13 +135,13 @@ fun OnboardingHeader(currentStep: Int, totalSteps: Int) {
         .padding(horizontal = 24.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "FIT",
+                stringResource(R.string.onboarding_brand_fit),
                 fontWeight = FontWeight.Black,
                 fontSize = 24.sp,
                 fontStyle = FontStyle.Italic
             )
             Text(
-                "FLOW",
+                stringResource(R.string.onboarding_brand_flow),
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Black,
                 fontSize = 24.sp,
@@ -173,7 +174,10 @@ fun OnboardingHeader(currentStep: Int, totalSteps: Int) {
 
 @Composable
 fun GoalStep(selectedGoal: FitnessGoal, onGoalSelected: (FitnessGoal) -> Unit) {
-    StepLayout(title = "WHAT IS YOUR GOAL?", subtitle = "SELECT ONE OPTION") {
+    StepLayout(
+        title = stringResource(R.string.onboarding_goal_title),
+        subtitle = stringResource(R.string.onboarding_goal_subtitle)
+    ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             FitnessGoal.values().forEach { goal ->
                 val isSelected = goal == selectedGoal
@@ -194,9 +198,13 @@ fun GoalStep(selectedGoal: FitnessGoal, onGoalSelected: (FitnessGoal) -> Unit) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(goal.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             Text(
-                                goal.description,
+                                stringResource(goal.titleRes()),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                            Text(
+                                stringResource(goal.descriptionRes()),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -209,12 +217,30 @@ fun GoalStep(selectedGoal: FitnessGoal, onGoalSelected: (FitnessGoal) -> Unit) {
     }
 }
 
+private fun FitnessGoal.titleRes(): Int = when (this) {
+    FitnessGoal.WEIGHT_LOSS -> R.string.onboarding_goal_weight_loss_title
+    FitnessGoal.MUSCLE_GAIN -> R.string.onboarding_goal_muscle_gain_title
+    FitnessGoal.ENDURANCE -> R.string.onboarding_goal_endurance_title
+    FitnessGoal.MAINTENANCE -> R.string.onboarding_goal_maintenance_title
+}
+
+private fun FitnessGoal.descriptionRes(): Int = when (this) {
+    FitnessGoal.WEIGHT_LOSS -> R.string.onboarding_goal_weight_loss_desc
+    FitnessGoal.MUSCLE_GAIN -> R.string.onboarding_goal_muscle_gain_desc
+    FitnessGoal.ENDURANCE -> R.string.onboarding_goal_endurance_desc
+    FitnessGoal.MAINTENANCE -> R.string.onboarding_goal_maintenance_desc
+}
+
 @Composable
 fun BirthYearStep(birthYear: Int, onYearChange: (Int) -> Unit) {
-    StepLayout(title = "WHEN WERE YOU BORN?", subtitle = "BIRTH YEAR") {
+    val currentYear = Year.now().value
+    StepLayout(
+        title = stringResource(R.string.onboarding_birth_year_title),
+        subtitle = stringResource(R.string.onboarding_birth_year_subtitle)
+    ) {
         YearWheelPicker(
             selectedYear = birthYear,
-            years = (1950..2024).toList(),
+            years = (1950..currentYear).toList(),
             onYearChange = onYearChange
         )
         Text(
@@ -236,10 +262,13 @@ fun HeightStep(height: Float, onHeightChange: (Float) -> Unit) {
     val feet = inchValue / 12
     val inches = inchValue % 12
 
-    StepLayout(title = "HOW TALL ARE YOU?", subtitle = "HEIGHT (CM)") {
+    StepLayout(
+        title = stringResource(R.string.onboarding_height_title),
+        subtitle = stringResource(R.string.onboarding_height_subtitle)
+    ) {
         UnitToggle(
-            left = "CM",
-            right = "FT",
+            left = stringResource(R.string.onboarding_unit_cm),
+            right = stringResource(R.string.onboarding_unit_ft),
             isLeftSelected = useCm,
             onToggle = { useCm = it }
         )
@@ -253,7 +282,11 @@ fun HeightStep(height: Float, onHeightChange: (Float) -> Unit) {
         )
         Spacer(Modifier.height(18.dp))
         Text(
-            if (useCm) "${cmValue} cm" else "$feet ft $inches in",
+            if (useCm) {
+                stringResource(R.string.onboarding_height_value_cm_format, cmValue)
+            } else {
+                stringResource(R.string.onboarding_height_value_ft_in_format, feet, inches)
+            },
             fontSize = 48.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
@@ -271,10 +304,13 @@ fun WeightStep(
     val kgValue = weight.coerceIn(30f, 150f)
     val lbsValue = kgValue * 2.20462f
 
-    StepLayout(title = "WHAT'S YOUR WEIGHT?", subtitle = "CURRENT WEIGHT (KG)") {
+    StepLayout(
+        title = stringResource(R.string.onboarding_weight_title),
+        subtitle = stringResource(R.string.onboarding_weight_subtitle)
+    ) {
         UnitToggle(
-            left = "KG",
-            right = "LB",
+            left = stringResource(R.string.onboarding_unit_kg),
+            right = stringResource(R.string.onboarding_unit_lb),
             isLeftSelected = useKg,
             onToggle = { useKg = it }
         )
@@ -288,7 +324,11 @@ fun WeightStep(
         )
         Spacer(Modifier.height(18.dp))
         Text(
-            if (useKg) "${String.format("%.1f", kgValue)} kg" else "${String.format("%.1f", lbsValue)} lb",
+            if (useKg) {
+                stringResource(R.string.onboarding_weight_value_kg_format, kgValue)
+            } else {
+                stringResource(R.string.onboarding_weight_value_lb_format, lbsValue)
+            },
             fontSize = 48.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
@@ -303,18 +343,21 @@ fun BmiInfoStep(weight: Float, height: Float) {
     val category = getBmiCategory(bmi)
 
     val categoryLabel = when (category) {
-        BmiCategory.UNDERWEIGHT -> "UNDERWEIGHT"
-        BmiCategory.NORMAL -> "NORMAL"
-        BmiCategory.OVERWEIGHT -> "OVERWEIGHT"
+        BmiCategory.UNDERWEIGHT -> stringResource(R.string.onboarding_bmi_label_underweight)
+        BmiCategory.NORMAL -> stringResource(R.string.onboarding_bmi_label_normal)
+        BmiCategory.OVERWEIGHT -> stringResource(R.string.onboarding_bmi_label_overweight)
     }
 
     val guidance = when (category) {
-        BmiCategory.UNDERWEIGHT -> "Your BMI is below average. Focus on balanced nutrition and strength workouts."
-        BmiCategory.NORMAL -> "Your BMI is in a healthy range. Keep training consistently to improve fitness."
-        BmiCategory.OVERWEIGHT -> "Your BMI is above average. A gradual calorie deficit with regular training is ideal."
+        BmiCategory.UNDERWEIGHT -> stringResource(R.string.onboarding_bmi_guidance_underweight)
+        BmiCategory.NORMAL -> stringResource(R.string.onboarding_bmi_guidance_normal)
+        BmiCategory.OVERWEIGHT -> stringResource(R.string.onboarding_bmi_guidance_overweight)
     }
 
-    StepLayout(title = "YOUR BMI RESULT", subtitle = "BODY MASS INDEX") {
+    StepLayout(
+        title = stringResource(R.string.onboarding_bmi_title),
+        subtitle = stringResource(R.string.onboarding_bmi_subtitle)
+    ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -374,10 +417,13 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
     val kgValue = targetWeight.coerceIn(30f, 150f)
     val lbsValue = kgValue * 2.20462f
 
-    StepLayout(title = "GOAL WEIGHT?", subtitle = "TARGET WEIGHT (KG)") {
+    StepLayout(
+        title = stringResource(R.string.onboarding_target_weight_title),
+        subtitle = stringResource(R.string.onboarding_target_weight_subtitle)
+    ) {
         UnitToggle(
-            left = "KG",
-            right = "LB",
+            left = stringResource(R.string.onboarding_unit_kg),
+            right = stringResource(R.string.onboarding_unit_lb),
             isLeftSelected = useKg,
             onToggle = { useKg = it }
         )
@@ -392,7 +438,11 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
         )
         Spacer(Modifier.height(18.dp))
         Text(
-            if (useKg) "${kgValue.toInt()} kg" else "${String.format("%.1f", lbsValue)} lb",
+            if (useKg) {
+                stringResource(R.string.onboarding_target_weight_value_kg_format, kgValue.toInt())
+            } else {
+                stringResource(R.string.onboarding_weight_value_lb_format, lbsValue)
+            },
             fontSize = 48.sp,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.Center,
@@ -412,7 +462,7 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
         ) {
             Column(Modifier.padding(20.dp)) {
                 Text(
-                    "CHALLENGING GOAL!",
+                    stringResource(R.string.onboarding_target_challenge_title),
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Black,
                     fontSize = 14.sp,
@@ -421,13 +471,15 @@ fun TargetWeightStep(targetWeight: Float, currentWeight: Float, onTargetChange: 
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = if (isLosing) {
-                        "You're looking to lose ${
-                            String.format("%.1f", diffPercentage)
-                        }% of your body weight. This will significantly improve your heart health and energy levels."
+                        stringResource(
+                            R.string.onboarding_target_losing_body_format,
+                            String.format(Locale.getDefault(), "%.1f", diffPercentage)
+                        )
                     } else {
-                        "Gaining ${
-                            String.format("%.1f", diffPercentage)
-                        }% body weight requires consistent surplus. This will help build strength and metabolic resilience."
+                        stringResource(
+                            R.string.onboarding_target_gaining_body_format,
+                            String.format(Locale.getDefault(), "%.1f", diffPercentage)
+                        )
                     },
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
@@ -449,7 +501,10 @@ fun WorkoutTimeStep(workoutTime: String, onTimeSelected: (String) -> Unit) {
         is24Hour = true
     )
 
-    StepLayout(title = "SET YOUR REMINDER", subtitle = "WORKOUT TIME") {
+    StepLayout(
+        title = stringResource(R.string.onboarding_reminder_title),
+        subtitle = stringResource(R.string.onboarding_reminder_subtitle)
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
@@ -473,7 +528,7 @@ fun WorkoutTimeStep(workoutTime: String, onTimeSelected: (String) -> Unit) {
                 onTimeSelected(String.format("%02d:%02d", timePickerState.hour, timePickerState.minute))
             }
             Text(
-                "We'll remind you to stay consistent!",
+                stringResource(R.string.onboarding_reminder_helper_text),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 16.dp)
             )
@@ -634,6 +689,7 @@ fun RulerPicker(
 ) {
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val tickSlotWidth = 16.dp
@@ -642,15 +698,7 @@ fun RulerPicker(
         val selectedIndex = values.indexOf(selectedValue).coerceAtLeast(0)
 
         LaunchedEffect(selectedIndex) {
-            val nearestCenteredIndex = listState.layoutInfo.visibleItemsInfo
-                .minByOrNull { item ->
-                    val viewportCenter =
-                        (listState.layoutInfo.viewportStartOffset + listState.layoutInfo.viewportEndOffset) / 2
-                    abs((item.offset + item.size / 2) - viewportCenter)
-                }
-                ?.index
-
-            if (nearestCenteredIndex != selectedIndex) {
+            if (selectedIndex != listState.firstVisibleItemIndex) {
                 listState.scrollToItem(selectedIndex)
             }
         }
@@ -667,7 +715,9 @@ fun RulerPicker(
                         abs((item.offset + item.size / 2) - viewportCenter)
                     }?.index
                 }
-            }.collect { centeredIndex ->
+            }
+                .distinctUntilChanged()
+                .collect { centeredIndex ->
                 if (centeredIndex == null || centeredIndex !in values.indices) return@collect
                 val valueAtCenter = values[centeredIndex]
                 if (valueAtCenter != selectedValue) {
@@ -679,6 +729,7 @@ fun RulerPicker(
         Box(modifier = Modifier.fillMaxWidth()) {
             LazyRow(
                 state = listState,
+                flingBehavior = snapFlingBehavior,
                 contentPadding = PaddingValues(horizontal = horizontalPadding),
                 horizontalArrangement = Arrangement.spacedBy(tickSpacing),
                 modifier = Modifier.fillMaxWidth()
@@ -751,11 +802,37 @@ fun YearWheelPicker(
     years: List<Int>,
     onYearChange: (Int) -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val selectedIndex = years.indexOf(selectedYear).coerceAtLeast(0)
+    val clampedSelectedYear = selectedYear.coerceIn(years.first(), years.last())
+    val selectedIndex = years.indexOf(clampedSelectedYear).coerceAtLeast(0)
+    val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
     LaunchedEffect(selectedIndex) {
         listState.scrollToItem(selectedIndex)
+    }
+
+    LaunchedEffect(listState, years) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val visibleItems = layoutInfo.visibleItemsInfo
+            if (visibleItems.isEmpty()) {
+                null
+            } else {
+                val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+                visibleItems.minByOrNull { item ->
+                    abs((item.offset + item.size / 2) - viewportCenter)
+                }?.index
+            }
+        }
+            .distinctUntilChanged()
+            .collect { centeredIndex ->
+            if (centeredIndex == null || centeredIndex !in years.indices) return@collect
+            val yearAtCenter = years[centeredIndex]
+            if (yearAtCenter != selectedYear) {
+                onYearChange(yearAtCenter)
+            }
+        }
     }
 
     Card(
@@ -768,6 +845,7 @@ fun YearWheelPicker(
     ) {
         LazyColumn(
             state = listState,
+            flingBehavior = snapFlingBehavior,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             contentPadding = PaddingValues(vertical = 56.dp)
@@ -777,7 +855,13 @@ fun YearWheelPicker(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onYearChange(year) }
+                        .clickable {
+                            onYearChange(year)
+                            val index = years.indexOf(year)
+                            if (index >= 0) {
+                                scope.launch { listState.animateScrollToItem(index) }
+                            }
+                        }
                         .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {

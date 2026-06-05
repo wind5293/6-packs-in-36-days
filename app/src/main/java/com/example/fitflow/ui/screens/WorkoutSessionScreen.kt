@@ -53,8 +53,6 @@
         var remaining by remember { mutableStateOf(exercises.getOrNull(0)?.durationSec ?: 0) }
         var isRunning by remember { mutableStateOf(false) }
         var phase by remember { mutableStateOf(SessionPhase.PREPARING) }
-        var countdownStarted by remember { mutableStateOf(false) }
-        var isFirstLoad by remember { mutableStateOf(true) }
     
         val gifUrls by viewModel.gifUrls.collectAsState()
         Log.d("GIF_DEBUG", "gifUrls in UI: ${gifUrls.size}, keys: ${gifUrls.keys}")
@@ -119,7 +117,6 @@
     
         // Timer chung xử lý cả 3 phase
         LaunchedEffect(Unit) {
-            viewModel.loadGifs(exercises)
             settingsViewModel.startMusicIfEnabled()
         }
     
@@ -235,6 +232,15 @@
                     )
                 }
             }
+
+            SessionStatusStrip(
+                phase = phase,
+                currentExercise = current,
+                nextExercise = next,
+                currentIndex = index,
+                totalExercises = exercises.size,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
     
             when (phase) {
                 // ─── Màn hình CHUẨN BỊ ─────────────────────────
@@ -290,7 +296,6 @@
                         Spacer(modifier = Modifier.height(32.dp))
                         Button(
                             onClick = {
-                                countdownStarted = false
                                 viewModel.skipCountdown()
                                 phase = SessionPhase.EXERCISING
                                 isRunning = current?.reps == 0
@@ -406,6 +411,7 @@
                     ) {
                         OutlinedIconButton(
                             onClick = { goToPrev() },
+                            enabled = index > 0,
                             modifier = Modifier.size(64.dp), shape = CircleShape
                         ) {
                             Icon(
@@ -446,7 +452,14 @@
                             val reps = current?.reps ?: 0
                             val icon = if (reps > 0) Icons.Default.Check
                             else if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
-                            Icon(icon, contentDescription = "Action", modifier = Modifier.size(36.dp))
+                            val actionDescription = if (reps > 0) {
+                                "Complete exercise"
+                            } else if (isRunning) {
+                                "Pause timer"
+                            } else {
+                                "Start timer"
+                            }
+                            Icon(icon, contentDescription = actionDescription, modifier = Modifier.size(36.dp))
                         }
     
                         OutlinedIconButton(
@@ -457,7 +470,11 @@
                             },
                             modifier = Modifier.size(64.dp), shape = CircleShape
                         ) {
-                            Icon(Icons.Default.SkipNext, contentDescription = "Next", tint = textColor)
+                            Icon(
+                                imageVector = if (index < exercises.lastIndex) Icons.Default.SkipNext else Icons.Default.Check,
+                                contentDescription = if (index < exercises.lastIndex) "Next" else "Finish",
+                                tint = textColor
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -477,6 +494,68 @@
                         primaryColor = primaryColor
                     )
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun SessionStatusStrip(
+        phase: SessionPhase,
+        currentExercise: WorkoutExercise?,
+        nextExercise: WorkoutExercise?,
+        currentIndex: Int,
+        totalExercises: Int,
+        modifier: Modifier = Modifier
+    ) {
+        val surfaceColor = if (phase == SessionPhase.RESTING) {
+            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.14f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        }
+        val titleColor = if (phase == SessionPhase.RESTING) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+        val bodyColor = if (phase == SessionPhase.RESTING) {
+            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+        }
+
+        val phaseTitle = when (phase) {
+            SessionPhase.PREPARING -> "Prepare"
+            SessionPhase.EXERCISING -> "Now training"
+            SessionPhase.RESTING -> "Recovery"
+        }
+        val phaseBody = when (phase) {
+            SessionPhase.PREPARING -> currentExercise?.name ?: "Get ready"
+            SessionPhase.EXERCISING -> "${currentIndex + 1}/$totalExercises · ${currentExercise?.name ?: "Current exercise"}"
+            SessionPhase.RESTING -> nextExercise?.name?.let { "Up next: $it" } ?: "Final recovery before summary"
+        }
+
+        Surface(
+            modifier = modifier.fillMaxWidth(),
+            color = surfaceColor,
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = phaseTitle.uppercase(),
+                    color = titleColor,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.2.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = phaseBody,
+                    color = bodyColor,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
@@ -43,7 +44,8 @@ import com.example.fitflow.viewmodel.WorkoutSettingsViewModel
 @Composable
 fun WorkoutSettingsScreen(
     onBack: () -> Unit,
-    viewModel: WorkoutSettingsViewModel
+    viewModel: WorkoutSettingsViewModel,
+    isInWorkoutSession: Boolean = false
 ) {
     // Collecting states from ViewModel
     val isBgMusicEnabled by viewModel.isBgMusicEnabled.collectAsState()
@@ -51,8 +53,6 @@ fun WorkoutSettingsScreen(
     val currentSongIndex by viewModel.currentSongIndex.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
     val playbackProgress by viewModel.playbackProgress.collectAsState()
-    val isShuffle by viewModel.isShuffle.collectAsState()
-    val isRepeat by viewModel.isRepeat.collectAsState()
 
     val isVoiceGuideEnabled by viewModel.isVoiceGuideEnabled.collectAsState()
     val coachName by viewModel.coachName.collectAsState()
@@ -94,7 +94,7 @@ fun WorkoutSettingsScreen(
             ) {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White
                     )
@@ -156,28 +156,28 @@ fun WorkoutSettingsScreen(
                         }
 
                         AnimatedVisibility(
-                            visible = isBgMusicEnabled,
+                            visible = isBgMusicEnabled && isInWorkoutSession,
                             enter = expandVertically(),
                             exit = shrinkVertically()
                         ) {
+                            // Compact player — chỉ hiện khi isInWorkoutSession=true (đảm bảo bởi visible condition)
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 16.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(CardNested)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // Music Player Container
+                                // Album art + song info
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(CardNested)
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    // Album art Box with pulsing orange glow
                                     Box(
                                         modifier = Modifier
-                                            .size(56.dp)
+                                            .size(52.dp)
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(
                                                 Brush.linearGradient(
@@ -191,92 +191,56 @@ fun WorkoutSettingsScreen(
                                             imageVector = Lucide.Music,
                                             contentDescription = null,
                                             tint = Color.White,
-                                            modifier = Modifier.size(28.dp)
+                                            modifier = Modifier.size(24.dp)
                                         )
                                     }
-
-                                    Spacer(modifier = Modifier.width(16.dp))
-
-                                    Column(modifier = Modifier.weight(1f)) {
+                                    Column {
                                         Text(
                                             text = currentSong.name.uppercase(),
                                             color = Color.White,
                                             fontWeight = FontWeight.Black,
-                                            fontSize = 16.sp,
+                                            fontSize = 14.sp,
                                             fontStyle = FontStyle.Italic
                                         )
                                         Text(
                                             text = currentSong.artist,
                                             color = Color.Gray,
-                                            fontSize = 13.sp
+                                            fontSize = 12.sp
                                         )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            // Simulated playing audio wave indicator
-                                            if (isPlaying) {
-                                                Text(
-                                                    text = "❙❙❙",
-                                                    color = OrangePrimary,
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-                                            Text(
-                                                text = "${formatTime(playbackProgress)} / ${formatTime(currentSong.durationSec)}",
-                                                color = OrangePrimary,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                        }
                                     }
                                 }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                // Progress Slider (un-thumbed or mini-slider for aesthetic progress representation)
+                                // Progress bar
                                 Slider(
                                     value = playbackProgress.toFloat(),
                                     onValueChange = {},
                                     valueRange = 0f..currentSong.durationSec.toFloat().coerceAtLeast(1f),
                                     colors = SliderDefaults.colors(
-                                        thumbColor = Color.Transparent, // hidden thumb for look and feel
+                                        thumbColor = Color.Transparent,
                                         activeTrackColor = OrangePrimary,
                                         inactiveTrackColor = Color.DarkGray
                                     ),
                                     modifier = Modifier.height(8.dp)
                                 )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                // Control Pad
+                                // Time labels
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = formatTime(playbackProgress), color = OrangePrimary, fontSize = 11.sp)
+                                    Text(text = formatTime(currentSong.durationSec), color = Color.Gray, fontSize = 11.sp)
+                                }
+                                // Controls: Prev | Play/Pause | Next
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceEvenly,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    IconButton(onClick = { viewModel.toggleShuffle() }) {
-                                        Icon(
-                                            imageVector = Lucide.Shuffle,
-                                            contentDescription = "Shuffle",
-                                            tint = if (isShuffle) OrangePrimary else Color.Gray,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
                                     IconButton(onClick = { viewModel.prevSong() }) {
-                                        Icon(
-                                            imageVector = Lucide.SkipBack,
-                                            contentDescription = "Prev",
-                                            tint = Color.White,
-                                            modifier = Modifier.size(24.dp)
-                                        )
+                                        Icon(Lucide.SkipBack, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(22.dp))
                                     }
-                                    // Play Pause Glowing Circle
                                     Box(
                                         modifier = Modifier
-                                            .size(56.dp)
+                                            .size(48.dp)
                                             .clip(CircleShape)
                                             .background(OrangePrimary)
                                             .clickable { viewModel.togglePlayPause() },
@@ -286,30 +250,29 @@ fun WorkoutSettingsScreen(
                                             imageVector = if (isPlaying) Lucide.Pause else Lucide.Play,
                                             contentDescription = "Play/Pause",
                                             tint = Color.White,
-                                            modifier = Modifier.size(26.dp)
+                                            modifier = Modifier.size(22.dp)
                                         )
                                     }
                                     IconButton(onClick = { viewModel.nextSong() }) {
-                                        Icon(
-                                            imageVector = Lucide.SkipForward,
-                                            contentDescription = "Next",
-                                            tint = Color.White,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                    IconButton(onClick = { viewModel.toggleRepeat() }) {
-                                        Icon(
-                                            imageVector = Lucide.Repeat,
-                                            contentDescription = "Repeat",
-                                            tint = if (isRepeat) OrangePrimary else Color.Gray,
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                        Icon(Lucide.SkipForward, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(22.dp))
                                     }
                                 }
+                                // Volume slider
+                                VolumeSlider(
+                                    value = bgMusicVolume,
+                                    onValueChange = { viewModel.setBgMusicVolume(it) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
 
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                // Volume Slider
+                        // Volume slider khi không trong buổi tập
+                        AnimatedVisibility(
+                            visible = isBgMusicEnabled && !isInWorkoutSession,
+                            enter = expandVertically(),
+                            exit = shrinkVertically()
+                        ) {
+                            Column(modifier = Modifier.padding(top = 16.dp)) {
                                 VolumeSlider(
                                     value = bgMusicVolume,
                                     onValueChange = { viewModel.setBgMusicVolume(it) },
@@ -427,7 +390,7 @@ fun WorkoutSettingsScreen(
                             }
                         }
 
-                        Divider(color = Color.White.copy(alpha = 0.05f))
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.05f))
 
                         // Sound Effect Row
                         Row(
@@ -472,7 +435,7 @@ fun WorkoutSettingsScreen(
                             onClick = { activeDialog = "autoCounting" }
                         )
 
-                        Divider(color = Color.White.copy(alpha = 0.05f), modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.05f), modifier = Modifier.padding(horizontal = 16.dp))
 
                         // Rest Timer Item
                         GeneralSettingRow(
@@ -482,7 +445,7 @@ fun WorkoutSettingsScreen(
                             onClick = { activeDialog = "restTimer" }
                         )
 
-                        Divider(color = Color.White.copy(alpha = 0.05f), modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.05f), modifier = Modifier.padding(horizontal = 16.dp))
 
                         // Countdown before exercise Item
                         GeneralSettingRow(

@@ -71,6 +71,9 @@ class UserViewModel(
     private val _completedDays = MutableStateFlow<Set<Int>>(emptySet())
     val completedDays: StateFlow<Set<Int>> = _completedDays.asStateFlow()
 
+    private val _currentStreak = MutableStateFlow(0)
+    val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
+
     private val _startDate = MutableStateFlow<LocalDate?>(null)
     val startDate: StateFlow<LocalDate?> = _startDate.asStateFlow()
 
@@ -97,6 +100,9 @@ class UserViewModel(
     private val _stepSensorEnabled = MutableStateFlow(false)
     val stepSensorEnabled: StateFlow<Boolean> = _stepSensorEnabled.asStateFlow()
 
+    private val _stepTrackingActive = MutableStateFlow(false)
+    val stepTrackingActive: StateFlow<Boolean> = _stepTrackingActive.asStateFlow()
+
     private val _planProvisioningState = MutableStateFlow(PlanProvisioningState())
     val planProvisioningState: StateFlow<PlanProvisioningState> = _planProvisioningState.asStateFlow()
 
@@ -112,6 +118,7 @@ class UserViewModel(
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
+        _currentStreak.value = userPreferences.getCurrentStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
         refreshHealthMetrics()
@@ -119,7 +126,7 @@ class UserViewModel(
         // ✅ generatePlan là suspend → cần viewModelScope
         viewModelScope.launch {
             val basePlan = if (profile != null) {
-                workoutPlanGenerator.generatePlan(profile.goal, profile.equipment)
+                workoutPlanGenerator.generatePlan(profile.goal)
             } else {
                 emptyList()
             }
@@ -159,7 +166,7 @@ class UserViewModel(
         loadUserProfile()
     }
 
-    fun startPlanProvisioning(context: Context, goal: FitnessGoal, equipment: String = "bodyweight") {
+    fun startPlanProvisioning(context: Context, goal: FitnessGoal) {
         if (planProvisioningJob?.isActive == true) return
 
         pendingGoal = goal
@@ -178,11 +185,10 @@ class UserViewModel(
         planProvisioningJob = viewModelScope.launch {
             try {
                 userPreferences.saveGoal(goal)
-                userPreferences.saveEquipment(equipment)
                 userPreferences.clearCustomDayPlans()
                 _userProfile.value = userPreferences.getUserProfile()
 
-                val generatedPlan = workoutPlanGenerator.generatePlan(goal, equipment)
+                val generatedPlan = workoutPlanGenerator.generatePlan(goal)
                 val mergedPlan = generatedPlan.map { day ->
                     val custom = userPreferences.getCustomDayPlan(day.dayNumber)
                     if (custom != null) day.copy(workoutExercises = custom) else day
@@ -236,14 +242,37 @@ class UserViewModel(
         }
 
         val goal = pendingGoal ?: _userProfile.value?.goal ?: FitnessGoal.WEIGHT_LOSS
-        val equipment = _userProfile.value?.equipment ?: "bodyweight"
-        startPlanProvisioning(context.applicationContext, goal, equipment)
+        startPlanProvisioning(context.applicationContext, goal)
     }
 
     fun markDayComplete(dayNumber: Int) {
-        val updated = _completedDays.value + dayNumber
-        _completedDays.value = updated
-        userPreferences.saveCompletedDays(updated)
+        val current = _completedDays.value.toMutableSet()
+        if (!current.contains(dayNumber)) {
+            current.add(dayNumber)
+            userPreferences.saveCompletedDays(current)
+            _completedDays.value = current
+
+            val today = LocalDate.now()
+            val lastWorkout = userPreferences.getLastWorkoutDate()
+            var streak = userPreferences.getCurrentStreak()
+
+            if (lastWorkout == null) {
+                streak = 1
+            } else {
+                val daysBetween = java.time.temporal.ChronoUnit.DAYS.between(lastWorkout, today)
+                if (daysBetween == 1L) {
+                    streak += 1
+                } else if (daysBetween > 1L) {
+                    streak = 1
+                }
+            }
+
+            if (lastWorkout != today) {
+                userPreferences.setCurrentStreak(streak)
+                userPreferences.setLastWorkoutDate(today)
+                _currentStreak.value = streak
+            }
+        }
     }
 
     fun recordWeight(weight: Float) {
@@ -276,6 +305,7 @@ class UserViewModel(
     fun setActivityRecognitionGranted(granted: Boolean) {
         _activityRecognitionGranted.value = granted
         if (!granted) {
+            stopStepTracking()
             userPreferences.setStepSensorEnabled(false)
             _stepSensorEnabled.value = false
         }
@@ -285,10 +315,14 @@ class UserViewModel(
         if (!_activityRecognitionGranted.value) {
             userPreferences.setStepSensorEnabled(false)
             _stepSensorEnabled.value = false
+            _stepTrackingActive.value = false
             return
         }
 
-        if (stepCounterManager != null) return
+        if (stepCounterManager != null) {
+            _stepTrackingActive.value = true
+            return
+        }
 
         stepCounterManager = StepCounterManager(context.applicationContext, object : StepCounterManager.Listener {
             override fun onCounterValue(counterValue: Int) {
@@ -316,17 +350,25 @@ class UserViewModel(
             }
 
             override fun onSensorUnavailable() {
+                _stepTrackingActive.value = false
                 userPreferences.setStepSensorEnabled(false)
                 refreshHealthMetrics()
             }
         })
 
-        stepCounterManager?.start()
+        val started = stepCounterManager?.start() == true
+        _stepTrackingActive.value = started
+        _stepSensorEnabled.value = started
+        userPreferences.setStepSensorEnabled(started)
+        if (!started) {
+            stepCounterManager = null
+        }
     }
 
     fun stopStepTracking() {
         stepCounterManager?.stop()
         stepCounterManager = null
+        _stepTrackingActive.value = false
     }
 
     fun scheduleWorkoutReminder(context: Context, hour: Int, minute: Int) {

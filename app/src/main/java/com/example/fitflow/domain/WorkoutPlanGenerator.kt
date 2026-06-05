@@ -5,7 +5,6 @@ import com.example.fitflow.data.PlanRepository
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.data.model.FitnessGoal
-import com.example.fitflow.domain.ABS_CORE_STRENGTH_POOL
 import com.example.fitflow.utils.GifUrlHelper
 
 // ─────────────────────────────────────────────────────────────
@@ -91,31 +90,6 @@ private val MAINTENANCE_POOL = ExercisePool(
     )
 )
 
-private val ABS_CORE_STRENGTH_POOL = ExercisePool(
-    restDays = setOf(3, 6, 7, 10, 13, 14, 17, 20, 21, 24, 27, 28),
-    exercises = listOf(
-
-        // Dynamic movements → dùng reps
-        ex("Abs", "Crunch",             reps = 20,  kcal = 30),
-        ex("Abs", "Sit-Up",             reps = 15,  kcal = 35),
-        ex("Abs", "Leg Raise",          reps = 12,  kcal = 35),
-        ex("Abs", "Reverse Crunch",     reps = 15,  kcal = 32),
-        ex("Abs", "Air Bike",           reps = 20,  kcal = 38),
-        ex("Abs", "Mountain Climber",   reps = 30,  kcal = 45),
-        ex("Abs", "V-Up",               reps = 12,  kcal = 40),
-        ex("Abs", "Scissor Kick",       reps = 20,  kcal = 33),
-        ex("Abs", "Jackknife Sit-Up",   reps = 12,  kcal = 42),
-
-        // Oblique focus → kết hợp
-        ex("Abs", "Oblique Crunch",     reps = 15,  kcal = 30),
-        ex("Abs", "Alternating Heel Touch", reps = 20, kcal = 28),
-        ex("Abs", "Cross Body Crunch",  reps = 16,  kcal = 32),
-
-        // Hip flexor / lower abs → reps
-        ex("Abs", "Leg Pull-In",        reps = 15,  kcal = 33),
-    )
-)
-
 // ─────────────────────────────────────────────────────────────
 // 3. REGISTRY: Map FitnessGoal → ExercisePool
 //    → Thêm plan mới: chỉ thêm 1 dòng vào đây.
@@ -125,7 +99,7 @@ private val planRegistry: Map<FitnessGoal, ExercisePool> = mapOf(
     FitnessGoal.WEIGHT_LOSS to WEIGHT_LOSS_POOL,
     FitnessGoal.MUSCLE_GAIN to MUSCLE_GAIN_POOL,
     FitnessGoal.ENDURANCE   to ENDURANCE_POOL,
-    FitnessGoal.ABS_CORE_STRENGTH to ABS_CORE_STRENGTH_POOL,
+    FitnessGoal.MAINTENANCE to MAINTENANCE_POOL,
 )
 
 // ─────────────────────────────────────────────────────────────
@@ -136,8 +110,8 @@ class WorkoutPlanGenerator(
     private val exerciseRepository: ExerciseRepository,
     private val planRepository: PlanRepository
 ) {
-    suspend fun generatePlan(goal: FitnessGoal, equipment: String = "bodyweight"): List<DayPlan> {
-        val assetPlan = planRepository.getPlanForGoal(goal, equipment)
+    suspend fun generatePlan(goal: FitnessGoal): List<DayPlan> {
+        val assetPlan = planRepository.getPlanForGoal(goal)
         if (assetPlan != null) {
             return assetPlan.map { dayPlan ->
                 if (dayPlan.isRest) {
@@ -167,7 +141,7 @@ class WorkoutPlanGenerator(
             }
         }
 
-        val pool = planRegistry[goal] ?: planRegistry[FitnessGoal.ABS_CORE_STRENGTH]!!
+        val pool = planRegistry[goal] ?: planRegistry[FitnessGoal.WEIGHT_LOSS]!!
 
         return (1..30).map { day ->
             when {

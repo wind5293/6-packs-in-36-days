@@ -17,11 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.ui.theme.FitflowTheme
 
@@ -51,7 +53,7 @@ fun PlannerScreen(
         ) {
             Column {
                 Text(
-                    "MASTER MANIFEST",
+                    stringResource(R.string.planner_master_manifest),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,
@@ -59,7 +61,7 @@ fun PlannerScreen(
                 )
                 Row {
                     Text(
-                        "PLANNER",
+                        stringResource(R.string.planner_title),
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
@@ -82,7 +84,7 @@ fun PlannerScreen(
             ) {
                 Icon(
                     Icons.Default.Settings,
-                    contentDescription = "Settings",
+                    contentDescription = stringResource(R.string.common_settings),
                     tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
             }
@@ -101,7 +103,7 @@ fun PlannerScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            "WEEK ${weekNum.toString().padStart(2, '0')}",
+                            stringResource(R.string.planner_week_format, weekNum),
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black,
@@ -118,10 +120,12 @@ fun PlannerScreen(
                     }
                 }
                 items(daysInWeek) { dayPlan ->
+                    val isLocked = currentDay != -1 && dayPlan.dayNumber > currentDay && dayPlan.dayNumber !in completedDays
                     DayPlanItem(
                         dayPlan = dayPlan,
                         isCurrentDay = dayPlan.dayNumber == currentDay,
                         isCompleted = dayPlan.dayNumber in completedDays,
+                        isLocked = isLocked,
                         onClick = { onDayClick(dayPlan.dayNumber) }
                     )
                 }
@@ -144,14 +148,14 @@ fun PlannerScreen(
                     ) {
                         Column {
                             Text(
-                                "NEW CYCLE",
+                                stringResource(R.string.planner_new_cycle),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black,
                                 fontStyle = FontStyle.Italic
                             )
                             Text(
-                                "RE-GENERATE ENTIRE LOGIC",
+                                stringResource(R.string.planner_regenerate_logic),
                                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -177,11 +181,18 @@ fun DayPlanItem(
     dayPlan: DayPlan,
     isCurrentDay: Boolean = false,
     isCompleted: Boolean = false,
+    isLocked: Boolean = false,
     onClick: () -> Unit = {}
 ) {
     val dayNum = dayPlan.dayNumber
     val isRest = dayPlan.isRest
-    val cardAlpha = if (isCompleted) 0.4f else 1f
+    val totalMinutes = dayPlan.workoutExercises.sumOf { it.durationSec } / 60
+    val totalKcal = dayPlan.workoutExercises.sumOf { it.kcal }
+    val cardAlpha = when {
+        isCompleted -> 0.45f
+        isLocked -> 0.72f
+        else -> 1f
+    }
 
     val borderColor = when {
         isCurrentDay -> MaterialTheme.colorScheme.primary
@@ -206,6 +217,26 @@ fun DayPlanItem(
         else         -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
     }
 
+    val statusLabelRes = when {
+        isCompleted -> R.string.planner_status_done
+        isCurrentDay -> R.string.planner_status_start
+        isLocked -> R.string.planner_status_locked
+        isRest -> R.string.planner_status_rest
+        else -> R.string.planner_status_open
+    }
+    val statusBg = when {
+        isCompleted -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f)
+        isCurrentDay -> MaterialTheme.colorScheme.primary
+        isLocked -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.07f)
+        isRest -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f)
+        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    }
+    val statusTextColor = when {
+        isCurrentDay -> MaterialTheme.colorScheme.onPrimary
+        isRest -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+    }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = cardBg),
         shape = RoundedCornerShape(24.dp),
@@ -214,7 +245,7 @@ fun DayPlanItem(
             .padding(vertical = 4.dp)
             .alpha(cardAlpha)
             .border(1.dp, borderColor, RoundedCornerShape(24.dp))
-            .clickable(onClick = onClick)
+            .clickable(enabled = !isLocked, onClick = onClick)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -233,9 +264,15 @@ fun DayPlanItem(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("DAY $dayNum", color = labelColor, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
                         Text(
-                            if (isRest) "REST & RECOVERY" else "SCHEDULED ACTIVITY",
+                            stringResource(R.string.planner_day_format, dayNum),
+                            color = labelColor,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
+                        )
+                        Text(
+                            if (isRest) stringResource(R.string.planner_rest_recovery) else stringResource(R.string.planner_scheduled_activity),
                             color = if (isCompleted)
                                 MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                             else
@@ -246,10 +283,31 @@ fun DayPlanItem(
                         )
                     }
                 }
+
+                Box(
+                    modifier = Modifier
+                        .background(statusBg, RoundedCornerShape(10.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = stringResource(statusLabelRes),
+                        color = statusTextColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                }
             }
 
             if (!isRest) {
                 Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.planner_workout_meta_format, totalMinutes, totalKcal),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     dayPlan.workoutExercises.take(3).forEach { exercise ->
                         ExerciseTag(exercise.name)
