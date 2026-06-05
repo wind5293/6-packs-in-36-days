@@ -43,6 +43,9 @@ import com.example.fitflow.viewmodel.WorkoutPlannerViewModel
 import com.example.fitflow.ui.screens.WorkoutSettingsScreen
 import com.example.fitflow.viewmodel.WorkoutSettingsViewModel
 import java.time.LocalDate
+import androidx.compose.runtime.LaunchedEffect
+import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.data.model.WorkoutExercise
 
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
@@ -128,6 +131,7 @@ class MainActivity : ComponentActivity() {
                         composable("dashboard") {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
+                            val completedDateMap by viewModel.completedDateMap.collectAsState()
                             val userProfile by viewModel.userProfile.collectAsState()
                             val startDate by viewModel.startDate.collectAsState()
                             val todayHealthMetrics by viewModel.todayHealthMetrics.collectAsState()
@@ -137,6 +141,7 @@ class MainActivity : ComponentActivity() {
                             val currentStreak by viewModel.currentStreak.collectAsState()
                             DashboardScreen(
                                 completedDays = completedDays,
+                                completedDateMap = completedDateMap,
                                 currentStreak = currentStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
@@ -166,10 +171,12 @@ class MainActivity : ComponentActivity() {
                                         launchSingleTop = true
                                         restoreState = true
                                     }
-                                }
-                                ,
-                                onOpenDaySummary = { dayNumber ->
-                                    navController.navigate("day_workout_summary/$dayNumber")
+                                },
+                                onOpenSupplementary = { id ->
+                                    navController.navigate("supplementary_detail/$id")
+                                },
+                                onOpenDaySummary = { dayNumber, epochDay ->
+                                    navController.navigate("day_workout_summary/$dayNumber?date=$epochDay")
                                 }
                             )
                         }
@@ -318,8 +325,10 @@ class MainActivity : ComponentActivity() {
                                 onFinish = {
                                     settingsViewModel.stopMusic()
                                     viewModel.markDayComplete(dayNumber)
-                                    navController.navigate("day_workout_summary/$dayNumber") {
-                                        popUpTo("workout_session/$dayNumber") { inclusive = true }
+                                    navController.navigate("dashboard") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
                                 },
                                 onOpenSettings = { navController.navigate("workout_settings") },
@@ -327,26 +336,38 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(
-                            route = "day_workout_summary/{dayNumber}",
-                            arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
+                            route = "day_workout_summary/{dayNumber}?date={date}",
+                            arguments = listOf(
+                                navArgument("dayNumber") { type = NavType.IntType },
+                                navArgument("date") { 
+                                    type = NavType.LongType 
+                                    defaultValue = -1L
+                                }
+                            )
                         ) { backStackEntry ->
                             val dayNumber =
                                 backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val epochDay = backStackEntry.arguments?.getLong("date") ?: -1L
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
                             val startDate by viewModel.startDate.collectAsState()
 
-                            var selectedDate by remember(dayNumber, startDate) {
+
+                            var selectedDate by remember(dayNumber, startDate, epochDay) {
                                 mutableStateOf<LocalDate>(
-                                    startDate?.plusDays((dayNumber - 1).toLong()) ?: LocalDate.now()
+                                    if (epochDay != -1L) LocalDate.ofEpochDay(epochDay)
+                                    else startDate?.plusDays((dayNumber - 1).toLong()) ?: LocalDate.now()
                                 )
                             }
+
+                            val completedDateMap by viewModel.completedDateMap.collectAsState()
 
                             DayWorkoutSummaryScreen(
                                 selectedDate = selectedDate,
                                 workoutPlan = workoutPlan,
                                 completedDays = completedDays,
+                                completedDateMap = completedDateMap,
                                 currentStreak = currentStreak,
                                 startDate = startDate,
                                 onBack = {
@@ -374,6 +395,60 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             )
+                        }
+                        composable(
+                            route = "supplementary_detail/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+                            var dayPlan by remember { mutableStateOf<DayPlan?>(null) }
+                            
+                            LaunchedEffect(id) {
+                                val workout = viewModel.getSupplementaryWorkout(id)
+                                dayPlan = workout?.toDayPlan()
+                            }
+
+                            if (dayPlan != null) {
+                                WorkoutDayDetailScreen(
+                                    dayPlan = dayPlan!!,
+                                    onBack = { navController.popBackStack() },
+                                    onStartSession = {
+                                        // Push Your Limits uses the standard workout_session but without a dayNumber.
+                                        // Wait, workout_session requires dayNumber.
+                                        // I should navigate to supplementary_session/$id
+                                        navController.navigate("supplementary_session/$id")
+                                    },
+                                    onEditPlan = { }
+                                )
+                            }
+                        }
+                        composable(
+                            route = "supplementary_session/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+                            var exercises by remember { mutableStateOf<List<WorkoutExercise>?>(null) }
+
+                            LaunchedEffect(id) {
+                                val workout = viewModel.getSupplementaryWorkout(id)
+                                exercises = workout?.exercises
+                            }
+
+                            if (exercises != null) {
+                                WorkoutSessionScreen(
+                                    exercises = exercises!!,
+                                    onBack = {
+                                        settingsViewModel.stopMusic()
+                                        navController.popBackStack()
+                                    },
+                                    onFinish = {
+                                        settingsViewModel.stopMusic()
+                                        navController.popBackStack()
+                                    },
+                                    onOpenSettings = { navController.navigate("workout_settings") },
+                                    settingsViewModel = settingsViewModel
+                                )
+                            }
                         }
                     }
                 }

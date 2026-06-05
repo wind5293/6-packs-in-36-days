@@ -51,6 +51,8 @@ import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.StepSource
+import com.example.fitflow.domain.PushYourLimitsCatalog
+import com.example.fitflow.ui.components.PushYourLimitsSection
 import com.example.fitflow.ui.theme.FitflowTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -59,6 +61,7 @@ import java.time.format.DateTimeFormatter
 fun DashboardScreen(
     paddingValues: PaddingValues = PaddingValues(0.dp),
     completedDays: Set<Int> = emptySet(),
+    completedDateMap: Map<LocalDate, Int> = emptyMap(),
     currentStreak: Int = 0,
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
@@ -72,9 +75,9 @@ fun DashboardScreen(
     onSetWaterGoal: (Int) -> Unit = {},
     onStartWorkout: () -> Unit = {},
     onOpenChatbot: () -> Unit = {},
-    onOpenPlanner: () -> Unit = {}
-    ,
-    onOpenDaySummary: (Int) -> Unit = {}
+    onOpenPlanner: () -> Unit = {},
+    onOpenSupplementary: (String) -> Unit = {},
+    onOpenDaySummary: (Int, Long) -> Unit = { _, _ -> }
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -106,18 +109,16 @@ fun DashboardScreen(
         item {
             WeeklyGoalSection(
                 completedDays = completedDays,
+                startDate = startDate,
+                completedDateMap = completedDateMap,
                 onToggleDay = { weekIndex ->
-                    // Map weekIndex (0..6 relative to this week) to absolute dayNumber using startDate
                     val today = LocalDate.now()
                     val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
                     val startOfWeek = today.minusDays(todayIndex.toLong())
                     val date = startOfWeek.plusDays(weekIndex.toLong())
-                    if (startDate != null) {
-                        val dayNum = java.time.temporal.ChronoUnit.DAYS.between(startDate, date).toInt() + 1
-                        if (dayNum >= 1 && dayNum <= workoutPlan.size) {
-                            onOpenDaySummary(dayNum)
-                        }
-                    }
+                    
+                    val dayNum = completedDateMap[date] ?: -1
+                    onOpenDaySummary(dayNum, date.toEpochDay())
                 }
             )
         }
@@ -134,6 +135,17 @@ fun DashboardScreen(
                     onClick = onOpenPlanner
                 )
             }
+        }
+        item {
+            Spacer(modifier = Modifier.height(18.dp))
+        }
+        item {
+            // Push Your Limits horizontal scroller — uses local catalog
+            PushYourLimitsSection(
+                workouts = PushYourLimitsCatalog.all(),
+                onWorkoutClick = onOpenSupplementary,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -312,6 +324,8 @@ fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
 fun WeeklyGoalSection(
     weeklyGoal: Int = 3,
     completedDays: Set<Int> = emptySet(),
+    completedDateMap: Map<LocalDate, Int> = emptyMap(),
+    startDate: LocalDate? = null,
     onEditGoal: () -> Unit = {},
     onToggleDay: (Int) -> Unit = {}
 ) {
@@ -389,8 +403,8 @@ fun WeeklyGoalSection(
                     val date = startOfWeek.plusDays(i.toLong())
                     val isToday = i == todayIndex
                     val isPast = i < todayIndex
-                    val isCompleted = i in completedDays
-                    val isClickable = isPast || isToday
+
+                    val isCompleted = date in completedDateMap
 
                     val bgColor = when {
                         isCompleted -> MaterialTheme.colorScheme.primary
@@ -417,10 +431,7 @@ fun WeeklyGoalSection(
                             modifier = Modifier
                                 .size(36.dp)
                                 .background(bgColor, CircleShape)
-                                .then(
-                                    if (isClickable) Modifier.clickable { onToggleDay(i) }
-                                    else Modifier
-                                ),
+                                .clickable { onToggleDay(i) },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(

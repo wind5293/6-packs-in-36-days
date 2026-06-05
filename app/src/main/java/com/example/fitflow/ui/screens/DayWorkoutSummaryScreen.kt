@@ -51,6 +51,7 @@ fun DayWorkoutSummaryScreen(
     selectedDate: LocalDate = LocalDate.now(),
     workoutPlan: List<DayPlan> = emptyList(),
     completedDays: Set<Int> = emptySet(),
+    completedDateMap: Map<LocalDate, Int> = emptyMap(),
     currentStreak: Int = 0,
     startDate: LocalDate? = null,
     onBack: () -> Unit = {},
@@ -60,17 +61,16 @@ fun DayWorkoutSummaryScreen(
 ) {
     BackHandler(onBack = onBack)
 
-    // Tính dayNumber tương ứng với selectedDate
-    val dayNumber: Int? = if (startDate != null) {
-        val diff = selectedDate.toEpochDay() - startDate.toEpochDay()
-        if (diff in 0..29) (diff + 1).toInt() else null
-    } else null
-
-    val dayPlan = dayNumber?.let { dn -> workoutPlan.find { it.dayNumber == dn } }
-    val isCompleted = dayNumber != null && dayNumber in completedDays
     val nextPlannedDay = workoutPlan
         .filter { !it.isRest }
         .firstOrNull { it.dayNumber !in completedDays }
+
+    // Tính dayNumber linh hoạt dựa trên actual completion
+    val dayNumber: Int? = completedDateMap[selectedDate] 
+        ?: if (selectedDate == LocalDate.now()) nextPlannedDay?.dayNumber else null
+
+    val dayPlan = dayNumber?.let { dn -> workoutPlan.find { it.dayNumber == dn } }
+    val isCompleted = selectedDate in completedDateMap
 
     val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
 
