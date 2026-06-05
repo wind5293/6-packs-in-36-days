@@ -95,11 +95,11 @@ fun DashboardScreen(
                 completedDays = completedDays
             )
         }
-        item {
-            if (userProfile != null) {
-                TodayWeightSection(userProfile = userProfile)
-            }
-        }
+//        item {
+//            if (userProfile != null) {
+//                TodayWeightSection(userProfile = userProfile)
+//            }
+//        }
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
