@@ -278,6 +278,7 @@ fun HeaderSection(
     }
 }
 
+@Composable
 fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
     0 -> stringResource(R.string.dashboard_quote_sunday)
     1 -> stringResource(R.string.dashboard_quote_monday)
