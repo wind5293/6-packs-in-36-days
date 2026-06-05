@@ -14,6 +14,7 @@ data class SupplementaryWorkout(
     val muscleGroup: String,
     val gradientStart: Color,
     val gradientEnd: Color,
+    val imageRes: Int? = null,
     val exercises: List<WorkoutExercise>
 ) {
     fun toDayPlan(): DayPlan = DayPlan(
