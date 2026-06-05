@@ -279,6 +279,7 @@
                         prepareCountdown = countdownRemaining,
                         onBack = onBack,
                         onOpenSettings = onOpenSettings,
+                        settingsViewModel = settingsViewModel,
                         modifier = Modifier.weight(1f)
                     )
     
@@ -350,6 +351,7 @@
                         prepareCountdown = 0,
                         onBack = onBack,
                         onOpenSettings = onOpenSettings,
+                        settingsViewModel = settingsViewModel,
                         modifier = Modifier.weight(1f)
                     )
     
@@ -596,6 +598,7 @@
         prepareCountdown: Int,
         onBack: () -> Unit,
         onOpenSettings: () -> Unit,
+        settingsViewModel: WorkoutSettingsViewModel,
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
@@ -691,20 +694,19 @@
                             tint = textColor
                         )
                     }
-                    listOf(
-                        Icons.Default.Fullscreen to "Expand",
-                        Icons.Default.MusicNote to "Music",
-                        Icons.Default.Videocam to "Video"
-                    ).forEach { (icon, desc) ->
-                        IconButton(
-                            onClick = {},
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(buttonBgColor)
-                        ) {
-                            Icon(icon, contentDescription = desc, tint = textColor)
-                        }
+                    val isBgMusicEnabled by settingsViewModel.isBgMusicEnabled.collectAsState()
+                    IconButton(
+                        onClick = { settingsViewModel.setBgMusicEnabled(!isBgMusicEnabled) },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(buttonBgColor)
+                    ) {
+                        Icon(
+                            imageVector = if (isBgMusicEnabled) Icons.Default.MusicNote else Icons.Default.MusicOff,
+                            contentDescription = "Toggle Music",
+                            tint = textColor
+                        )
                     }
                 }
             }

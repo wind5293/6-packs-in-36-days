@@ -4,7 +4,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -66,13 +68,14 @@ fun DashboardScreen(
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
     startDate: LocalDate? = null,
-    healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, StepSource.MANUAL),
+    healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, stepGoal = 6000, stepSource = StepSource.MANUAL),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
     isStepTrackingActive: Boolean = false,
     onUnlockStepSensor: () -> Unit = {},
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
+    onSetStepGoal: (Int) -> Unit = {},
     onStartWorkout: () -> Unit = {},
     onOpenChatbot: () -> Unit = {},
     onOpenPlanner: () -> Unit = {},
@@ -179,7 +182,8 @@ fun DashboardScreen(
                 isStepTrackingActive = isStepTrackingActive,
                 onUnlockStepSensor = onUnlockStepSensor,
                 onAddWater = onAddWater,
-                onSetWaterGoal = onSetWaterGoal
+                onSetWaterGoal = onSetWaterGoal,
+                onSetStepGoal = onSetStepGoal
             )
         }
     }
@@ -774,10 +778,21 @@ fun HealthMetricsSection(
     isStepTrackingActive: Boolean,
     onUnlockStepSensor: () -> Unit,
     onAddWater: (Int) -> Unit,
-    onSetWaterGoal: (Int) -> Unit
+    onSetWaterGoal: (Int) -> Unit,
+    onSetStepGoal: (Int) -> Unit = {}
 ) {
-    var showGoalDialog by remember { mutableStateOf(false) }
-    var goalInput by remember { mutableStateOf(metrics.waterGoalMl.toString()) }
+    // Dialog states
+    var showWaterGoalDialog by remember { mutableStateOf(false) }
+    var showStepGoalDialog by remember { mutableStateOf(false) }
+    var showAddWaterDialog by remember { mutableStateOf(false) }
+    var waterGoalInput by remember(metrics.waterGoalMl) { mutableStateOf(metrics.waterGoalMl.toString()) }
+    var stepGoalInput by remember(metrics.stepGoal) { mutableStateOf(metrics.stepGoal.toString()) }
+    var customWaterInput by remember { mutableStateOf("") }
+
+    // Step progress
+    val stepProgress = (metrics.steps.toFloat() / metrics.stepGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
+    // Water progress
+    val waterProgress = (metrics.waterIntakeMl.toFloat() / metrics.waterGoalMl.coerceAtLeast(1)).coerceIn(0f, 1f)
 
     Text(
         stringResource(R.string.dashboard_health_metrics),
@@ -792,67 +807,44 @@ fun HealthMetricsSection(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // --- Steps card ---
         MetricHorizontalCard(
             modifier = Modifier.weight(1f),
             icon = Lucide.Footprints,
             iconTint = MaterialTheme.colorScheme.primary,
             value = metrics.steps.toString(),
-            unit = stringResource(R.string.dashboard_steps).uppercase(),
+            unit = "/ ${metrics.stepGoal} STEPS",
+            progress = stepProgress,
+            progressColor = MaterialTheme.colorScheme.primary,
             buttonText = when {
                 !isActivityRecognitionGranted -> stringResource(R.string.dashboard_unlock)
                 !isStepSensorEnabled -> stringResource(R.string.dashboard_manual_mode)
                 isStepTrackingActive -> stringResource(R.string.dashboard_live_sensor)
                 else -> stringResource(R.string.dashboard_sensor_ready)
             },
-            onClick = if (!isActivityRecognitionGranted) onUnlockStepSensor else null
+            onClick = onUnlockStepSensor,
+            secondaryButtonText = "SET GOAL",
+            onSecondaryClick = { showStepGoalDialog = true },
+            onLongClick = { showStepGoalDialog = true }
         )
+        // --- Water card ---
         MetricHorizontalCard(
             modifier = Modifier.weight(1f),
             icon = Lucide.GlassWater,
             iconTint = MaterialTheme.colorScheme.secondary,
             value = metrics.waterIntakeMl.toString(),
-            unit = stringResource(
-                R.string.dashboard_water_with_goal_format,
-                stringResource(R.string.dashboard_water).uppercase(),
-                metrics.waterGoalMl
-            ),
-            buttonText = stringResource(R.string.dashboard_add_250_ml),
-            onClick = { onAddWater(250) }
+            unit = "/ ${metrics.waterGoalMl} ML",
+            progress = waterProgress,
+            progressColor = MaterialTheme.colorScheme.secondary,
+            buttonText = "+ ADD WATER",
+            onClick = { showAddWaterDialog = true },
+            onLongClick = { showWaterGoalDialog = true }
         )
     }
 
     Spacer(modifier = Modifier.height(10.dp))
 
-    if (showGoalDialog) {
-        AlertDialog(
-            onDismissRequest = { showGoalDialog = false },
-            title = { Text(stringResource(R.string.dashboard_water_goal_title)) },
-            text = {
-                OutlinedTextField(
-                    value = goalInput,
-                    onValueChange = { goalInput = it.filter { c -> c.isDigit() } },
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.dashboard_goal_label)) }
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val parsed = goalInput.toIntOrNull()
-                        if (parsed != null && parsed > 0) {
-                            onSetWaterGoal(parsed)
-                            showGoalDialog = false
-                        }
-                    }
-                ) { Text(stringResource(R.string.common_save)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
-            }
-        )
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
+    // Step tracking status hint
     Text(
         text = when {
             !isActivityRecognitionGranted -> stringResource(R.string.dashboard_steps_permission_off)
@@ -864,6 +856,142 @@ fun HealthMetricsSection(
         fontSize = 10.sp,
         fontWeight = FontWeight.Medium
     )
+
+    // ---- Dialogs ----
+
+    // Add Water dialog
+    if (showAddWaterDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddWaterDialog = false; customWaterInput = "" },
+            title = { Text("Add Water", fontWeight = FontWeight.Black) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Quick presets
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(150, 250, 350, 500).forEach { amount ->
+                            OutlinedButton(
+                                onClick = {
+                                    onAddWater(amount)
+                                    showAddWaterDialog = false
+                                    customWaterInput = ""
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(4.dp)
+                            ) {
+                                Text("${amount}ml", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    // Custom input
+                    OutlinedTextField(
+                        value = customWaterInput,
+                        onValueChange = { customWaterInput = it.filter { c -> c.isDigit() } },
+                        singleLine = true,
+                        label = { Text("Custom amount (ml)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val parsed = customWaterInput.toIntOrNull()
+                        if (parsed != null && parsed > 0) {
+                            onAddWater(parsed)
+                            showAddWaterDialog = false
+                            customWaterInput = ""
+                        }
+                    },
+                    enabled = customWaterInput.toIntOrNull()?.let { it > 0 } == true
+                ) { Text("Add") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddWaterDialog = false; customWaterInput = "" }) { Text(stringResource(R.string.common_cancel)) }
+            }
+        )
+    }
+
+    // Water Goal dialog
+    if (showWaterGoalDialog) {
+        AlertDialog(
+            onDismissRequest = { showWaterGoalDialog = false },
+            title = { Text(stringResource(R.string.dashboard_water_goal_title), fontWeight = FontWeight.Black) },
+            text = {
+                OutlinedTextField(
+                    value = waterGoalInput,
+                    onValueChange = { waterGoalInput = it.filter { c -> c.isDigit() } },
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.dashboard_goal_label)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val parsed = waterGoalInput.toIntOrNull()
+                        if (parsed != null && parsed > 0) {
+                            onSetWaterGoal(parsed)
+                            showWaterGoalDialog = false
+                        }
+                    }
+                ) { Text(stringResource(R.string.common_save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showWaterGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+            }
+        )
+    }
+
+    // Step Goal dialog
+    if (showStepGoalDialog) {
+        AlertDialog(
+            onDismissRequest = { showStepGoalDialog = false },
+            title = { Text("Set Step Goal", fontWeight = FontWeight.Black) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Quick presets
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(5000, 8000, 10000, 12000).forEach { goal ->
+                            OutlinedButton(
+                                onClick = {
+                                    onSetStepGoal(goal)
+                                    showStepGoalDialog = false
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(4.dp)
+                            ) {
+                                Text("${goal/1000}K", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    // Custom input
+                    OutlinedTextField(
+                        value = stepGoalInput,
+                        onValueChange = { stepGoalInput = it.filter { c -> c.isDigit() } },
+                        singleLine = true,
+                        label = { Text("Custom goal (steps)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val parsed = stepGoalInput.toIntOrNull()
+                        if (parsed != null && parsed > 0) {
+                            onSetStepGoal(parsed)
+                            showStepGoalDialog = false
+                        }
+                    }
+                ) { Text(stringResource(R.string.common_save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStepGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+            }
+        )
+    }
 }
 
 @Composable
@@ -873,8 +1001,13 @@ fun MetricHorizontalCard(
     iconTint: Color,
     value: String,
     unit: String,
+    progress: Float? = null,
+    progressColor: Color = Color.Unspecified,
     buttonText: String,
-    onClick: (() -> Unit)?
+    onClick: (() -> Unit)?,
+    secondaryButtonText: String? = null,
+    onSecondaryClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -890,25 +1023,52 @@ fun MetricHorizontalCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
-                        RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
+            // Top row: icon + optional goal pill
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(20.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                // Secondary button in top-right (e.g. SET GOAL)
+                if (secondaryButtonText != null && onSecondaryClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.07f))
+                            .clickable { onSecondaryClick() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            secondaryButtonText,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+                }
             }
-            Column {
+            // Value + unit
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     value,
                     fontSize = 28.sp,
@@ -921,16 +1081,27 @@ fun MetricHorizontalCard(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    letterSpacing = 2.sp
+                    letterSpacing = 1.sp
                 )
             }
+            // Progress bar
+            if (progress != null) {
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                    color = progressColor,
+                    trackColor = progressColor.copy(alpha = 0.12f)
+                )
+            }
+            // Primary action button (full width)
             if (onClick != null) {
                 Button(
                     onClick = onClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(
-                            alpha = 0.1f
-                        )
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier

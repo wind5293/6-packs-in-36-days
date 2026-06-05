@@ -43,7 +43,7 @@ fun PlannerScreen(
     workoutPlan: List<DayPlan>,
     completedDays: Set<Int> = emptySet(),
     currentDay: Int = -1, // Ignored, we calculate it ourselves to include rest days
-    onDayClick: (Int) -> Unit = {},
+    onDayClick: (Int, Boolean) -> Unit = { _, _ -> },
     onOpenSettings: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -177,7 +177,7 @@ fun PlannerScreen(
                     dayPlan = dayPlan,
                     isCompleted = isCompleted,
                     isCurrent = isCurrent,
-                    onClick = { onDayClick(dayPlan.dayNumber) },
+                    onClick = { onDayClick(dayPlan.dayNumber, dayPlan.isRest) },
                     onRestClick = { userViewModel.markDayComplete(dayPlan.dayNumber) }
                 )
             }
@@ -198,21 +198,22 @@ fun DayPlanItemRedesigned(
     val subTextColor = if (isCurrent) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
 
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
         modifier = Modifier
             .fillMaxWidth()
             .border(
                 1.dp,
                 if (isCurrent) Color.Transparent else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                RoundedCornerShape(16.dp)
+                RoundedCornerShape(20.dp)
             )
             .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(vertical = 20.dp, horizontal = 20.dp)
+                .defaultMinSize(minHeight = 56.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -224,6 +225,7 @@ fun DayPlanItemRedesigned(
                     fontSize = 18.sp,
                     fontStyle = FontStyle.Italic
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = if (isCompleted) "Finished" else if (dayPlan.isRest) "Rest" else "${dayPlan.workoutExercises.size} Exercises",
                     color = subTextColor,
@@ -256,11 +258,12 @@ fun DayPlanItemRedesigned(
                             containerColor = MaterialTheme.colorScheme.onPrimary,
                             contentColor = MaterialTheme.colorScheme.primary
                         ),
-                        shape = RoundedCornerShape(24.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        modifier = Modifier.height(40.dp)
                     ) {
-                        Icon(Lucide.Coffee, contentDescription = "Rest", modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("REST", fontWeight = FontWeight.Black)
+                        Icon(Lucide.Coffee, contentDescription = "Rest", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("REST", fontWeight = FontWeight.Black, fontSize = 13.sp)
                     }
                 } else {
                     Button(
@@ -269,9 +272,10 @@ fun DayPlanItemRedesigned(
                             containerColor = MaterialTheme.colorScheme.onPrimary,
                             contentColor = MaterialTheme.colorScheme.primary
                         ),
-                        shape = RoundedCornerShape(24.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        modifier = Modifier.height(40.dp)
                     ) {
-                        Text("START", fontWeight = FontWeight.Black)
+                        Text("START", fontWeight = FontWeight.Black, fontSize = 13.sp)
                     }
                 }
             } else {

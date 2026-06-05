@@ -44,8 +44,16 @@ fun ProfileScreen(
     startDate: LocalDate? = null,
     weightHistory: List<Pair<LocalDate, Float>> = emptyList(),
     healthMetricsHistory: List<DailyHealthMetrics> = emptyList(),
+    todayHealthMetrics: DailyHealthMetrics? = null,
+    isActivityRecognitionGranted: Boolean = false,
+    isStepSensorEnabled: Boolean = false,
+    isStepTrackingActive: Boolean = false,
     onRecordWeight: (Float) -> Unit = {},
     onReCalibrate: () -> Unit = {},
+    onUnlockStepSensor: () -> Unit = {},
+    onAddWater: (Int) -> Unit = {},
+    onSetWaterGoal: (Int) -> Unit = {},
+    onSetStepGoal: (Int) -> Unit = {}
 ) {
     val completedCount = completedDays.size
     val totalKcal = workoutPlan
@@ -202,6 +210,20 @@ fun ProfileScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        if (todayHealthMetrics != null) {
+            HealthMetricsSection(
+                metrics = todayHealthMetrics,
+                isActivityRecognitionGranted = isActivityRecognitionGranted,
+                isStepSensorEnabled = isStepSensorEnabled,
+                isStepTrackingActive = isStepTrackingActive,
+                onUnlockStepSensor = onUnlockStepSensor,
+                onAddWater = onAddWater,
+                onSetWaterGoal = onSetWaterGoal,
+                onSetStepGoal = onSetStepGoal
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Weekly charts row
         Row(
