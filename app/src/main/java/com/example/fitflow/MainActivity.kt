@@ -36,6 +36,7 @@ import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.screens.EditPlanScreen
 import com.example.fitflow.ui.screens.DayWorkoutSummaryScreen
+import com.example.fitflow.ui.screens.WorkoutCompletedScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
@@ -108,6 +109,7 @@ class MainActivity : ComponentActivity() {
                                 || currentRoute == "loading"
                                 || (currentRoute.startsWith("day_detail"))
                                 || (currentRoute.startsWith("workout_session"))
+                                || (currentRoute.startsWith("workout_completed"))
                             || (currentRoute.startsWith("day_workout_summary"))
                                 || (currentRoute.startsWith("edit_plan"))
                                 || currentRoute == "workout_settings"
@@ -211,7 +213,8 @@ class MainActivity : ComponentActivity() {
                                 dayPlan = dayPlan,
                                 onBack = { navController.popBackStack() },
                                 onStartSession = { navController.navigate("workout_session/$dayNumber") },
-                                onEditPlan = { navController.navigate("edit_plan/$dayNumber") }
+                                onEditPlan = { navController.navigate("edit_plan/$dayNumber") },
+                                onOpenSettings = { navController.navigate("workout_settings") }
                             )
                         }
                         composable("workout_settings") {
@@ -322,17 +325,45 @@ class MainActivity : ComponentActivity() {
                                     settingsViewModel.stopMusic()
                                     navController.popBackStack()
                                 },
-                                onFinish = {
+                                onFinish = { activeSeconds ->
                                     settingsViewModel.stopMusic()
                                     viewModel.markDayComplete(dayNumber)
-                                    navController.navigate("dashboard") {
+                                    navController.navigate("workout_completed/$dayNumber?activeSeconds=$activeSeconds") {
                                         popUpTo("dashboard") { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
                                     }
                                 },
                                 onOpenSettings = { navController.navigate("workout_settings") },
                                 settingsViewModel = settingsViewModel
+                            )
+                        }
+                        composable(
+                            route = "workout_completed/{dayNumber}?activeSeconds={activeSeconds}",
+                            arguments = listOf(
+                                navArgument("dayNumber") { type = NavType.IntType },
+                                navArgument("activeSeconds") { 
+                                    type = NavType.IntType 
+                                    defaultValue = 0
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val dayNumber = backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val activeSeconds = backStackEntry.arguments?.getInt("activeSeconds") ?: 0
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val dayPlan = workoutPlan.find { it.dayNumber == dayNumber }
+                            val userProfile by viewModel.userProfile.collectAsState()
+
+                            WorkoutCompletedScreen(
+                                dayPlan = dayPlan,
+                                totalActiveSeconds = activeSeconds,
+                                userProfile = userProfile,
+                                onSaveWeight = { newWeight -> viewModel.recordWeight(newWeight) },
+                                onNext = {
+                                    navController.navigate("day_workout_summary/$dayNumber") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             )
                         }
                         composable(
@@ -418,7 +449,8 @@ class MainActivity : ComponentActivity() {
                                         // I should navigate to supplementary_session/$id
                                         navController.navigate("supplementary_session/$id")
                                     },
-                                    onEditPlan = { }
+                                    onEditPlan = { },
+                                    onOpenSettings = { navController.navigate("workout_settings") }
                                 )
                             }
                         }
@@ -441,7 +473,7 @@ class MainActivity : ComponentActivity() {
                                         settingsViewModel.stopMusic()
                                         navController.popBackStack()
                                     },
-                                    onFinish = {
+                                    onFinish = { activeSeconds ->
                                         settingsViewModel.stopMusic()
                                         navController.popBackStack()
                                     },
