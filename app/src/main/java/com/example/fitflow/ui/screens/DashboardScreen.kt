@@ -1,6 +1,7 @@
 package com.example.fitflow.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,19 +12,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.fitflow.data.model.UserProfile
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -31,8 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
@@ -60,7 +70,8 @@ fun DashboardScreen(
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
     onStartWorkout: () -> Unit = {},
-    onOpenSettings: () -> Unit = {}
+    onOpenChatbot: () -> Unit = {},
+    onOpenPlanner: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -68,6 +79,9 @@ fun DashboardScreen(
         .filter { it.dayNumber in completedDays }
         .flatMap { it.workoutExercises }
         .sumOf { it.kcal }
+    val currentDayPlan = workoutPlan
+        .filter { !it.isRest }
+        .firstOrNull { it.dayNumber !in completedDays }
 
     LazyColumn(
         modifier = Modifier
@@ -81,7 +95,7 @@ fun DashboardScreen(
         )
     ) {
         item {
-            HeaderSection(onOpenSettings = onOpenSettings)
+            HeaderSection(onOpenChatbot = onOpenChatbot)
         }
         item {
             Spacer(modifier = Modifier.height(32.dp))
@@ -90,18 +104,26 @@ fun DashboardScreen(
             WeeklyGoalSection()
         }
         item {
-            if (userProfile != null) {
-                TodayWeightSection(userProfile = userProfile)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            if (currentDayPlan != null) {
+                DailyChallengeSection(
+                    currentDay = currentDayPlan.dayNumber,
+                    totalDays = workoutPlan.count { !it.isRest },
+                    dayTitle = currentDayPlan.title,
+                    exercises = currentDayPlan.workoutExercises.map { it.name },
+                    onClick = onOpenPlanner
+                )
             }
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
         item {
-            CheckInRecordSection(currentStreak = currentStreak)
-        }
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
+            if (userProfile != null) {
+                TodayWeightSection(userProfile = userProfile)
+            }
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -208,7 +230,9 @@ fun TodayWeightSection(userProfile: UserProfile) {
 }
 
 @Composable
-fun HeaderSection(onOpenSettings: () -> Unit = {}) {
+fun HeaderSection(
+    onOpenChatbot: () -> Unit = {}
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -233,137 +257,27 @@ fun HeaderSection(onOpenSettings: () -> Unit = {}) {
             }
         }
         IconButton(
-            onClick = onOpenSettings,
+            onClick = onOpenChatbot,
             modifier = Modifier
                 .background(
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
                     RoundedCornerShape(50)
                 )
                 .border(
                     1.dp,
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
                     RoundedCornerShape(50)
                 )
         ) {
             Icon(
-                Icons.Default.Settings,
-                contentDescription = stringResource(R.string.common_settings),
-                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                Icons.Default.Chat,
+                contentDescription = "AI Coach",
+                tint = MaterialTheme.colorScheme.surfaceVariant
             )
         }
     }
 }
 
-@Composable
-fun CheckInRecordSection(currentStreak: Int) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                RoundedCornerShape(24.dp)
-            )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.dashboard_checkin_record),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.dashboard_day_streak_format, currentStreak),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🔥", fontSize = 24.sp)
-                }
-            }
-
-            Text(
-                stringResource(R.string.dashboard_motivation_message),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
-
-            // Progress Bar with milestones
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                val maxDays = 7
-                val progress = (currentStreak.toFloat() / maxDays).coerceIn(0f, 1f)
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(progress)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    val milestones = listOf(2, 5, 7)
-                    for (i in 1..maxDays) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.width(24.dp)
-                        ) {
-                            Text(
-                                text = if (i in milestones) "🔥" else "",
-                                fontSize = 12.sp,
-                                modifier = Modifier.height(16.dp)
-                            )
-                            Text(
-                                text = "$i",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = if (i <= currentStreak)
-                                    MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
     0 -> stringResource(R.string.dashboard_quote_sunday)
     1 -> stringResource(R.string.dashboard_quote_monday)
@@ -555,6 +469,163 @@ fun WeeklyGoalSection(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                         lineHeight = 18.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DailyChallengeSection(
+    currentDay: Int,
+    totalDays: Int,
+    dayTitle: String,
+    exercises: List<String>,
+    onClick: () -> Unit
+) {
+    val completedDays = currentDay - 1
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Daily Challenge",
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        IconButton(
+            onClick = { /* Hành động bộ lọc tinh chỉnh */ },
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Tune,
+                contentDescription = "Filter",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFF6D00),
+                            Color(0xFFFF3D00)
+                        )
+                    )
+                )
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 16.dp, end = 8.dp)
+                    .size(width = 140.dp, height = 150.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.co_bung_2),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(
+                            topStart = 32.dp,
+                            bottomStart = 32.dp,
+                            topEnd = 16.dp,
+                            bottomEnd = 16.dp
+                        ))
+                        .alpha(0.9f)
+                )
+            }
+
+            // ── Foreground content ──
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Program name + difficulty
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        dayTitle.uppercase(),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                // Day number — big
+                Text(
+                    "Day $currentDay",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Black,
+                    lineHeight = 48.sp
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                // Progress counter
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        "$completedDays",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        "/$totalDays Days",
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // START button
+                Button(
+                    onClick = onClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(
+                        "START",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
                     )
                 }
             }
@@ -872,18 +943,33 @@ fun DashboardScreenPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Daily Challenge - Light Mode")
 @Composable
-fun CheckInRecordSectionPreview() {
-    FitflowTheme {
-        CheckInRecordSection(currentStreak = 2)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WeeklyCalendarSectionPreview() {
-    FitflowTheme {
-        WeeklyGoalSection()
+fun DailyChallengeSectionPreview() {
+    // Ép buộc preview sử dụng hệ màu nền sáng (Light Color Scheme) để đồng bộ với app mẫu
+    MaterialTheme(
+        colorScheme = lightColorScheme(
+            background = Color(0xFFF8F9FA), // Nền trắng xám nhạt cao cấp của app mẫu
+            onBackground = Color(0xFF1A1A1A), // Chữ màu đen xám đậm dễ đọc
+            primary = Color(0xFFFF5722), // Màu cam thương hiệu
+            onPrimary = Color.White
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column {
+                DailyChallengeSection(
+                    currentDay = 1,
+                    totalDays = 30,
+                    dayTitle = "Rock Hard Abs",
+                    exercises = listOf("Crunch", "Plank", "Leg Raise"),
+                    onClick = { /* Không xử lý hành động trong preview */ }
+                )
+            }
+        }
     }
 }
