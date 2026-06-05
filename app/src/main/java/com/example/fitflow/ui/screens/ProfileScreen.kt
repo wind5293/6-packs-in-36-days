@@ -45,7 +45,7 @@ fun ProfileScreen(
     weightHistory: List<Pair<LocalDate, Float>> = emptyList(),
     healthMetricsHistory: List<DailyHealthMetrics> = emptyList(),
     onRecordWeight: (Float) -> Unit = {},
-    onReCalibrate: () -> Unit = {}
+    onReCalibrate: () -> Unit = {},
 ) {
     val completedCount = completedDays.size
     val totalKcal = workoutPlan
