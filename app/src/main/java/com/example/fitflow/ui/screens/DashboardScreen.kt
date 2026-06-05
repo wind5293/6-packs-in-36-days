@@ -17,7 +17,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
@@ -77,7 +77,8 @@ fun DashboardScreen(
     onOpenChatbot: () -> Unit = {},
     onOpenPlanner: () -> Unit = {},
     onOpenSupplementary: (String) -> Unit = {},
-    onOpenDaySummary: (Int, Long) -> Unit = { _, _ -> }
+    onOpenDaySummary: (Int, Long) -> Unit = { _, _ -> },
+    onOpenHistory: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -111,6 +112,7 @@ fun DashboardScreen(
                 completedDays = completedDays,
                 startDate = startDate,
                 completedDateMap = completedDateMap,
+                onViewHistory = onOpenHistory,
                 onToggleDay = { weekIndex ->
                     val today = LocalDate.now()
                     val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
@@ -326,6 +328,7 @@ fun WeeklyGoalSection(
     completedDays: Set<Int> = emptySet(),
     completedDateMap: Map<LocalDate, Int> = emptyMap(),
     startDate: LocalDate? = null,
+    onViewHistory: () -> Unit = {},
     onEditGoal: () -> Unit = {},
     onToggleDay: (Int) -> Unit = {}
 ) {
@@ -366,13 +369,13 @@ fun WeeklyGoalSection(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     IconButton(
-                        onClick = onEditGoal,
+                        onClick = onViewHistory,
                         modifier = Modifier.size(20.dp)
                     ) {
                         Icon(
-                            Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.dashboard_edit_goal),
-                            tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                            Icons.Default.Visibility,
+                            contentDescription = "View History",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                             modifier = Modifier.size(16.dp)
                         )
                     }

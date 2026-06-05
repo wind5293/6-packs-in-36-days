@@ -47,6 +47,8 @@ class UserPreferences(context: Context) {
         const val KEY_SETTING_COUNTDOWN = "setting_countdown"
         const val KEY_HYBRID_GIF_CACHE_READY = "hybrid_gif_cache_ready"
         const val KEY_HYBRID_GIF_CACHE_SIGNATURE = "hybrid_gif_cache_signature"
+        // Format: "dayNumber:epochMillis,dayNumber:epochMillis,..."
+        const val KEY_WORKOUT_TIMESTAMPS = "workout_timestamps"
 
         const val HISTORY_MAX_DAYS = 90
     }
@@ -391,4 +393,26 @@ class UserPreferences(context: Context) {
     fun isHybridGifCacheReady(): Boolean = prefs.getBoolean(KEY_HYBRID_GIF_CACHE_READY, false)
 
     fun getHybridGifCacheSignature(): String? = prefs.getString(KEY_HYBRID_GIF_CACHE_SIGNATURE, null)
+
+    /** Save the exact epoch-millisecond timestamp of when a day was completed. */
+    fun saveWorkoutTimestamp(dayNumber: Int, epochMillis: Long) {
+        val current = getWorkoutTimestamps().toMutableMap()
+        current[dayNumber] = epochMillis
+        val encoded = current.entries.joinToString(",") { "${it.key}:${it.value}" }
+        prefs.edit().putString(KEY_WORKOUT_TIMESTAMPS, encoded).apply()
+    }
+
+    /** Returns Map<dayNumber, epochMillis> for all recorded completions. */
+    fun getWorkoutTimestamps(): Map<Int, Long> {
+        val raw = prefs.getString(KEY_WORKOUT_TIMESTAMPS, "") ?: return emptyMap()
+        if (raw.isBlank()) return emptyMap()
+        return raw.split(",").mapNotNull { token ->
+            val parts = token.split(":")
+            if (parts.size == 2) {
+                val day = parts[0].toIntOrNull() ?: return@mapNotNull null
+                val millis = parts[1].toLongOrNull() ?: return@mapNotNull null
+                day to millis
+            } else null
+        }.toMap()
+    }
 }

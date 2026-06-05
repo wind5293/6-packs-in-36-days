@@ -83,6 +83,10 @@ class UserViewModel(
     private val _weightHistory = MutableStateFlow<List<Pair<LocalDate, Float>>>(emptyList())
     val weightHistory: StateFlow<List<Pair<LocalDate, Float>>> = _weightHistory.asStateFlow()
 
+    // dayNumber -> epochMillis of when the day was completed
+    private val _workoutTimestamps = MutableStateFlow<Map<Int, Long>>(emptyMap())
+    val workoutTimestamps: StateFlow<Map<Int, Long>> = _workoutTimestamps.asStateFlow()
+
     private val _todayHealthMetrics = MutableStateFlow(
         DailyHealthMetrics(
             date = LocalDate.now(),
@@ -125,6 +129,7 @@ class UserViewModel(
         _currentStreak.value = userPreferences.getCurrentStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
+        _workoutTimestamps.value = userPreferences.getWorkoutTimestamps()
         refreshHealthMetrics()
 
         // ✅ generatePlan là suspend → cần viewModelScope
@@ -264,6 +269,11 @@ class UserViewModel(
             dateMap[LocalDate.now()] = dayNumber
             userPreferences.saveCompletedDateMap(dateMap)
             _completedDateMap.value = dateMap
+
+            // Save exact timestamp
+            val nowMillis = System.currentTimeMillis()
+            userPreferences.saveWorkoutTimestamp(dayNumber, nowMillis)
+            _workoutTimestamps.value = _workoutTimestamps.value.toMutableMap().also { it[dayNumber] = nowMillis }
 
             val today = LocalDate.now()
             val lastWorkout = userPreferences.getLastWorkoutDate()
