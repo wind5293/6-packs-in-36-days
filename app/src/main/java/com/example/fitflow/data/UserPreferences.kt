@@ -229,6 +229,14 @@ class UserPreferences(context: Context) {
         upsertHealthMetrics(today, updated)
     }
 
+    fun setStepGoal(goalSteps: Int, defaultWaterGoalMl: Int) {
+        if (goalSteps <= 0) return
+        val today = LocalDate.now()
+        val current = getTodayHealthMetrics(defaultWaterGoalMl)
+        val updated = current.copy(stepGoal = goalSteps)
+        upsertHealthMetrics(today, updated)
+    }
+
     fun setTodaySteps(steps: Int, defaultWaterGoalMl: Int, source: StepSource) {
         val today = LocalDate.now()
         val current = getTodayHealthMetrics(defaultWaterGoalMl)
@@ -289,7 +297,7 @@ class UserPreferences(context: Context) {
 
         return raw.split(";")
             .mapNotNull { token ->
-                // format: epochDay,steps,waterIntake,waterGoal,source
+                // format: epochDay,steps,waterIntake,waterGoal,stepGoal,source (stepGoal optional for backward compat)
                 val parts = token.split(",")
                 if (parts.size < 5) return@mapNotNull null
 
@@ -297,10 +305,16 @@ class UserPreferences(context: Context) {
                 val steps = parts[1].toIntOrNull() ?: return@mapNotNull null
                 val waterIntake = parts[2].toIntOrNull() ?: return@mapNotNull null
                 val waterGoal = parts[3].toIntOrNull() ?: return@mapNotNull null
-                val source = try {
-                    StepSource.valueOf(parts[4])
-                } catch (_: IllegalArgumentException) {
-                    StepSource.MANUAL
+
+                // Handle both old format (5 fields) and new format (6 fields)
+                val stepGoal: Int
+                val source: StepSource
+                if (parts.size >= 6) {
+                    stepGoal = parts[4].toIntOrNull() ?: 6000
+                    source = try { StepSource.valueOf(parts[5]) } catch (_: IllegalArgumentException) { StepSource.MANUAL }
+                } else {
+                    stepGoal = 6000
+                    source = try { StepSource.valueOf(parts[4]) } catch (_: IllegalArgumentException) { StepSource.MANUAL }
                 }
 
                 val date = LocalDate.ofEpochDay(epochDay)
@@ -309,6 +323,7 @@ class UserPreferences(context: Context) {
                     steps = steps,
                     waterIntakeMl = waterIntake,
                     waterGoalMl = waterGoal,
+                    stepGoal = stepGoal,
                     stepSource = source
                 )
             }
@@ -319,7 +334,7 @@ class UserPreferences(context: Context) {
         val encoded = map.values
             .sortedBy { it.date }
             .joinToString(";") {
-                "${it.date.toEpochDay()},${it.steps},${it.waterIntakeMl},${it.waterGoalMl},${it.stepSource.name}"
+                "${it.date.toEpochDay()},${it.steps},${it.waterIntakeMl},${it.waterGoalMl},${it.stepGoal},${it.stepSource.name}"
             }
         prefs.edit().putString(KEY_HEALTH_HISTORY, encoded).apply()
     }

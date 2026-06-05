@@ -93,6 +93,7 @@ class UserViewModel(
             steps = 0,
             waterIntakeMl = 0,
             waterGoalMl = 2000,
+            stepGoal = 6000,
             stepSource = StepSource.MANUAL
         )
     )
@@ -304,10 +305,12 @@ class UserViewModel(
     }
 
     fun refreshHealthMetrics() {
-        val defaultGoal = defaultWaterGoalMl()
-        _todayHealthMetrics.value = userPreferences.getTodayHealthMetrics(defaultGoal)
-        _healthMetricsHistory.value = userPreferences.getHealthMetricsHistory()
-        _stepSensorEnabled.value = userPreferences.isStepSensorEnabled()
+        viewModelScope.launch(Dispatchers.Main.immediate) {
+            val defaultGoal = defaultWaterGoalMl()
+            _todayHealthMetrics.value = userPreferences.getTodayHealthMetrics(defaultGoal)
+            _healthMetricsHistory.value = userPreferences.getHealthMetricsHistory()
+            _stepSensorEnabled.value = userPreferences.isStepSensorEnabled()
+        }
     }
 
     fun addWater(amountMl: Int) {
@@ -317,6 +320,11 @@ class UserViewModel(
 
     fun setWaterGoal(goalMl: Int) {
         userPreferences.setWaterGoal(goalMl, defaultWaterGoalMl())
+        refreshHealthMetrics()
+    }
+
+    fun setStepGoal(goalSteps: Int) {
+        userPreferences.setStepGoal(goalSteps, defaultWaterGoalMl())
         refreshHealthMetrics()
     }
 

@@ -14,6 +14,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import coil.request.CachePolicy
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.composables.icons.lucide.*
 import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
@@ -46,6 +49,7 @@ fun WorkoutDayDetailScreen(
     onEditPlan: () -> Unit = {},
     onOpenSettings: () -> Unit = {}
 ) {
+    var selectedExercise by remember { mutableStateOf<WorkoutExercise?>(null) }
     val context = LocalContext.current
     val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
     val gifUrls = remember(dayPlan.workoutExercises) {
@@ -112,7 +116,10 @@ fun WorkoutDayDetailScreen(
                 }
             }
             items(dayPlan.workoutExercises) { exercise ->
-                ExerciseExpandableItem(exercise)
+                ExerciseExpandableItem(
+                    exercise = exercise,
+                    onClick = { selectedExercise = exercise }
+                )
             }
         }
         Box(
@@ -151,6 +158,13 @@ fun WorkoutDayDetailScreen(
                 )
             }
         }
+
+        if (selectedExercise != null) {
+            ExerciseInstructionOverlayScreen(
+                exercise = selectedExercise!!,
+                onClose = { selectedExercise = null }
+            )
+        }
     }
 }
 
@@ -170,12 +184,12 @@ fun HeaderAndSummarySection(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(350.dp)
+            .height(380.dp)
     ) {
         Box (
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp)
+                .height(260.dp)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(OrangePrimary, OrangeGlow)
@@ -220,17 +234,30 @@ fun HeaderAndSummarySection(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                val dots = when (dayPlan.difficulty.lowercase()) {
-                    "easy"     -> "⚡"
-                    "advanced" -> "⚡⚡⚡"
-                    else       -> "⚡⚡"
-                }
-                Text(
-                    text = "$dots ${dayPlan.difficulty}",
-                    color = Color(0xFFFFFFFF),
-                    style = MaterialTheme.typography.bodyMedium,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(start = 8.dp)
-                )
+                ) {
+                    val iconCount = when (dayPlan.difficulty.lowercase()) {
+                        "easy"     -> 1
+                        "advanced" -> 3
+                        else       -> 2
+                    }
+                    repeat(iconCount) {
+                        Icon(
+                            imageVector = Lucide.Zap,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = dayPlan.difficulty.replaceFirstChar { it.uppercase() },
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
             Box(
                 modifier = Modifier
@@ -330,7 +357,10 @@ fun SummaryItem(
 }
 
 @Composable
-private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
+private fun ExerciseExpandableItem(
+    exercise: WorkoutExercise,
+    onClick: () -> Unit
+) {
     var isExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
@@ -344,7 +374,7 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { isExpanded = !isExpanded }
+            .clickable { onClick() }
             .padding(horizontal = 24.dp, vertical = 12.dp)
     ) {
         Row(
@@ -402,9 +432,20 @@ private fun ExerciseExpandableItem(exercise: WorkoutExercise) {
                     fontSize = 14.sp
                 )
             }
+
+            IconButton(
+                onClick = { isExpanded = !isExpanded },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Expand details",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                )
+            }
         }
 
-        // Phần chi tiết xổ xuống khi bấm vào
+        // Phần chi tiết xổ xuống
         AnimatedVisibility(visible = isExpanded) {
             Column(
                 modifier = Modifier
