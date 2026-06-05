@@ -147,7 +147,14 @@ class MainActivity : ComponentActivity() {
                                         restoreState = true
                                     }
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onOpenChatbot = {  },
+                                onOpenPlanner = {
+                                    navController.navigate("planner") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             )
                         }
                         composable("planner") {
