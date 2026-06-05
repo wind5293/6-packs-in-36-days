@@ -37,6 +37,7 @@ import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.screens.EditPlanScreen
 import com.example.fitflow.ui.screens.DayWorkoutSummaryScreen
 import com.example.fitflow.ui.screens.WorkoutCompletedScreen
+import com.example.fitflow.ui.screens.WorkoutHistoryScreen
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.viewmodel.UserViewModel
 import com.example.fitflow.viewmodel.UserViewModelFactory
@@ -113,6 +114,7 @@ class MainActivity : ComponentActivity() {
                             || (currentRoute.startsWith("day_workout_summary"))
                                 || (currentRoute.startsWith("edit_plan"))
                                 || (currentRoute.startsWith("workout_settings"))
+                                || currentRoute == "history"
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
@@ -179,7 +181,23 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onOpenDaySummary = { dayNumber, epochDay ->
                                     navController.navigate("day_workout_summary/$dayNumber?date=$epochDay")
+                                },
+                                onOpenHistory = {
+                                    navController.navigate("history")
                                 }
+                            )
+                        }
+                        composable("history") {
+                            val completedDays by viewModel.completedDays.collectAsState()
+                            val completedDateMap by viewModel.completedDateMap.collectAsState()
+                            val workoutTimestamps by viewModel.workoutTimestamps.collectAsState()
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            WorkoutHistoryScreen(
+                                completedDays = completedDays,
+                                completedDateMap = completedDateMap,
+                                workoutTimestamps = workoutTimestamps,
+                                workoutPlan = workoutPlan,
+                                onBack = { navController.popBackStack() }
                             )
                         }
                         composable("planner") {
