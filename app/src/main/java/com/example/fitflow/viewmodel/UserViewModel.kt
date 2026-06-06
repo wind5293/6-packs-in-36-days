@@ -71,6 +71,9 @@ class UserViewModel(
     private val _completedDays = MutableStateFlow<Set<Int>>(emptySet())
     val completedDays: StateFlow<Set<Int>> = _completedDays.asStateFlow()
 
+    private val _completedDateMap = MutableStateFlow<Map<LocalDate, Int>>(emptyMap())
+    val completedDateMap: StateFlow<Map<LocalDate, Int>> = _completedDateMap.asStateFlow()
+
     private val _currentStreak = MutableStateFlow(0)
     val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
 
@@ -80,12 +83,17 @@ class UserViewModel(
     private val _weightHistory = MutableStateFlow<List<Pair<LocalDate, Float>>>(emptyList())
     val weightHistory: StateFlow<List<Pair<LocalDate, Float>>> = _weightHistory.asStateFlow()
 
+    // dayNumber -> epochMillis of when the day was completed
+    private val _workoutTimestamps = MutableStateFlow<Map<Int, Long>>(emptyMap())
+    val workoutTimestamps: StateFlow<Map<Int, Long>> = _workoutTimestamps.asStateFlow()
+
     private val _todayHealthMetrics = MutableStateFlow(
         DailyHealthMetrics(
             date = LocalDate.now(),
             steps = 0,
             waterIntakeMl = 0,
             waterGoalMl = 2000,
+            stepGoal = 6000,
             stepSource = StepSource.MANUAL
         )
     )
@@ -118,9 +126,11 @@ class UserViewModel(
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
         _completedDays.value = userPreferences.getCompletedDays()
+        _completedDateMap.value = userPreferences.getCompletedDateMap()
         _currentStreak.value = userPreferences.getCurrentStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
+        _workoutTimestamps.value = userPreferences.getWorkoutTimestamps()
         refreshHealthMetrics()
 
         // ✅ generatePlan là suspend → cần viewModelScope
@@ -146,6 +156,10 @@ class UserViewModel(
                 day
             }
         }
+    }
+
+    suspend fun getSupplementaryWorkout(id: String): com.example.fitflow.data.model.SupplementaryWorkout? {
+        return com.example.fitflow.domain.PushYourLimitsCatalog.findEnrichedById(id, exerciseRepository)
     }
 
     fun saveProfile(
@@ -252,6 +266,16 @@ class UserViewModel(
             userPreferences.saveCompletedDays(current)
             _completedDays.value = current
 
+            val dateMap = _completedDateMap.value.toMutableMap()
+            dateMap[LocalDate.now()] = dayNumber
+            userPreferences.saveCompletedDateMap(dateMap)
+            _completedDateMap.value = dateMap
+
+            // Save exact timestamp
+            val nowMillis = System.currentTimeMillis()
+            userPreferences.saveWorkoutTimestamp(dayNumber, nowMillis)
+            _workoutTimestamps.value = _workoutTimestamps.value.toMutableMap().also { it[dayNumber] = nowMillis }
+
             val today = LocalDate.now()
             val lastWorkout = userPreferences.getLastWorkoutDate()
             var streak = userPreferences.getCurrentStreak()
@@ -281,10 +305,12 @@ class UserViewModel(
     }
 
     fun refreshHealthMetrics() {
-        val defaultGoal = defaultWaterGoalMl()
-        _todayHealthMetrics.value = userPreferences.getTodayHealthMetrics(defaultGoal)
-        _healthMetricsHistory.value = userPreferences.getHealthMetricsHistory()
-        _stepSensorEnabled.value = userPreferences.isStepSensorEnabled()
+        viewModelScope.launch(Dispatchers.Main.immediate) {
+            val defaultGoal = defaultWaterGoalMl()
+            _todayHealthMetrics.value = userPreferences.getTodayHealthMetrics(defaultGoal)
+            _healthMetricsHistory.value = userPreferences.getHealthMetricsHistory()
+            _stepSensorEnabled.value = userPreferences.isStepSensorEnabled()
+        }
     }
 
     fun addWater(amountMl: Int) {
@@ -294,6 +320,11 @@ class UserViewModel(
 
     fun setWaterGoal(goalMl: Int) {
         userPreferences.setWaterGoal(goalMl, defaultWaterGoalMl())
+        refreshHealthMetrics()
+    }
+
+    fun setStepGoal(goalSteps: Int) {
+        userPreferences.setStepGoal(goalSteps, defaultWaterGoalMl())
         refreshHealthMetrics()
     }
 

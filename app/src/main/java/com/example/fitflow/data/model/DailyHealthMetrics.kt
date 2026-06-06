@@ -12,5 +12,6 @@ data class DailyHealthMetrics(
     val steps: Int,
     val waterIntakeMl: Int,
     val waterGoalMl: Int,
+    val stepGoal: Int = 6000,
     val stepSource: StepSource
 )

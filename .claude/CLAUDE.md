@@ -191,14 +191,34 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - ~~`MainActivity.kt` line 123: `composable("workout_setup")` bị thụt lề sai (dùng tab thay vì spaces)~~
 - **Đã sửa** (2026-05-08): Căn về đúng indent cùng cấp với các `composable()` khác
 
-### ~~17. Màn hình kết thúc buổi tập (Workout Completed) còn thiếu chức năng và thiết kế sơ sài~~ ✅ ĐÃ SỬA (2026-06-04)
+### ~~17. Màn hình kết thúc buổi tập (Workout Completed) còn thiếu chức năng và thiết kế sơ sài~~ ✅ ĐÃ SỬA (2026-06-04 → cập nhật 2026-06-06)
 - ~~Chưa có theo dõi thời gian thực, chưa có UI thống kê hoàn chỉnh, calo không chính xác~~
-- **Đã sửa**:
-   - Thêm bộ đếm thời gian thực `totalActiveSeconds` trong `WorkoutSessionScreen` với `LaunchedEffect` tích lũy từng 100ms để đảm bảo chính xác khi skip.
-   - Thêm cơ chế `FLAG_KEEP_SCREEN_ON` để giữ sáng màn hình trong lúc tập.
+- **Đã sửa (2026-06-04)**:
    - Xây dựng `WorkoutCompletedScreen.kt` theo chuẩn thiết kế mới (Gradient Header, Stats Card, Feedback Emojis, Weight & BMI Canvas Slider).
    - Logic đếm Calories đồng bộ chính xác với tổng `kcal` của danh sách bài tập từ `DayPlan`.
-   - Cập nhật NavHost trong `MainActivity.kt` chuyển hướng chuẩn xác và tự động đóng `WorkoutSessionScreen`.
+   - Cập nhật NavHost trong `MainActivity.kt` chuyển hướng sang route `workout_completed/{dayNumber}?activeSeconds={activeSeconds}` và tự động đóng `WorkoutSessionScreen`.
+- **Cập nhật thêm (2026-06-06)**:
+   - Sửa bộ đếm `totalActiveSeconds`: đổi từ `LaunchedEffect(isRunning, phase)` → `LaunchedEffect(Unit)` chạy liên tục từ khi mở màn hình, đếm **toàn bộ thời gian phiên** (cả PREPARING, RESTING, Pause).
+   - Thêm `FLAG_KEEP_SCREEN_ON` via `DisposableEffect` để giữ màn hình sáng trong buổi tập, tự động clear khi thoát.
+   - Bổ sung `workout_completed` vào `hideNav` list trong `MainActivity` để ẩn bottom nav bar.
+
+### ~~18. Nút Workout Settings trong WorkoutDayDetailScreen không redirect~~ ✅ ĐÃ SỬA (2026-06-06)
+- ~~Bấm vào "Workout Settings" không điều hướng sang `WorkoutSettingsScreen`~~
+- **Nguyên nhân**: `WorkoutDayDetailScreen` trong cả hai route `day_detail/{dayNumber}` và `supplementary_detail/{id}` thiếu callback `onOpenSettings`.
+- **Đã sửa**: Bổ sung `onOpenSettings = { navController.navigate("workout_settings") }` tại cả hai call site trong `MainActivity.kt`.
+
+### ~~19. PlannerScreen thiếu tham số `onOpenSettings`~~ ✅ ĐÃ SỬA (2026-06-06)
+- ~~Lỗi biên dịch: `No parameter with name 'onOpenSettings' found` tại `MainActivity.kt`~~
+- **Đã sửa**: Thêm tham số `onOpenSettings: () -> Unit` vào signature của `PlannerScreen`.
+
+### 20. WeightPickerSheet trong WorkoutCompletedScreen ✅ ĐÃ THÊM (2026-06-06)
+- **Tính năng mới**: Người dùng có thể cập nhật cân nặng ngay sau khi tập xong.
+- **Cách hoạt động**:
+   - Bấm vào Weight Card → mở `WeightPickerSheet` (ModalBottomSheet).
+   - Giao diện: Header (Weight + ngày hôm nay), toggle kg/lbs, số lớn hiển thị giá trị, ruler kéo ngang để điều chỉnh, nhãn số xung quanh vị trí hiện tại, CANCEL / SAVE.
+   - Kéo trái để tăng cân, kéo phải để giảm (0.05 kg/pixel).
+   - Bấm SAVE → `onSaveWeight(weightKg)` → `viewModel.recordWeight()` → lưu vào `UserPreferences` + reload `userProfile`.
+   - BMI card cập nhật ngay lập tức dựa trên `currentWeightKg` local state (không cần reload từ server).
 
 ---
 
@@ -245,6 +265,7 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 - Padding: dùng `Modifier.padding()` nhất quán, tránh nested padding
 
 ### Quy tắc làm việc với AI Agent
+- KHÔNG chạy các lệnh build như Gradle (VD: `./gradlew build` hay `./gradlew assembleDebug`) vì có thể gặp lỗi môi trường Java/SDK. Chỉ cần dựa vào đọc hiểu và kiểm tra code tĩnh.
 - Sau khi hoàn thành code, **bắt buộc** chạy subagent (ưu tiên `QA-Testcode`) để review lại toàn bộ thay đổi so với yêu cầu ban đầu.
 - Chỉ xem task là hoàn tất khi đã đối chiếu kết quả review và xử lý các điểm lệch quan trọng (nếu có).
 - Nếu yêu cầu có điểm mơ hồ, thiếu dữ liệu, hoặc có nhiều cách hiểu, **bắt buộc dùng subagent `specify` để tạo câu hỏi làm rõ và hỏi lại người dùng trước khi làm**.

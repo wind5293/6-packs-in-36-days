@@ -25,6 +25,7 @@ class UserPreferences(context: Context) {
         const val KEY_TARGET_WEIGHT = "target_weight"
         const val KEY_IS_ONBOARDED = "is_onboarded"
         const val KEY_COMPLETED_DAYS = "completed_days"
+        const val KEY_COMPLETED_DATE_MAP = "completed_date_map"
         const val KEY_GOAL           = "goal"
         const val KEY_EQUIPMENT      = "equipment"
         const val KEY_START_DATE     = "start_date"
@@ -46,6 +47,8 @@ class UserPreferences(context: Context) {
         const val KEY_SETTING_COUNTDOWN = "setting_countdown"
         const val KEY_HYBRID_GIF_CACHE_READY = "hybrid_gif_cache_ready"
         const val KEY_HYBRID_GIF_CACHE_SIGNATURE = "hybrid_gif_cache_signature"
+        // Format: "dayNumber:epochMillis,dayNumber:epochMillis,..."
+        const val KEY_WORKOUT_TIMESTAMPS = "workout_timestamps"
 
         const val HISTORY_MAX_DAYS = 90
     }
@@ -127,6 +130,26 @@ class UserPreferences(context: Context) {
         return raw.split(",").mapNotNull { it.toIntOrNull() }.toSet()
     }
 
+    fun saveCompletedDateMap(map: Map<LocalDate, Int>) {
+        val encoded = map.entries.joinToString(",") { "${it.key.toEpochDay()}:${it.value}" }
+        prefs.edit().putString(KEY_COMPLETED_DATE_MAP, encoded).apply()
+    }
+
+    fun getCompletedDateMap(): Map<LocalDate, Int> {
+        val raw = prefs.getString(KEY_COMPLETED_DATE_MAP, "") ?: return emptyMap()
+        if (raw.isEmpty()) return emptyMap()
+        return raw.split(",").mapNotNull { token ->
+            val parts = token.split(":")
+            if (parts.size == 2) {
+                val epoch = parts[0].toLongOrNull()
+                val dayNum = parts[1].toIntOrNull()
+                if (epoch != null && dayNum != null) {
+                    LocalDate.ofEpochDay(epoch) to dayNum
+                } else null
+            } else null
+        }.toMap()
+    }
+
     fun getCurrentStreak(): Int = prefs.getInt(KEY_CURRENT_STREAK, 0)
     fun setCurrentStreak(streak: Int) = prefs.edit().putInt(KEY_CURRENT_STREAK, streak).apply()
 
@@ -206,6 +229,14 @@ class UserPreferences(context: Context) {
         upsertHealthMetrics(today, updated)
     }
 
+    fun setStepGoal(goalSteps: Int, defaultWaterGoalMl: Int) {
+        if (goalSteps <= 0) return
+        val today = LocalDate.now()
+        val current = getTodayHealthMetrics(defaultWaterGoalMl)
+        val updated = current.copy(stepGoal = goalSteps)
+        upsertHealthMetrics(today, updated)
+    }
+
     fun setTodaySteps(steps: Int, defaultWaterGoalMl: Int, source: StepSource) {
         val today = LocalDate.now()
         val current = getTodayHealthMetrics(defaultWaterGoalMl)
@@ -266,7 +297,7 @@ class UserPreferences(context: Context) {
 
         return raw.split(";")
             .mapNotNull { token ->
-                // format: epochDay,steps,waterIntake,waterGoal,source
+                // format: epochDay,steps,waterIntake,waterGoal,stepGoal,source (stepGoal optional for backward compat)
                 val parts = token.split(",")
                 if (parts.size < 5) return@mapNotNull null
 
@@ -274,10 +305,16 @@ class UserPreferences(context: Context) {
                 val steps = parts[1].toIntOrNull() ?: return@mapNotNull null
                 val waterIntake = parts[2].toIntOrNull() ?: return@mapNotNull null
                 val waterGoal = parts[3].toIntOrNull() ?: return@mapNotNull null
-                val source = try {
-                    StepSource.valueOf(parts[4])
-                } catch (_: IllegalArgumentException) {
-                    StepSource.MANUAL
+
+                // Handle both old format (5 fields) and new format (6 fields)
+                val stepGoal: Int
+                val source: StepSource
+                if (parts.size >= 6) {
+                    stepGoal = parts[4].toIntOrNull() ?: 6000
+                    source = try { StepSource.valueOf(parts[5]) } catch (_: IllegalArgumentException) { StepSource.MANUAL }
+                } else {
+                    stepGoal = 6000
+                    source = try { StepSource.valueOf(parts[4]) } catch (_: IllegalArgumentException) { StepSource.MANUAL }
                 }
 
                 val date = LocalDate.ofEpochDay(epochDay)
@@ -286,6 +323,7 @@ class UserPreferences(context: Context) {
                     steps = steps,
                     waterIntakeMl = waterIntake,
                     waterGoalMl = waterGoal,
+                    stepGoal = stepGoal,
                     stepSource = source
                 )
             }
@@ -296,7 +334,7 @@ class UserPreferences(context: Context) {
         val encoded = map.values
             .sortedBy { it.date }
             .joinToString(";") {
-                "${it.date.toEpochDay()},${it.steps},${it.waterIntakeMl},${it.waterGoalMl},${it.stepSource.name}"
+                "${it.date.toEpochDay()},${it.steps},${it.waterIntakeMl},${it.waterGoalMl},${it.stepGoal},${it.stepSource.name}"
             }
         prefs.edit().putString(KEY_HEALTH_HISTORY, encoded).apply()
     }
@@ -370,4 +408,26 @@ class UserPreferences(context: Context) {
     fun isHybridGifCacheReady(): Boolean = prefs.getBoolean(KEY_HYBRID_GIF_CACHE_READY, false)
 
     fun getHybridGifCacheSignature(): String? = prefs.getString(KEY_HYBRID_GIF_CACHE_SIGNATURE, null)
+
+    /** Save the exact epoch-millisecond timestamp of when a day was completed. */
+    fun saveWorkoutTimestamp(dayNumber: Int, epochMillis: Long) {
+        val current = getWorkoutTimestamps().toMutableMap()
+        current[dayNumber] = epochMillis
+        val encoded = current.entries.joinToString(",") { "${it.key}:${it.value}" }
+        prefs.edit().putString(KEY_WORKOUT_TIMESTAMPS, encoded).apply()
+    }
+
+    /** Returns Map<dayNumber, epochMillis> for all recorded completions. */
+    fun getWorkoutTimestamps(): Map<Int, Long> {
+        val raw = prefs.getString(KEY_WORKOUT_TIMESTAMPS, "") ?: return emptyMap()
+        if (raw.isBlank()) return emptyMap()
+        return raw.split(",").mapNotNull { token ->
+            val parts = token.split(":")
+            if (parts.size == 2) {
+                val day = parts[0].toIntOrNull() ?: return@mapNotNull null
+                val millis = parts[1].toLongOrNull() ?: return@mapNotNull null
+                day to millis
+            } else null
+        }.toMap()
+    }
 }

@@ -1,6 +1,8 @@
     package com.example.fitflow.ui.screens
     
+    import android.app.Activity
     import android.util.Log
+    import android.view.WindowManager
     import androidx.activity.compose.BackHandler
     import androidx.compose.foundation.background
     import androidx.compose.foundation.layout.*
@@ -42,7 +44,7 @@
     fun WorkoutSessionScreen(
         exercises: List<WorkoutExercise> = sampleExercises(),
         onBack: () -> Unit = {},
-        onFinish: () -> Unit = {},
+        onFinish: (Int) -> Unit = {},
         onOpenSettings: () -> Unit = {},
         viewModel: WorkoutSessionViewModel = viewModel(),
         settingsViewModel: WorkoutSettingsViewModel
@@ -53,6 +55,17 @@
         var remaining by remember { mutableStateOf(exercises.getOrNull(0)?.durationSec ?: 0) }
         var isRunning by remember { mutableStateOf(false) }
         var phase by remember { mutableStateOf(SessionPhase.PREPARING) }
+        
+        var totalActiveSeconds by remember { mutableStateOf(0) }
+
+        // Đếm toàn bộ thời gian phiên tập — kể cả PREPARING, RESTING, Pause
+        // Một coroutine duy nhất chạy từ lúc mở màn hình đến khi thoát
+        LaunchedEffect(Unit) {
+            while (isActive) {
+                delay(1000L)
+                totalActiveSeconds++
+            }
+        }
     
         val gifUrls by viewModel.gifUrls.collectAsState()
         Log.d("GIF_DEBUG", "gifUrls in UI: ${gifUrls.size}, keys: ${gifUrls.keys}")
@@ -72,6 +85,15 @@
         DisposableEffect(Unit) {
             onDispose {
                 ttsHelper.shutdown()
+            }
+        }
+
+        // Giữ màn hình sáng trong suốt buổi tập
+        val activity = LocalContext.current as? Activity
+        DisposableEffect(Unit) {
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            onDispose {
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
 
@@ -102,7 +124,7 @@
                 isRunning = false
                 phase = SessionPhase.PREPARING
             } else {
-                onFinish()
+                onFinish(totalActiveSeconds)
             }
         }
     
@@ -153,7 +175,7 @@
                 if (index < exercises.lastIndex) {
                     phase = SessionPhase.RESTING
                 } else {
-                    onFinish()
+                    onFinish(totalActiveSeconds)
                 }
             }
         }
@@ -233,14 +255,14 @@
                 }
             }
 
-            SessionStatusStrip(
-                phase = phase,
-                currentExercise = current,
-                nextExercise = next,
-                currentIndex = index,
-                totalExercises = exercises.size,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+//            SessionStatusStrip(
+//                phase = phase,
+//                currentExercise = current,
+//                nextExercise = next,
+//                currentIndex = index,
+//                totalExercises = exercises.size,
+//                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+//            )
     
             when (phase) {
                 // ─── Màn hình CHUẨN BỊ ─────────────────────────
@@ -257,6 +279,7 @@
                         prepareCountdown = countdownRemaining,
                         onBack = onBack,
                         onOpenSettings = onOpenSettings,
+                        settingsViewModel = settingsViewModel,
                         modifier = Modifier.weight(1f)
                     )
     
@@ -328,6 +351,7 @@
                         prepareCountdown = 0,
                         onBack = onBack,
                         onOpenSettings = onOpenSettings,
+                        settingsViewModel = settingsViewModel,
                         modifier = Modifier.weight(1f)
                     )
     
@@ -428,12 +452,12 @@
                                     // Xong bài rep → nghỉ (nếu còn bài tiếp)
                                     if (index < exercises.lastIndex) {
                                         phase = SessionPhase.RESTING
-                                    } else onFinish()
+                                    } else onFinish(totalActiveSeconds)
                                 } else {
                                     if (remaining == 0) {
                                         if (index < exercises.lastIndex) {
                                             phase = SessionPhase.RESTING
-                                        } else onFinish()
+                                        } else onFinish(totalActiveSeconds)
                                     } else {
                                         isRunning = !isRunning
                                     }
@@ -466,7 +490,7 @@
                             onClick = {
                                 if (index < exercises.lastIndex) {
                                     phase = SessionPhase.RESTING
-                                } else onFinish()
+                                } else onFinish(totalActiveSeconds)
                             },
                             modifier = Modifier.size(64.dp), shape = CircleShape
                         ) {
@@ -498,67 +522,67 @@
         }
     }
 
-    @Composable
-    private fun SessionStatusStrip(
-        phase: SessionPhase,
-        currentExercise: WorkoutExercise?,
-        nextExercise: WorkoutExercise?,
-        currentIndex: Int,
-        totalExercises: Int,
-        modifier: Modifier = Modifier
-    ) {
-        val surfaceColor = if (phase == SessionPhase.RESTING) {
-            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.14f)
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant
-        }
-        val titleColor = if (phase == SessionPhase.RESTING) {
-            MaterialTheme.colorScheme.onPrimary
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        }
-        val bodyColor = if (phase == SessionPhase.RESTING) {
-            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-        }
-
-        val phaseTitle = when (phase) {
-            SessionPhase.PREPARING -> "Prepare"
-            SessionPhase.EXERCISING -> "Now training"
-            SessionPhase.RESTING -> "Recovery"
-        }
-        val phaseBody = when (phase) {
-            SessionPhase.PREPARING -> currentExercise?.name ?: "Get ready"
-            SessionPhase.EXERCISING -> "${currentIndex + 1}/$totalExercises · ${currentExercise?.name ?: "Current exercise"}"
-            SessionPhase.RESTING -> nextExercise?.name?.let { "Up next: $it" } ?: "Final recovery before summary"
-        }
-
-        Surface(
-            modifier = modifier.fillMaxWidth(),
-            color = surfaceColor,
-            shape = RoundedCornerShape(18.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                Text(
-                    text = phaseTitle.uppercase(),
-                    color = titleColor,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.2.sp
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = phaseBody,
-                    color = bodyColor,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-    }
+//    @Composable
+//    private fun SessionStatusStrip(
+//        phase: SessionPhase,
+//        currentExercise: WorkoutExercise?,
+//        nextExercise: WorkoutExercise?,
+//        currentIndex: Int,
+//        totalExercises: Int,
+//        modifier: Modifier = Modifier
+//    ) {
+//        val surfaceColor = if (phase == SessionPhase.RESTING) {
+//            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.14f)
+//        } else {
+//            MaterialTheme.colorScheme.surfaceVariant
+//        }
+//        val titleColor = if (phase == SessionPhase.RESTING) {
+//            MaterialTheme.colorScheme.onPrimary
+//        } else {
+//            MaterialTheme.colorScheme.onSurfaceVariant
+//        }
+//        val bodyColor = if (phase == SessionPhase.RESTING) {
+//            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+//        } else {
+//            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+//        }
+//
+//        val phaseTitle = when (phase) {
+//            SessionPhase.PREPARING -> "Prepare"
+//            SessionPhase.EXERCISING -> "Now training"
+//            SessionPhase.RESTING -> "Recovery"
+//        }
+//        val phaseBody = when (phase) {
+//            SessionPhase.PREPARING -> currentExercise?.name ?: "Get ready"
+//            SessionPhase.EXERCISING -> "${currentIndex + 1}/$totalExercises · ${currentExercise?.name ?: "Current exercise"}"
+//            SessionPhase.RESTING -> nextExercise?.name?.let { "Up next: $it" } ?: "Final recovery before summary"
+//        }
+//
+//        Surface(
+//            modifier = modifier.fillMaxWidth(),
+//            color = surfaceColor,
+//            shape = RoundedCornerShape(18.dp)
+//        ) {
+//            Column(
+//                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+//            ) {
+//                Text(
+//                    text = phaseTitle.uppercase(),
+//                    color = titleColor,
+//                    fontSize = 11.sp,
+//                    fontWeight = FontWeight.Black,
+//                    letterSpacing = 1.2.sp
+//                )
+//                Spacer(modifier = Modifier.height(4.dp))
+//                Text(
+//                    text = phaseBody,
+//                    color = bodyColor,
+//                    fontSize = 14.sp,
+//                    fontWeight = FontWeight.Medium
+//                )
+//            }
+//        }
+//    }
     
     // ─── Vùng hiển thị GIF/Placeholder + Overlay ────────────────
     @Composable
@@ -574,6 +598,7 @@
         prepareCountdown: Int,
         onBack: () -> Unit,
         onOpenSettings: () -> Unit,
+        settingsViewModel: WorkoutSettingsViewModel,
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
@@ -669,20 +694,19 @@
                             tint = textColor
                         )
                     }
-                    listOf(
-                        Icons.Default.Fullscreen to "Expand",
-                        Icons.Default.MusicNote to "Music",
-                        Icons.Default.Videocam to "Video"
-                    ).forEach { (icon, desc) ->
-                        IconButton(
-                            onClick = {},
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(buttonBgColor)
-                        ) {
-                            Icon(icon, contentDescription = desc, tint = textColor)
-                        }
+                    val isBgMusicEnabled by settingsViewModel.isBgMusicEnabled.collectAsState()
+                    IconButton(
+                        onClick = { settingsViewModel.setBgMusicEnabled(!isBgMusicEnabled) },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(buttonBgColor)
+                    ) {
+                        Icon(
+                            imageVector = if (isBgMusicEnabled) Icons.Default.MusicNote else Icons.Default.MusicOff,
+                            contentDescription = "Toggle Music",
+                            tint = textColor
+                        )
                     }
                 }
             }
