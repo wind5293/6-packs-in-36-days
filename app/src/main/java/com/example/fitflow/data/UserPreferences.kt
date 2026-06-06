@@ -16,6 +16,37 @@ class UserPreferences(context: Context) {
     private val prefs = context.getSharedPreferences("fitflow_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
+    init {
+        performOneTimeMigration()
+    }
+
+    private fun performOneTimeMigration() {
+        val hasLegacyDays = prefs.contains(KEY_COMPLETED_DAYS)
+        val hasLegacyDateMap = prefs.contains(KEY_COMPLETED_DATE_MAP)
+        if (hasLegacyDays || hasLegacyDateMap) {
+            val currentGoal = try {
+                FitnessGoal.valueOf(prefs.getString(KEY_GOAL, "") ?: "")
+            } catch (_: Exception) { null }
+            if (currentGoal != null) {
+                // Migrate days
+                val legacyDays = getCompletedDays()
+                if (legacyDays.isNotEmpty()) {
+                    saveCompletedDaysForGoal(currentGoal, legacyDays)
+                }
+                // Migrate date map
+                val legacyDateMap = getCompletedDateMap()
+                if (legacyDateMap.isNotEmpty()) {
+                    saveCompletedDateMapForGoal(currentGoal, legacyDateMap)
+                }
+            }
+            // Clear legacy keys so they are never migrated again or confused
+            prefs.edit()
+                .remove(KEY_COMPLETED_DAYS)
+                .remove(KEY_COMPLETED_DATE_MAP)
+                .apply()
+        }
+    }
+
     companion object {
         const val KEY_CURRENT_STREAK = "current_streak"
         const val KEY_LAST_WORKOUT_DATE = "last_workout_date"
@@ -120,6 +151,7 @@ class UserPreferences(context: Context) {
 
     fun isOnboarded(): Boolean = prefs.getBoolean(KEY_IS_ONBOARDED, false)
 
+    // ─── Legacy global keys (kept for one-time migration) ───────────────────
     fun saveCompletedDays(days: Set<Int>) {
         prefs.edit().putString(KEY_COMPLETED_DAYS, days.joinToString(",")).apply()
     }
@@ -149,6 +181,56 @@ class UserPreferences(context: Context) {
             } else null
         }.toMap()
     }
+
+    // ─── Per-goal progress storage ────────────────────────────────────────────
+
+    private fun goalDaysKey(goal: FitnessGoal) = "completed_days_${goal.name}"
+    private fun goalDateMapKey(goal: FitnessGoal) = "completed_date_map_${goal.name}"
+
+    /** Returns the frozen completed-day set for a specific goal. */
+    fun getCompletedDaysForGoal(goal: FitnessGoal): Set<Int> {
+        val key = goalDaysKey(goal)
+        val raw = prefs.getString(key, null) ?: return emptySet()
+        if (raw.isEmpty()) return emptySet()
+        return raw.split(",").mapNotNull { it.toIntOrNull() }.toSet()
+    }
+
+    fun saveCompletedDaysForGoal(goal: FitnessGoal, days: Set<Int>) {
+        prefs.edit().putString(goalDaysKey(goal), days.joinToString(",")).apply()
+    }
+
+    /** Returns the frozen date→dayNumber map for a specific goal. */
+    fun getCompletedDateMapForGoal(goal: FitnessGoal): Map<LocalDate, Int> {
+        val key = goalDateMapKey(goal)
+        val raw = prefs.getString(key, null) ?: return emptyMap()
+        if (raw.isEmpty()) return emptyMap()
+        return raw.split(",").mapNotNull { token ->
+            val parts = token.split(":")
+            if (parts.size == 2) {
+                val epoch = parts[0].toLongOrNull()
+                val dayNum = parts[1].toIntOrNull()
+                if (epoch != null && dayNum != null) LocalDate.ofEpochDay(epoch) to dayNum
+                else null
+            } else null
+        }.toMap()
+    }
+
+    fun saveCompletedDateMapForGoal(goal: FitnessGoal, map: Map<LocalDate, Int>) {
+        val encoded = map.entries.joinToString(",") { "${it.key.toEpochDay()}:${it.value}" }
+        prefs.edit().putString(goalDateMapKey(goal), encoded).apply()
+    }
+
+    /** Clear progress for a goal (reset to Day 1). */
+    fun clearCompletedDaysForGoal(goal: FitnessGoal) {
+        prefs.edit()
+            .putString(goalDaysKey(goal), "")
+            .putString(goalDateMapKey(goal), "")
+            .apply()
+    }
+
+    /** How many workout days have been completed for a given goal. */
+    fun getCompletedCountForGoal(goal: FitnessGoal): Int =
+        getCompletedDaysForGoal(goal).size
 
     fun getCurrentStreak(): Int = prefs.getInt(KEY_CURRENT_STREAK, 0)
     fun setCurrentStreak(streak: Int) = prefs.edit().putInt(KEY_CURRENT_STREAK, streak).apply()

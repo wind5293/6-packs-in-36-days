@@ -265,7 +265,8 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("day_detail/$dayNumber")
                                     }
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onOpenSettings = { navController.navigate("workout_settings") },
+                                onResetPlan = { viewModel.resetPlan() }
                             )
                         }
                         composable(
@@ -435,7 +436,13 @@ class MainActivity : ComponentActivity() {
                                 com.example.fitflow.ui.screens.UpdateGoalScreen(
                                     currentGoal = userProfile!!.goal,
                                     onBack = { navController.popBackStack() },
-                                    onComplete = { goal ->
+                                    onComplete = { goal, resetProgress ->
+                                        if (resetProgress) {
+                                            // User chose Day 1 — wipe frozen data for this goal
+                                            viewModel.clearProgressForGoal(goal)
+                                        }
+                                        // startPlanProvisioning saves the new goal and regenerates
+                                        // the plan; it no longer touches completedDays itself.
                                         viewModel.startPlanProvisioning(applicationContext, goal)
                                         navController.navigate("loading") {
                                             popUpTo("update_goal") { inclusive = true }
