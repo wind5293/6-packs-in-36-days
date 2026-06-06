@@ -332,7 +332,7 @@ onboarding → workout_setup → loading (2.5s) → dashboard (root)
 | Workout Settings | ✅ MaterialTheme (partial token usage) | ✅ LazyColumn + section cards | ✅ Route `workout_settings` | ✅ Persist settings (music/coach/timer) qua UserPreferences | ✅ Tích hợp |
 | Workout Session | ✅ MaterialTheme | ✅ Column | ✅ Route workout_session/{dayNumber} | ✅ Exercise (có category) từ DayPlan | ✅ Tích hợp |
 | Library | ✅ MaterialTheme | ✅ OK | ✅ OK | ❌ 2 exercises hardcoded | ⚠️ Cần phát triển |
-| Profile | ✅ MaterialTheme | ✅ OK | ✅ OK | ✅ Weight record/history chart + weekly Steps/Water charts (vẫn còn một phần stats placeholder) | ⚠️ Gần hoàn chỉnh MVP |
+| Profile | ✅ MaterialTheme (chart/weight card đang dùng palette custom) | ✅ OK | ✅ OK | ✅ Weight update bằng sheet kéo-thả + weekly Duration/Calories charts + weight history mini chart (vẫn còn một phần stats placeholder) | ⚠️ Gần hoàn chỉnh MVP |
 
 ### Trạng thái theo component hệ thống
 
@@ -621,6 +621,51 @@ Dự án sử dụng hệ thống multi-agent trong `.claude/agents/`:
 ---
 
 ## Changelog
+
+### 2026-06-06 — Remote Sync Batch #74 -> #78 (commits d46a121 -> f1fcbf6)
+
+#### 1) Goal update flow rollout (`dbb6746`, `ca4a810`, merged by `af43208`)
+- Thêm màn hình mới `UpdateGoalScreen.kt` và route tương ứng trong `MainActivity`.
+- Hoàn thiện end-to-end flow cập nhật goal (UI -> state -> persistence) với thay đổi ở `UserPreferences`, `UserViewModel`, `PlannerScreen`, `MainActivity`.
+- Mục tiêu sau khi đổi goal được đồng bộ lại plan/luồng chính thay vì chỉ đổi cờ UI.
+
+#### 2) Notification expansion cho fitness/water tracking (`a0ec3bb`, merged by `be3b182`)
+- Bổ sung notification actions và service mới: `FitnessActionReceiver`, `FitnessNotificationService`.
+- `AndroidManifest.xml` được cập nhật để khai báo luồng notification mới.
+- Thêm assets/icons phục vụ notification (`notification_fitness.xml`, badges/icons liên quan).
+
+#### 3) GIF loading migration sang local assets + fuzzy matching (`dc36f8a`, merged by `1042e25`)
+- Commit migration lớn: **1260 files changed** (chủ yếu bổ sung assets GIF local trong `app/src/main/assets/gifs`).
+- Chuyển hướng ưu tiên load GIF local và bổ sung fuzzy name matching để map tên bài tập ổn định hơn.
+- Ghi chú vận hành: commit này có output rất lớn, nên khi review dùng cách an toàn (`git show --shortstat` + sample `--name-only` giới hạn dòng) để tránh crash terminal.
+
+#### 4) Profile/workout flow polish (`ae4b28d`, merged by `f1fcbf6`)
+- Tối ưu lại nhiều màn hình liên quan workout/profile với thay đổi tập trung ở `DashboardScreen`, `ProfileScreen`, `WorkoutSessionScreen`, `MainActivity`.
+- Bao gồm các điều chỉnh UI và flow completion để đồng bộ trải nghiệm sau các batch #74-#77.
+
+#### 5) Merge timeline
+- Các nhánh/PR đã được merge vào `main`: #74, #75, #76, #77, #78.
+
+### 2026-06-06 — Local Profile Charts & Weight Update UX (current workspace)
+
+#### 1) Profile weekly charts redesign theo reference
+- Profile giữ 2 weekly charts chính: `Duration` và `Calories`.
+- UI chart được redesign theo style card tối, value lớn, 7-day bars, label ngày và footer kiểu "This week".
+- Bổ sung responsive behavior: màn hẹp thì 2 chart xếp dọc, màn rộng hiển thị song song.
+
+#### 2) Weight tracking card + update flow
+- Thẻ `Weight Tracking` được làm lại theo phong cách đồng bộ với chart cards.
+- Bỏ field nhập trực tiếp bằng `OutlinedTextField`; thay bằng CTA `UPDATE WEIGHT`.
+- Bấm CTA mở `WeightPickerSheet` (kéo-thả ruler, toggle kg/lbs, `CANCEL`/`SAVE`) để cập nhật cân nặng.
+
+#### 3) Data flow fix cho calories/duration weekly totals
+- Khôi phục flow calories về cách map tuần theo `startDate + completedDays` (flow cũ đã chạy ổn định trước đó).
+- Đồng bộ duration theo cùng weekly mapping với calories để tránh lệch dữ liệu giữa 2 chart.
+- Duration dùng fallback `reps * 3` khi `durationSec <= 0` để giảm trường hợp tổng thời gian tuần hiển thị 0 sai.
+
+#### 4) QA loop cho thay đổi local
+- Đã chạy subagent `QA-Testcode` sau các lần chỉnh sửa chính để xác nhận flow chart và weight update.
+- Các cảnh báo còn lại chủ yếu là theme consistency (một số card dùng màu hardcoded theo reference).
 
 ### 2026-06-06 — Remote Sync Batch #62 -> #73 (commits 5fd0c71 -> 008a52f)
 
