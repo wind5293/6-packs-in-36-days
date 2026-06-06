@@ -1,6 +1,7 @@
 package com.example.fitflow.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import coil.request.CachePolicy
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.composables.icons.lucide.*
+import com.example.fitflow.R
 import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
@@ -259,23 +261,15 @@ fun HeaderAndSummarySection(
                     )
                 }
             }
-            Box(
+            Image (
+                painter = painterResource(id = R.drawable.co_bung_2),
+                contentDescription = "6_pack",
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp)
-                    .width(120.dp)
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .background(MaterialTheme.colorScheme.onBackground),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = dayPlan.muscleGroup.ifEmpty { "Image Space" },
-                    color = MaterialTheme.colorScheme.background,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                    .fillMaxHeight()
+                    .width(160.dp)
+            )
         }
         Card (
             modifier = Modifier

@@ -1,5 +1,8 @@
 package com.example.fitflow
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.content.pm.PackageManager
@@ -59,12 +62,16 @@ import java.time.LocalDate
 import androidx.compose.runtime.LaunchedEffect
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
+import com.example.fitflow.notification.FitnessNotificationService
 
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         Log.d("FitFlowDebug", "Notification permission granted: $isGranted")
+        if (isGranted) {
+            startFitnessService()
+        }
     }
 
     private val requestActivityRecognitionPermissionLauncher = registerForActivityResult(
@@ -79,8 +86,31 @@ class MainActivity : ComponentActivity() {
 
     private var uiViewModel: UserViewModel? = null
 
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                FitnessNotificationService.CHANNEL_ID,
+                "Fitness Status",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Trạng thái tập luyện và nước uống"
+                setShowBadge(false)
+            }
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun startFitnessService() {
+        ContextCompat.startForegroundService(
+            this,
+            Intent(this, FitnessNotificationService::class.java)
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel()
         val app = application as FitFlowApplication
         val viewModel: UserViewModel by viewModels {
             UserViewModelFactory(app.userPreferences, app.exerciseRepository, PlanRepository(applicationContext))
@@ -90,6 +120,8 @@ class MainActivity : ComponentActivity() {
         val startDestination = if (app.userPreferences.isOnboarded()) "dashboard" else "onboarding"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            startFitnessService()
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -178,6 +210,26 @@ class MainActivity : ComponentActivity() {
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
+
+                            LaunchedEffect(workoutPlan, completedDays, todayHealthMetrics) {
+                                val nextDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }
+
+                                if (nextDay != null) {
+                                    FitnessNotificationService.currentDay    = nextDay.dayNumber
+                                    FitnessNotificationService.totalDays     = workoutPlan.size
+                                    FitnessNotificationService.challengeName = nextDay.title
+                                    FitnessNotificationService.challengeState = when {
+                                        nextDay.isRest                       -> "rest"
+                                        nextDay.dayNumber in completedDays   -> "done"
+                                        else                                 -> "todo"
+                                    }
+                                }
+
+                                FitnessNotificationService.waterCurrent = todayHealthMetrics.waterIntakeMl
+                                FitnessNotificationService.waterGoal    = todayHealthMetrics.waterGoalMl
+                                FitnessNotificationService.refresh(this@MainActivity)
+                            }
+
                             DashboardScreen(
                                 completedDays = completedDays,
                                 completedDateMap = completedDateMap,
@@ -194,7 +246,13 @@ class MainActivity : ComponentActivity() {
                                         requestActivityRecognitionPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
                                     }
                                 },
-                                onAddWater = { amount -> viewModel.addWater(amount) },
+                                onAddWater = { amount ->
+                                    viewModel.addWater(amount)
+                                    FitnessNotificationService.waterCurrent =
+                                        (FitnessNotificationService.waterCurrent + amount)
+                                            .coerceAtMost(FitnessNotificationService.waterGoal)
+                                    FitnessNotificationService.refresh(this@MainActivity)
+                                             },
                                 onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
                                 onSetStepGoal = { goal -> viewModel.setStepGoal(goal) },
                                 onStartWorkout = {
