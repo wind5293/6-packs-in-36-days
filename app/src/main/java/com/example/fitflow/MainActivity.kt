@@ -344,6 +344,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             val userProfile by viewModel.userProfile.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
+                            val completedDateMap by viewModel.completedDateMap.collectAsState()
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val startDate by viewModel.startDate.collectAsState()
                             val weightHistory by viewModel.weightHistory.collectAsState()
@@ -357,6 +358,7 @@ class MainActivity : ComponentActivity() {
                                 completedDays = completedDays,
                                 workoutPlan = workoutPlan,
                                 startDate = startDate,
+                                completedDateMap = completedDateMap,
                                 weightHistory = weightHistory,
                                 healthMetricsHistory = healthHistory,
                                 todayHealthMetrics = todayHealthMetrics,

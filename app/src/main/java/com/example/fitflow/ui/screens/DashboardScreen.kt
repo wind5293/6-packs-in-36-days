@@ -155,37 +155,37 @@ fun DashboardScreen(
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
-        item {
-            if (userProfile != null) {
-                TodayWeightSection(userProfile = userProfile)
-            }
-        }
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-        item {
-            WorkoutsSummarySection(
-                completedCount = completedCount,
-                totalWorkoutDays = totalWorkoutDays,
-                totalKcal = totalKcal,
-                onStartWorkout = onStartWorkout
-            )
-        }
+//        item {
+//            if (userProfile != null) {
+//                TodayWeightSection(userProfile = userProfile)
+//            }
+//        }
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
+//        item {
+//            WorkoutsSummarySection(
+//                completedCount = completedCount,
+//                totalWorkoutDays = totalWorkoutDays,
+//                totalKcal = totalKcal,
+//                onStartWorkout = onStartWorkout
+//            )
+//        }
         item {
-            HealthMetricsSection(
-                metrics = healthMetrics,
-                isActivityRecognitionGranted = isActivityRecognitionGranted,
-                isStepSensorEnabled = isStepSensorEnabled,
-                isStepTrackingActive = isStepTrackingActive,
-                onUnlockStepSensor = onUnlockStepSensor,
-                onAddWater = onAddWater,
-                onSetWaterGoal = onSetWaterGoal,
-                onSetStepGoal = onSetStepGoal
-            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
+//        item {
+//            HealthMetricsSection(
+//                metrics = healthMetrics,
+//                isActivityRecognitionGranted = isActivityRecognitionGranted,
+//                isStepSensorEnabled = isStepSensorEnabled,
+//                isStepTrackingActive = isStepTrackingActive,
+//                onUnlockStepSensor = onUnlockStepSensor,
+//                onAddWater = onAddWater,
+//                onSetWaterGoal = onSetWaterGoal,
+//                onSetStepGoal = onSetStepGoal
+//            )
+//        }
     }
 }
 
