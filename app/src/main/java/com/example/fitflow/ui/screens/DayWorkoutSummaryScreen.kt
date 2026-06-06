@@ -117,6 +117,15 @@ fun DayWorkoutSummaryScreen(
             )
         }
 
+        // ── Plan Progress ────────────────────────────────────
+        item {
+            Spacer(Modifier.height(28.dp))
+            PlanProgressSection(
+                completedDaysCount = completedDays.size,
+                totalDaysCount = workoutPlan.size
+            )
+        }
+
         // ── Overview cards ───────────────────────────────────
         item {
             Spacer(Modifier.height(28.dp))
@@ -574,6 +583,59 @@ private fun OverviewStatCard(
                 fontStyle = FontStyle.Italic,
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Plan Progress Section
+// ─────────────────────────────────────────────────────────────
+
+@Composable
+fun PlanProgressSection(
+    completedDaysCount: Int,
+    totalDaysCount: Int,
+    modifier: Modifier = Modifier
+) {
+    val progress = if (totalDaysCount > 0) completedDaysCount.toFloat() / totalDaysCount else 0f
+    
+    Card(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Plan Progress",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    stringResource(R.string.dashboard_weekly_goal_progress, completedDaysCount, totalDaysCount).replace("days", "Days").let { "$completedDaysCount / $totalDaysCount Days" },
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
             )
         }
     }
