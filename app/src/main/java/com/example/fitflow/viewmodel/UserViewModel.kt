@@ -125,15 +125,22 @@ class UserViewModel(
     private fun loadUserProfile() {
         val profile = userPreferences.getUserProfile()
         _userProfile.value = profile
-        _completedDays.value = userPreferences.getCompletedDays()
-        _completedDateMap.value = userPreferences.getCompletedDateMap()
+        // Load progress scoped to the active goal
+        val activeGoal = profile?.goal
+        _completedDays.value = if (activeGoal != null)
+            userPreferences.getCompletedDaysForGoal(activeGoal)
+        else
+            userPreferences.getCompletedDays() // fallback (first-run / no goal yet)
+        _completedDateMap.value = if (activeGoal != null)
+            userPreferences.getCompletedDateMapForGoal(activeGoal)
+        else
+            userPreferences.getCompletedDateMap()
         _currentStreak.value = userPreferences.getCurrentStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
         _workoutTimestamps.value = userPreferences.getWorkoutTimestamps()
         refreshHealthMetrics()
 
-        // ✅ generatePlan là suspend → cần viewModelScope
         viewModelScope.launch {
             val basePlan = if (profile != null) {
                 workoutPlanGenerator.generatePlan(profile.goal)
@@ -201,6 +208,9 @@ class UserViewModel(
                 userPreferences.saveGoal(goal)
                 userPreferences.clearCustomDayPlans()
                 _userProfile.value = userPreferences.getUserProfile()
+                // Immediately sync progress state to the NEW goal so UI is correct
+                _completedDays.value = userPreferences.getCompletedDaysForGoal(goal)
+                _completedDateMap.value = userPreferences.getCompletedDateMapForGoal(goal)
 
                 val generatedPlan = workoutPlanGenerator.generatePlan(goal)
                 val mergedPlan = generatedPlan.map { day ->
@@ -263,12 +273,21 @@ class UserViewModel(
         val current = _completedDays.value.toMutableSet()
         if (!current.contains(dayNumber)) {
             current.add(dayNumber)
-            userPreferences.saveCompletedDays(current)
+            val activeGoal = _userProfile.value?.goal
+            if (activeGoal != null) {
+                userPreferences.saveCompletedDaysForGoal(activeGoal, current)
+            } else {
+                userPreferences.saveCompletedDays(current)
+            }
             _completedDays.value = current
 
             val dateMap = _completedDateMap.value.toMutableMap()
             dateMap[LocalDate.now()] = dayNumber
-            userPreferences.saveCompletedDateMap(dateMap)
+            if (activeGoal != null) {
+                userPreferences.saveCompletedDateMapForGoal(activeGoal, dateMap)
+            } else {
+                userPreferences.saveCompletedDateMap(dateMap)
+            }
             _completedDateMap.value = dateMap
 
             // Save exact timestamp
@@ -296,6 +315,37 @@ class UserViewModel(
                 userPreferences.setLastWorkoutDate(today)
                 _currentStreak.value = streak
             }
+        }
+    }
+
+    /**
+     * Reset progress for the currently active goal back to Day 1.
+     * All completed-day data for this goal is cleared.
+     */
+    fun resetPlan() {
+        val activeGoal = _userProfile.value?.goal ?: return
+        userPreferences.clearCompletedDaysForGoal(activeGoal)
+        _completedDays.value = emptySet()
+        _completedDateMap.value = emptyMap()
+    }
+
+    /**
+     * How many workout days the user has completed for the given goal.
+     * Used to decide whether to show the "Resume?" dialog in UpdateGoalScreen.
+     */
+    fun getCompletedCountForGoal(goal: FitnessGoal): Int =
+        userPreferences.getCompletedCountForGoal(goal)
+
+    /**
+     * Explicitly wipe the frozen progress for a given goal.
+     * Called from MainActivity when the user chooses "Day 1" in the resume dialog.
+     */
+    fun clearProgressForGoal(goal: FitnessGoal) {
+        userPreferences.clearCompletedDaysForGoal(goal)
+        // If we're clearing the currently-active goal, update state too
+        if (_userProfile.value?.goal == goal) {
+            _completedDays.value = emptySet()
+            _completedDateMap.value = emptyMap()
         }
     }
 
@@ -533,6 +583,8 @@ class UserViewModel(
     private fun completePlanProvisioning(goalSignature: String) {
         userPreferences.markHybridGifCacheReady(goalSignature)
         pendingHybridUrls = emptyList()
+        // Reload full profile & progress so the dashboard reflects the NEW goal
+        loadUserProfile()
 
         _planProvisioningState.value = _planProvisioningState.value.copy(
             firstSegmentProgress = 1f,

@@ -52,6 +52,7 @@ import com.composables.icons.lucide.Lucide
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
+import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.domain.PushYourLimitsCatalog
 import com.example.fitflow.ui.components.PushYourLimitsSection
@@ -81,7 +82,8 @@ fun DashboardScreen(
     onOpenPlanner: () -> Unit = {},
     onOpenSupplementary: (String) -> Unit = {},
     onOpenDaySummary: (Int, Long) -> Unit = { _, _ -> },
-    onOpenHistory: () -> Unit = {}
+    onOpenHistory: () -> Unit = {},
+    onOpenChangeGoal: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -137,7 +139,8 @@ fun DashboardScreen(
                     totalDays = workoutPlan.count { !it.isRest },
                     dayTitle = currentDayPlan.title,
                     exercises = currentDayPlan.workoutExercises.map { it.name },
-                    onClick = onOpenPlanner
+                    onClick = onOpenPlanner,
+                    onOpenSettings = onOpenChangeGoal
                 )
             }
         }
@@ -519,7 +522,8 @@ fun DailyChallengeSection(
     totalDays: Int,
     dayTitle: String,
     exercises: List<String>,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onOpenSettings: () -> Unit = {}
 ) {
     val completedDays = currentDay - 1
 
@@ -538,7 +542,7 @@ fun DailyChallengeSection(
         )
 
         IconButton(
-            onClick = { /* Hành động bộ lọc tinh chỉnh */ },
+            onClick = onOpenSettings,
             modifier = Modifier.size(24.dp)
         ) {
             Icon(

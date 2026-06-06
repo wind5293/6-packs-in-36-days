@@ -151,6 +151,7 @@ class MainActivity : ComponentActivity() {
                         val hideNav = currentRoute == "onboarding"
                                 || currentRoute == "workout_setup"
                                 || currentRoute == "loading"
+                                || currentRoute == "update_goal"
                                 || (currentRoute.startsWith("day_detail"))
                                 || (currentRoute.startsWith("workout_session"))
                                 || (currentRoute.startsWith("workout_completed"))
@@ -278,6 +279,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onOpenHistory = {
                                     navController.navigate("history")
+                                },
+                                onOpenChangeGoal = {
+                                    navController.navigate("update_goal")
                                 }
                             )
                         }
@@ -319,7 +323,8 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("day_detail/$dayNumber")
                                     }
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onOpenSettings = { navController.navigate("workout_settings") },
+                                onResetPlan = { viewModel.resetPlan() }
                             )
                         }
                         composable(
@@ -482,6 +487,27 @@ class MainActivity : ComponentActivity() {
                                     popUpTo("workout_setup") { inclusive = true }
                                 }
                             })
+                        }
+                        composable("update_goal") {
+                            val userProfile by viewModel.userProfile.collectAsState()
+                            if (userProfile != null) {
+                                com.example.fitflow.ui.screens.UpdateGoalScreen(
+                                    currentGoal = userProfile!!.goal,
+                                    onBack = { navController.popBackStack() },
+                                    onComplete = { goal, resetProgress ->
+                                        if (resetProgress) {
+                                            // User chose Day 1 — wipe frozen data for this goal
+                                            viewModel.clearProgressForGoal(goal)
+                                        }
+                                        // startPlanProvisioning saves the new goal and regenerates
+                                        // the plan; it no longer touches completedDays itself.
+                                        viewModel.startPlanProvisioning(applicationContext, goal)
+                                        navController.navigate("loading") {
+                                            popUpTo("update_goal") { inclusive = true }
+                                        }
+                                    }
+                                )
+                            }
                         }
                         composable(
                             route = "workout_session/{dayNumber}",
