@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitflow.R
-import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.data.model.WorkoutLogEntry
 import com.example.fitflow.ui.theme.FitflowTheme
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -39,51 +39,21 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
-// ─── Data model for a completed workout entry ────────────────────────────────
-data class WorkoutHistoryEntry(
-    val dayPlan: DayPlan,
-    val completedDate: LocalDate,
-    val durationSeconds: Int = 0,
-    val completedAtMillis: Long = 0L
-)
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
 @Composable
 fun WorkoutHistoryScreen(
-    completedDays: Set<Int> = emptySet(),
-    completedDateMap: Map<LocalDate, Int> = emptyMap(),
-    workoutTimestamps: Map<Int, Long> = emptyMap(),    // dayNumber -> epochMillis
-    workoutPlan: List<DayPlan> = emptyList(),
+    globalWorkoutLogs: List<WorkoutLogEntry> = emptyList(),
     onBack: () -> Unit = {}
 ) {
     var displayedMonth by remember { mutableStateOf(YearMonth.now()) }
 
-    // Build reverse lookup: dayNumber -> date (from completedDateMap)
-    // completedDateMap maps date->dayNumber, but multiple days completed on same date
-    // means only the last one is stored. We use completedDays (Set<Int>) as source of truth.
-    val dayNumberToDate: Map<Int, LocalDate> = remember(completedDateMap) {
-        completedDateMap.entries.associate { (date, dayNum) -> dayNum to date }
+    // Build history entries from global logs
+    val historyEntries: List<WorkoutLogEntry> = remember(globalWorkoutLogs) {
+        globalWorkoutLogs.sortedByDescending { it.timestampMillis }
     }
 
-    // Build history entries from completedDays (source of truth for which days are done)
-    val historyEntries: List<WorkoutHistoryEntry> = remember(completedDays, dayNumberToDate, workoutTimestamps, workoutPlan) {
-        completedDays
-            .sortedDescending()
-            .mapNotNull { dayNumber ->
-                val plan = workoutPlan.find { it.dayNumber == dayNumber } ?: return@mapNotNull null
-                val date = dayNumberToDate[dayNumber] ?: LocalDate.now()
-                val millis = workoutTimestamps[dayNumber] ?: 0L
-                WorkoutHistoryEntry(
-                    dayPlan = plan,
-                    completedDate = date,
-                    durationSeconds = plan.workoutExercises.sumOf { it.durationSec },
-                    completedAtMillis = millis
-                )
-            }
-    }
-
-    // Calendar marks: all dates that appear in completedDateMap keys
-    val completedDates = completedDateMap.keys.toSet()
+    // Calendar marks: all dates that appear in global logs
+    val completedDates = historyEntries.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
 
     // Weekly report: current week (Mon-Sun) containing today
     val today = LocalDate.now()
@@ -91,12 +61,11 @@ fun WorkoutHistoryScreen(
     val endOfWeek = today.with(DayOfWeek.SUNDAY)
 
     val weekEntries = historyEntries.filter {
-        !it.completedDate.isBefore(startOfWeek) && !it.completedDate.isAfter(endOfWeek)
+        val date = LocalDate.ofEpochDay(it.dateEpochDay)
+        !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek)
     }
-    val weekTotalSeconds = weekEntries.sumOf { it.durationSeconds }
-    val weekTotalKcal = weekEntries.sumOf { entry ->
-        entry.dayPlan.workoutExercises.sumOf { it.kcal }
-    }
+    val weekTotalSeconds = weekEntries.sumOf { it.durationSec }
+    val weekTotalKcal = weekEntries.sumOf { it.kcal }
 
     LazyColumn(
         modifier = Modifier
@@ -407,25 +376,24 @@ private fun WeekSummaryCard(
 
 // ─── Single workout history row ───────────────────────────────────────────────
 @Composable
-private fun WorkoutHistoryItem(entry: WorkoutHistoryEntry) {
-    val plan = entry.dayPlan
-    val isRest = plan.isRest
-    val kcal = plan.workoutExercises.sumOf { it.kcal }
-    val durationSec = entry.durationSeconds
+private fun WorkoutHistoryItem(entry: WorkoutLogEntry) {
+    val isRest = entry.isRest
+    val kcal = entry.kcal
+    val durationSec = entry.durationSec
     val minutes = durationSec / 60
     val timeLabel = if (minutes > 0) "${minutes}m" else "${durationSec}s"
 
     // Build timestamp label: "Jun 4, 11:08 PM" or just "Jun 4" as fallback
-    val dateTimeLabel = remember(entry.completedAtMillis, entry.completedDate) {
-        if (entry.completedAtMillis > 0L) {
+    val dateTimeLabel = remember(entry.timestampMillis, entry.dateEpochDay) {
+        if (entry.timestampMillis > 0L) {
             val localDateTime = java.time.Instant
-                .ofEpochMilli(entry.completedAtMillis)
+                .ofEpochMilli(entry.timestampMillis)
                 .atZone(java.time.ZoneId.systemDefault())
                 .toLocalDateTime()
             val fmt = java.time.format.DateTimeFormatter.ofPattern("MMM d, hh:mm a")
             localDateTime.format(fmt)
         } else {
-            entry.completedDate.format(java.time.format.DateTimeFormatter.ofPattern("MMM d"))
+            LocalDate.ofEpochDay(entry.dateEpochDay).format(java.time.format.DateTimeFormatter.ofPattern("MMM d"))
         }
     }
 
@@ -473,7 +441,7 @@ private fun WorkoutHistoryItem(entry: WorkoutHistoryEntry) {
             // Title + meta
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    plan.title.ifBlank { "Day ${plan.dayNumber}" },
+                    "Day ${entry.dayNumber}",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onBackground,
@@ -483,7 +451,7 @@ private fun WorkoutHistoryItem(entry: WorkoutHistoryEntry) {
                 Spacer(Modifier.height(3.dp))
                 if (isRest) {
                     Text(
-                        "Rest Day",
+                        "${entry.goalName} • Rest Day",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                     )
@@ -492,6 +460,12 @@ private fun WorkoutHistoryItem(entry: WorkoutHistoryEntry) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        Text(
+                            entry.goalName,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
                         // Duration
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

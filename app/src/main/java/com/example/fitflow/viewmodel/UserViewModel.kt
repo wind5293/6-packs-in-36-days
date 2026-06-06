@@ -21,6 +21,8 @@ import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.data.model.UserProfile
+import com.example.fitflow.data.model.WorkoutExercise
+import com.example.fitflow.data.model.WorkoutLogEntry
 import com.example.fitflow.domain.WorkoutPlanGenerator
 import com.example.fitflow.notification.WorkoutReminderReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,9 +30,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-
 import com.example.fitflow.data.model.Exercise
-import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.utils.GifUrlHelper
 import com.example.fitflow.utils.NetworkStateHelper
 import kotlinx.coroutines.flow.SharingStarted
@@ -102,6 +102,9 @@ class UserViewModel(
     private val _healthMetricsHistory = MutableStateFlow<List<DailyHealthMetrics>>(emptyList())
     val healthMetricsHistory: StateFlow<List<DailyHealthMetrics>> = _healthMetricsHistory.asStateFlow()
 
+    private val _globalWorkoutLogs = MutableStateFlow<List<WorkoutLogEntry>>(emptyList())
+    val globalWorkoutLogs: StateFlow<List<WorkoutLogEntry>> = _globalWorkoutLogs.asStateFlow()
+
     private val _activityRecognitionGranted = MutableStateFlow(false)
     val activityRecognitionGranted: StateFlow<Boolean> = _activityRecognitionGranted.asStateFlow()
 
@@ -139,6 +142,7 @@ class UserViewModel(
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
         _workoutTimestamps.value = userPreferences.getWorkoutTimestamps()
+        _globalWorkoutLogs.value = userPreferences.getGlobalWorkoutLogs()
         refreshHealthMetrics()
 
         viewModelScope.launch {
@@ -296,6 +300,25 @@ class UserViewModel(
             _workoutTimestamps.value = _workoutTimestamps.value.toMutableMap().also { it[dayNumber] = nowMillis }
 
             val today = LocalDate.now()
+            
+            // Save global workout log
+            val plan = _workoutPlan.value.find { it.dayNumber == dayNumber }
+            val durationSec = plan?.workoutExercises?.sumOf { it.durationSec } ?: 0
+            val kcal = plan?.workoutExercises?.sumOf { it.kcal } ?: 0
+            val isRest = plan?.isRest ?: false
+            val goalName = activeGoal?.name ?: "UNKNOWN"
+            val logEntry = WorkoutLogEntry(
+                dateEpochDay = today.toEpochDay(),
+                timestampMillis = nowMillis,
+                dayNumber = dayNumber,
+                goalName = goalName,
+                durationSec = durationSec,
+                kcal = kcal,
+                isRest = isRest
+            )
+            userPreferences.addGlobalWorkoutLog(logEntry)
+            _globalWorkoutLogs.value = _globalWorkoutLogs.value + logEntry
+
             val lastWorkout = userPreferences.getLastWorkoutDate()
             var streak = userPreferences.getCurrentStreak()
 

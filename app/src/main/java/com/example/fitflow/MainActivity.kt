@@ -183,9 +183,30 @@ class MainActivity : ComponentActivity() {
                             val libraryFilterState by libraryViewModel.filterState.collectAsState()
                             val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
                             val libraryCategories by libraryViewModel.categories.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
+
+                            LaunchedEffect(workoutPlan, completedDays, todayHealthMetrics) {
+                                val nextDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }
+
+                                if (nextDay != null) {
+                                    FitnessNotificationService.currentDay    = nextDay.dayNumber
+                                    FitnessNotificationService.totalDays     = workoutPlan.size
+                                    FitnessNotificationService.challengeName = nextDay.title
+                                    FitnessNotificationService.challengeState = when {
+                                        nextDay.isRest                       -> "rest"
+                                        nextDay.dayNumber in completedDays   -> "done"
+                                        else                                 -> "todo"
+                                    }
+                                }
+
+                                FitnessNotificationService.waterCurrent = todayHealthMetrics.waterIntakeMl
+                                FitnessNotificationService.waterGoal    = todayHealthMetrics.waterGoalMl
+                                FitnessNotificationService.refresh(this@MainActivity)
+                            }
                             DashboardScreen(
                                 completedDays = completedDays,
                                 completedDateMap = completedDateMap,
+                                globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
@@ -241,15 +262,9 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("history") {
-                            val completedDays by viewModel.completedDays.collectAsState()
-                            val completedDateMap by viewModel.completedDateMap.collectAsState()
-                            val workoutTimestamps by viewModel.workoutTimestamps.collectAsState()
-                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             WorkoutHistoryScreen(
-                                completedDays = completedDays,
-                                completedDateMap = completedDateMap,
-                                workoutTimestamps = workoutTimestamps,
-                                workoutPlan = workoutPlan,
+                                globalWorkoutLogs = globalWorkoutLogs,
                                 onBack = { navController.popBackStack() }
                             )
                         }

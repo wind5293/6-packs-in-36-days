@@ -61,6 +61,7 @@ import com.example.fitflow.data.model.DailyHealthMetrics
 import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.StepSource
+import com.example.fitflow.data.model.WorkoutLogEntry
 import com.example.fitflow.domain.PushYourLimitsCatalog
 import com.example.fitflow.ui.components.PushYourLimitsSection
 import com.example.fitflow.ui.theme.FitflowTheme
@@ -73,6 +74,7 @@ fun DashboardScreen(
     paddingValues: PaddingValues = PaddingValues(0.dp),
     completedDays: Set<Int> = emptySet(),
     completedDateMap: Map<LocalDate, Int> = emptyMap(),
+    globalWorkoutLogs: List<WorkoutLogEntry> = emptyList(),
     currentStreak: Int = 0,
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
@@ -128,10 +130,9 @@ fun DashboardScreen(
         }
         item {
             WeeklyGoalSection(
-                completedDays = completedDays,
-                startDate = startDate,
-                completedDateMap = completedDateMap,
+                globalWorkoutLogs = globalWorkoutLogs,
                 onViewHistory = onOpenHistory,
+                onEditGoal = onOpenChangeGoal,
                 onToggleDay = { weekIndex ->
                     val today = LocalDate.now()
                     val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
@@ -594,9 +595,7 @@ fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
 @Composable
 fun WeeklyGoalSection(
     weeklyGoal: Int = 3,
-    completedDays: Set<Int> = emptySet(),
-    completedDateMap: Map<LocalDate, Int> = emptyMap(),
-    startDate: LocalDate? = null,
+    globalWorkoutLogs: List<WorkoutLogEntry> = emptyList(),
     onViewHistory: () -> Unit = {},
     onEditGoal: () -> Unit = {},
     onToggleDay: (Int) -> Unit = {}
@@ -604,8 +603,14 @@ fun WeeklyGoalSection(
     val today = LocalDate.now()
     val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
     val startOfWeek = today.minusDays(todayIndex.toLong())
+    val endOfWeek = startOfWeek.plusDays(6)
 
-    val completedCount = completedDays.size
+    val weekLogs = globalWorkoutLogs.filter {
+        val d = LocalDate.ofEpochDay(it.dateEpochDay)
+        !d.isBefore(startOfWeek) && !d.isAfter(endOfWeek)
+    }
+    val completedCount = weekLogs.distinctBy { it.dateEpochDay }.size
+    val completedDateSetGlobal = globalWorkoutLogs.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
 
     var todayOffsetX by remember { mutableStateOf(0f) }
     var rowWidth by remember { mutableStateOf(0f) }
@@ -676,7 +681,7 @@ fun WeeklyGoalSection(
                     val isToday = i == todayIndex
                     val isPast = i < todayIndex
 
-                    val isCompleted = date in completedDateMap
+                    val isCompleted = date in completedDateSetGlobal
 
                     val bgColor = when {
                         isCompleted -> MaterialTheme.colorScheme.primary

@@ -10,6 +10,7 @@ import com.example.fitflow.domain.getBmiCategory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.example.fitflow.data.model.WorkoutExercise
+import com.example.fitflow.data.model.WorkoutLogEntry
 import java.time.LocalDate
 
 class UserPreferences(context: Context) {
@@ -80,6 +81,7 @@ class UserPreferences(context: Context) {
         const val KEY_HYBRID_GIF_CACHE_SIGNATURE = "hybrid_gif_cache_signature"
         // Format: "dayNumber:epochMillis,dayNumber:epochMillis,..."
         const val KEY_WORKOUT_TIMESTAMPS = "workout_timestamps"
+        const val KEY_GLOBAL_WORKOUT_LOGS = "global_workout_logs"
 
         const val HISTORY_MAX_DAYS = 90
     }
@@ -511,5 +513,22 @@ class UserPreferences(context: Context) {
                 day to millis
             } else null
         }.toMap()
+    }
+
+    fun getGlobalWorkoutLogs(): List<WorkoutLogEntry> {
+        val raw = prefs.getString(KEY_GLOBAL_WORKOUT_LOGS, "") ?: return emptyList()
+        if (raw.isBlank()) return emptyList()
+        val type = object : TypeToken<List<WorkoutLogEntry>>() {}.type
+        return try {
+            gson.fromJson(raw, type)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun addGlobalWorkoutLog(entry: WorkoutLogEntry) {
+        val current = getGlobalWorkoutLogs().toMutableList()
+        current.add(entry)
+        prefs.edit().putString(KEY_GLOBAL_WORKOUT_LOGS, gson.toJson(current)).apply()
     }
 }
