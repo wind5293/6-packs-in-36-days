@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <!-- ── WATER ROW ── -->
+    <LinearLayout
+        android:id="@+id/row_water"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_droplet"
+            android:tint="#378ADD" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Nước uống"
+            android:textSize="12sp"
+            android:textColor="#80ffffff" />
+
+        <TextView
+            android:id="@+id/tv_water"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 / 2000 ml"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#378ADD" />
+
+        <ImageView
+            android:id="@+id/ic_water_chevron"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/ic_chevron_down"
+            android:tint="#55ffffff" />
+    </LinearLayout>
+
+    <!-- ── WATER EXPAND ── -->
+    <LinearLayout
+        android:id="@+id/layout_water_expand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/progress_water"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="6dp"
+            android:max="2000"
+            android:progress="0"
+            android:progressTint="#378ADD"
+            android:progressBackgroundTint="#22ffffff" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btn_minus"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="−"
+                android:textSize="16sp"
+                android:padding="0dp"
+                android:backgroundTint="#22378ADD" />
+
+            <TextView
+                android:id="@+id/tv_ml_input"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="250 ml"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#ffffff" />
+
+            <Button
+                android:id="@+id/btn_plus"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="+"
+                android:textSize="16sp"
+                android:padding="0dp"
+                android:backgroundTint="#22378ADD" />
+
+            <Button
+                android:id="@+id/btn_add_water"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:text="+ Thêm"
+                android:textSize="11sp"
+                android:backgroundTint="#378ADD" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ── DIVIDER ── -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="#18ffffff"
+        android:text="" />
+
+    <!-- ── CHALLENGE ROW ── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_challenge_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FULL BODY HIIT"
+                android:textSize="9sp"
+                android:textColor="#44ffffff"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:id="@+id/tv_challenge_day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Day 1"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#ffffff" />
+        </LinearLayout>
+
+        <!-- Status badge -->
+        <LinearLayout
+            android:id="@+id/layout_status"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:background="@drawable/badge_bg_orange">
+
+            <ImageView
+                android:id="@+id/ic_status"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/ic_run" />
+
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:text="Chưa tập"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#f5651a" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ── PROGRESS BAR ── -->
+    <ProgressBar
+        android:id="@+id/progress_challenge"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_marginTop="6dp"
+        android:max="26"
+        android:progress="0"
+        android:progressTint="#f5651a"
+        android:progressBackgroundTint="#18ffffff" />
+
+    <TextView
+        android:id="@+id/tv_challenge_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:text="0 / 26 ngày"
+        android:textSize="10sp"
+        android:textColor="#44ffffff" />
+
+</LinearLayout>
