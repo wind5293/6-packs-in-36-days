@@ -234,9 +234,9 @@ fun WorkoutSessionScreen(
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                .fillMaxSize()
+                .background(if (phase == SessionPhase.RESTING) primaryColor else bgColor)
+                .padding(top = 16.dp)
         ) {
             for (i in 0 until totalSteps) {
                 Box(

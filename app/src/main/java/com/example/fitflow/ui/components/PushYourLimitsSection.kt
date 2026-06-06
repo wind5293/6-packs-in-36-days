@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.fitflow.data.model.SupplementaryWorkout
@@ -35,8 +36,16 @@ fun PushYourLimitsSection(
             text = "Push Your Limits",
             color = MaterialTheme.colorScheme.onBackground,
             fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Black,
             letterSpacing = 0.5.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "MUSCLE TARGET",
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 2.sp
         )
         Spacer(modifier = Modifier.height(14.dp))
         LazyRow(
@@ -53,9 +62,19 @@ fun PushYourLimitsSection(
     }
 }
 
-@Composable
 private fun cardMetaText(workout: SupplementaryWorkout): String {
     return "${workout.difficulty} • ${workout.durationMinutes} Min"
+}
+
+private fun focusMuscleTags(workout: SupplementaryWorkout): List<String> {
+    return when (workout.muscleGroup.lowercase(Locale.ROOT)) {
+        "core" -> listOf("Abs", "Oblique", "Lower Core")
+        "upper push" -> listOf("Chest", "Shoulder", "Triceps")
+        "lower body" -> listOf("Quads", "Glutes", "Hamstrings")
+        "back" -> listOf("Lats", "Mid Back", "Rear Delt")
+        "full body" -> listOf("Core", "Upper", "Lower")
+        else -> listOf(workout.muscleGroup)
+    }
 }
 
 @Composable
@@ -72,7 +91,7 @@ private fun PushYourLimitsCard(
             .width(300.dp)
             .height(160.dp)
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
@@ -137,8 +156,7 @@ private fun PushYourLimitsCard(
                 }
             }
 
-            // Content on the left
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 140.dp),

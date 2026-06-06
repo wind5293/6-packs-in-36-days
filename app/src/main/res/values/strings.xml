@@ -50,6 +50,15 @@
     <string name="dashboard_quote_default">Your fitness goals are calling - time to answer!</string>
     <string name="dashboard_unit_steps">steps</string>
     <string name="dashboard_unit_ml">ml</string>
+    <string name="dashboard_library_knowledge">EXERCISE KNOWLEDGE</string>
+    <string name="dashboard_library_title">LIBRARY</string>
+    <string name="dashboard_library_view_all">VIEW ALL</string>
+    <string name="dashboard_library_search_placeholder">Find exercise...</string>
+    <string name="dashboard_library_filter_category">CATEGORY</string>
+    <string name="dashboard_library_filter_difficulty">DIFFICULTY</string>
+    <string name="dashboard_library_filter_muscle">MUSCLE</string>
+    <string name="dashboard_library_results_count">%1$d exercises found</string>
+    <string name="dashboard_library_empty_state">No exercises match this search yet. Try a different keyword or switch back to ALL.</string>
 
     <string name="common_settings">Settings</string>
     <string name="common_save">SAVE</string>
