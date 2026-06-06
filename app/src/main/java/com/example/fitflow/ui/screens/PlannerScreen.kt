@@ -14,10 +14,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.LocalCafe
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,11 +48,69 @@ fun PlannerScreen(
     completedDays: Set<Int> = emptySet(),
     currentDay: Int = -1, // Ignored, we calculate it ourselves to include rest days
     onDayClick: (Int, Boolean) -> Unit = { _, _ -> },
-    onOpenSettings: () -> Unit = {}
+    onOpenSettings: () -> Unit = {},
+    onResetPlan: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val userViewModel: UserViewModel = viewModel(context as ComponentActivity)
     val userProfile by userViewModel.userProfile.collectAsState()
+
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    // Reset confirmation dialog
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(20.dp),
+            title = {
+                Text(
+                    "Reset toàn bộ tiến trình?",
+                    fontWeight = FontWeight.Black,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            },
+            text = {
+                Text(
+                    "Toàn bộ ngày đã tập của kế hoạch này sẽ bị xoá và bạn sẽ bắt đầu lại từ Day 1.\n\nHành động này không thể hoàn tác.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
+                    lineHeight = 20.sp
+                )
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showResetDialog = false },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        "Huỷ",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showResetDialog = false
+                        onResetPlan()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        "Reset",
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                }
+            }
+        )
+    }
 
     // Tự tính currentDay thực sự (ngày đầu tiên chưa hoàn thành)
     val realCurrentDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }?.dayNumber ?: -1
@@ -179,6 +241,56 @@ fun PlannerScreen(
                     isCurrent = isCurrent,
                     onClick = { onDayClick(dayPlan.dayNumber, dayPlan.isRest) },
                     onRestClick = { userViewModel.markDayComplete(dayPlan.dayNumber) }
+                )
+            }
+        }
+
+        // ─── Reset Plan button ───────────────────────────────────────────────
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 24.dp, bottom = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Divider(
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
+                    thickness = 1.dp
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                OutlinedButton(
+                    onClick = { showResetDialog = true },
+                    shape = RoundedCornerShape(16.dp),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        width = 1.dp,
+                        brush = androidx.compose.ui.graphics.SolidColor(
+                            MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                        )
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "RESET PLAN",
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Toàn bộ tiến trình của kế hoạch này sẽ được đặt lại về Day 1",
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

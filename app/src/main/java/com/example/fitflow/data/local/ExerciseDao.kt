@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.fitflow.data.model.Exercise
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -36,7 +35,7 @@ interface ExerciseDao {
 
     @Query("SELECT local_gifs FROM exercises WHERE name = :name LIMIT 1")
     suspend fun getGifsByName(name: String): String?
-  
+
     @Query("SELECT * FROM exercises WHERE name = :name COLLATE NOCASE LIMIT 1")
     suspend fun getByNameIgnoreCase(name: String): ExerciseEntity?
 }
