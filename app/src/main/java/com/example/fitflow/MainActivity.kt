@@ -1,5 +1,8 @@
 package com.example.fitflow
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.content.pm.PackageManager
@@ -59,6 +62,7 @@ import java.time.LocalDate
 import androidx.compose.runtime.LaunchedEffect
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
+import com.example.fitflow.notification.FitnessNotificationService
 import com.example.fitflow.viewmodel.LibraryViewModel
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +70,9 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         Log.d("FitFlowDebug", "Notification permission granted: $isGranted")
+        if (isGranted) {
+            startFitnessService()
+        }
     }
 
     private val requestActivityRecognitionPermissionLauncher = registerForActivityResult(
@@ -80,8 +87,31 @@ class MainActivity : ComponentActivity() {
 
     private var uiViewModel: UserViewModel? = null
 
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                FitnessNotificationService.CHANNEL_ID,
+                "Fitness Status",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Trạng thái tập luyện và nước uống"
+                setShowBadge(false)
+            }
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun startFitnessService() {
+        ContextCompat.startForegroundService(
+            this,
+            Intent(this, FitnessNotificationService::class.java)
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel()
         val app = application as FitFlowApplication
         val viewModel: UserViewModel by viewModels {
             UserViewModelFactory(app.userPreferences, app.exerciseRepository, PlanRepository(applicationContext))
@@ -92,6 +122,8 @@ class MainActivity : ComponentActivity() {
         val startDestination = if (app.userPreferences.isOnboarded()) "dashboard" else "onboarding"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            startFitnessService()
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -121,6 +153,7 @@ class MainActivity : ComponentActivity() {
                         val hideNav = currentRoute == "onboarding"
                                 || currentRoute == "workout_setup"
                                 || currentRoute == "loading"
+                                || currentRoute == "update_goal"
                                 || (currentRoute.startsWith("day_detail"))
                                 || (currentRoute.startsWith("workout_session"))
                                 || (currentRoute.startsWith("workout_completed"))
@@ -183,30 +216,29 @@ class MainActivity : ComponentActivity() {
                             val libraryFilterState by libraryViewModel.filterState.collectAsState()
                             val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
                             val libraryCategories by libraryViewModel.categories.collectAsState()
-                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
 
                             LaunchedEffect(workoutPlan, completedDays, todayHealthMetrics) {
                                 val nextDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }
 
                                 if (nextDay != null) {
-                                    FitnessNotificationService.currentDay    = nextDay.dayNumber
-                                    FitnessNotificationService.totalDays     = workoutPlan.size
+                                    FitnessNotificationService.currentDay = nextDay.dayNumber
+                                    FitnessNotificationService.totalDays = workoutPlan.size
                                     FitnessNotificationService.challengeName = nextDay.title
                                     FitnessNotificationService.challengeState = when {
-                                        nextDay.isRest                       -> "rest"
-                                        nextDay.dayNumber in completedDays   -> "done"
-                                        else                                 -> "todo"
+                                        nextDay.isRest -> "rest"
+                                        nextDay.dayNumber in completedDays -> "done"
+                                        else -> "todo"
                                     }
                                 }
 
                                 FitnessNotificationService.waterCurrent = todayHealthMetrics.waterIntakeMl
-                                FitnessNotificationService.waterGoal    = todayHealthMetrics.waterGoalMl
+                                FitnessNotificationService.waterGoal = todayHealthMetrics.waterGoalMl
                                 FitnessNotificationService.refresh(this@MainActivity)
                             }
+
                             DashboardScreen(
                                 completedDays = completedDays,
                                 completedDateMap = completedDateMap,
-                                globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
@@ -220,7 +252,13 @@ class MainActivity : ComponentActivity() {
                                         requestActivityRecognitionPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
                                     }
                                 },
-                                onAddWater = { amount -> viewModel.addWater(amount) },
+                                onAddWater = { amount ->
+                                    viewModel.addWater(amount)
+                                    FitnessNotificationService.waterCurrent =
+                                        (FitnessNotificationService.waterCurrent + amount)
+                                            .coerceAtMost(FitnessNotificationService.waterGoal)
+                                    FitnessNotificationService.refresh(this@MainActivity)
+                                },
                                 onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
                                 onSetStepGoal = { goal -> viewModel.setStepGoal(goal) },
                                 onStartWorkout = {
@@ -247,6 +285,9 @@ class MainActivity : ComponentActivity() {
                                 onOpenHistory = {
                                     navController.navigate("history")
                                 },
+                                onOpenChangeGoal = {
+                                    navController.navigate("update_goal")
+                                },
                                 libraryFilterState = libraryFilterState,
                                 libraryExercises = libraryExercises,
                                 libraryCategories = libraryCategories,
@@ -262,9 +303,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("history") {
-                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
+                            val completedDays by viewModel.completedDays.collectAsState()
+                            val completedDateMap by viewModel.completedDateMap.collectAsState()
+                            val workoutTimestamps by viewModel.workoutTimestamps.collectAsState()
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
                             WorkoutHistoryScreen(
-                                globalWorkoutLogs = globalWorkoutLogs,
+                                completedDays = completedDays,
+                                completedDateMap = completedDateMap,
+                                workoutTimestamps = workoutTimestamps,
+                                workoutPlan = workoutPlan,
                                 onBack = { navController.popBackStack() }
                             )
                         }
@@ -293,7 +340,8 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("day_detail/$dayNumber")
                                     }
                                 },
-                                onOpenSettings = { navController.navigate("workout_settings") }
+                                onOpenSettings = { navController.navigate("workout_settings") },
+                                onResetPlan = { viewModel.resetPlan() }
                             )
                         }
                         composable(
@@ -450,6 +498,24 @@ class MainActivity : ComponentActivity() {
                                     viewModel.retryPlanProvisioning(applicationContext)
                                 }
                             )
+                        }
+                        composable("update_goal") {
+                            val userProfile by viewModel.userProfile.collectAsState()
+                            if (userProfile != null) {
+                                com.example.fitflow.ui.screens.UpdateGoalScreen(
+                                    currentGoal = userProfile!!.goal,
+                                    onBack = { navController.popBackStack() },
+                                    onComplete = { goal, resetProgress ->
+                                        if (resetProgress) {
+                                            viewModel.clearProgressForGoal(goal)
+                                        }
+                                        viewModel.startPlanProvisioning(applicationContext, goal)
+                                        navController.navigate("loading") {
+                                            popUpTo("update_goal") { inclusive = true }
+                                        }
+                                    }
+                                )
+                            }
                         }
                         composable("workout_setup") {
                             WorkoutSetupScreen(onComplete = { goal ->
