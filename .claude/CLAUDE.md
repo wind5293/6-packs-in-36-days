@@ -622,6 +622,41 @@ Dự án sử dụng hệ thống multi-agent trong `.claude/agents/`:
 
 ## Changelog
 
+### 2026-06-06 — Remote Sync Batch #62 -> #73 (commits 5fd0c71 -> 008a52f)
+
+#### 1) Supplementary workout foundation + Planner refactor (`5fd0c71`, `7da3db1`, `bb58c84`, `fd21fda`)
+- Refactor UI `PlannerScreen` theo hướng rõ trạng thái ngày tập và luồng điều hướng tốt hơn.
+- Thêm model `SupplementaryWorkout` và catalog `PushYourLimitsCatalog` làm data source cho bài tập bổ sung.
+- Thêm `PushYourLimitsSection` để hiển thị nhóm bài tập bổ sung ngay trong flow chính.
+- Cập nhật điều hướng/hiển thị ở `MainActivity`, `WorkoutDayDetailScreen`, `ProfileScreen`, `WorkoutSettingsScreen`, `EditPlanScreen` để đồng bộ luồng mới.
+
+#### 2) Workout Completed flow + i18n onboarding + hygiene (`6f1b0cf`, `cb6161d`, `3c0033d`, `1ddcbb7`, `6563837`; label polish in `1cd4ab8`, `7e83e60`)
+- Tích hợp màn `WorkoutCompletedScreen` vào `NavHost` và finish-flow từ `WorkoutSessionScreen`.
+- Chuẩn hóa label calories trên màn tổng kết buổi tập (`1cd4ab8`, `7e83e60`).
+- Migrate thêm text hiển thị sang `strings.xml`, đặc biệt cho onboarding/planner/workout status.
+- Cập nhật `OnboardingScreen` theo hướng UX rõ ràng hơn (localize + tuning semantics nhập liệu).
+- Dọn file log lỗi IDE cũ trong `.kotlin/errors/*` và giữ repo sạch hơn.
+
+#### 3) Dashboard/Day flow fixes + supplementary plan tuning (`66509d8`, `901e6aa`, `bad638e`, `8c0f12c`, `7504c0f`, `9684310`)
+- `DashboardScreen` bổ sung daily challenge/quote và fix chạy ổn định composable quote.
+- Gỡ callback settings thừa ở `ProfileScreen` để tránh điều hướng sai.
+- Bổ sung `SummaryDayWorkout` trong Weekly Goal và hoàn thiện logic Day Calculate.
+- Nâng cấp data/section Push Your Limits và đồng bộ persistence liên quan trong `UserPreferences`.
+
+#### 4) Workout detail navigation polish (`7be84d8`, `acebba0`) + rest-day flow consolidated in `2f721b7`
+- Hoàn thiện các thành phần UI điều hướng giữa planner -> day detail -> session -> completed/summary.
+- Luồng route/màn `RestDayDetailScreen` được chốt trong commit `2f721b7` (không thuộc hoàn toàn `7be84d8`/`acebba0`).
+- `MainActivity` bổ sung route `workout_settings?inSession={inSession}` và điều hướng từ workout session sang settings với cờ `inSession=true` (`7be84d8`).
+- Đồng bộ tương tác giữa `PlannerScreen`, `WorkoutDayDetailScreen`, `WorkoutSessionScreen`, `WorkoutCompletedScreen`, `DayWorkoutSummaryScreen`.
+
+#### 5) Workout history feature rollout (`965dc07`, `314f09b`)
+- Thêm mới `WorkoutHistoryScreen`.
+- Hoàn thiện flow lịch sử tập từ data (`UserPreferences`, `UserViewModel`) tới điểm vào UI (`DashboardScreen`) và route trong `MainActivity`.
+
+#### 6) Functional consolidation commit (`2f721b7`) + merge timeline
+- Commit `2f721b7` là commit hợp nhất chức năng (không phải merge commit), bao gồm cập nhật lớn ở `MainActivity`, `DashboardScreen`, `PlannerScreen`, `ProfileScreen`, `WorkoutDayDetailScreen`, `WorkoutSessionScreen`, `UserPreferences`, `UserViewModel` và thêm mới `RestDayDetailScreen`.
+- Các nhánh/PR đã được merge vào `main`: #62, #63, #64, #66, #67, #68, #69, #70, #71, #72, #73.
+
 ### 2026-06-04 — Remote Sync Batch #49 -> #61 (commits 461ea64 -> 7fda846)
 
 #### 1) Plan provisioning + asset-driven plan generation (`f137ec9`, `6b50baa`, `6f67de4`, `8f57dbb`, `d78f6fe`)

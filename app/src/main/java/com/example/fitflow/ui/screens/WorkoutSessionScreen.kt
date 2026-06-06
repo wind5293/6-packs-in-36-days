@@ -226,7 +226,7 @@
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(if (phase == SessionPhase.RESTING) primaryColor else bgColor)
+                .background(if (phase == SessionPhase.RESTING) primaryColor else primaryColor)
                 .padding(top = 16.dp)
         ) {
             val totalSteps = (exercises.size * 2 - 1).coerceAtLeast(0)
