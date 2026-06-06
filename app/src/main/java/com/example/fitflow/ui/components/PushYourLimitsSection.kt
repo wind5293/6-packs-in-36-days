@@ -17,11 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.fitflow.data.model.SupplementaryWorkout
-import java.util.Locale
+import com.example.fitflow.domain.PushYourLimitsCatalog
 
 @Composable
 fun PushYourLimitsSection(
@@ -80,129 +82,145 @@ private fun PushYourLimitsCard(
     workout: SupplementaryWorkout,
     onClick: () -> Unit
 ) {
-    val shape = RoundedCornerShape(24.dp)
-    val tags = focusMuscleTags(workout)
-
+    val shape = RoundedCornerShape(20.dp)
     Card(
         onClick = onClick,
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         modifier = Modifier
-            .widthIn(min = 288.dp, max = 332.dp)
-            .heightIn(min = 186.dp)
+            .width(300.dp)
+            .height(160.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(
-                            workout.gradientStart,
-                            workout.gradientEnd
-                        )
-                    )
+                .then(
+                    if (workout.isFullBackground) Modifier.background(workout.gradientStart)
+                    else Modifier.background(Brush.horizontalGradient(listOf(workout.gradientStart, workout.gradientEnd)))
                 )
-                .padding(14.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(0.62f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "FOCUS: ${workout.muscleGroup.uppercase(Locale.ROOT)}",
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.5.sp
+            // Background Image
+            if (workout.imageRes != null) {
+                if (workout.isFullBackground) {
+                    Image(
+                        painter = painterResource(id = workout.imageRes),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .offset(x = workout.imageOffsetDp.dp)
+                            .then(
+                                if (workout.mirrorImage) Modifier.graphicsLayer(scaleX = -1f) 
+                                else Modifier
+                            )
                     )
-                    Text(
-                        text = workout.title,
-                        color = Color.White,
-                        fontSize = 17.sp,
-                        lineHeight = 21.sp,
-                        fontWeight = FontWeight.Black,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = workout.subtitle,
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        tags.take(2).forEach { tag ->
-                            Surface(
-                                shape = RoundedCornerShape(999.dp),
-                                color = Color.White.copy(alpha = 0.22f)
-                            ) {
-                                Text(
-                                    text = tag,
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    // Gradient overlay to fade left side into the background
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.horizontalGradient(
+                                    0.0f to workout.gradientStart,
+                                    0.55f to workout.gradientStart,
+                                    1.0f to workout.gradientEnd
                                 )
-                            }
-                        }
-                    }
-                    Text(
-                        text = cardMetaText(workout),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                            )
                     )
+                } else {
+                    // Anatomy style image on the right
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(140.dp)
+                            .align(Alignment.CenterEnd)
+                    ) {
+                        Image(
+                            painter = painterResource(id = workout.imageRes),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        // Subtle gradient to blend the left edge of the image
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(workout.gradientStart.copy(alpha = 0.5f), Color.Transparent),
+                                        startX = 0f,
+                                        endX = 100f
+                                    )
+                                )
+                        )
+                    }
                 }
             }
 
             Box(
                 modifier = Modifier
-                    .weight(0.38f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(Color.Black.copy(alpha = 0.18f)),
-                contentAlignment = Alignment.BottomCenter
+                    .fillMaxSize()
+                    .padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 140.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                if (workout.imageRes != null) {
-                    Image(
-                        painter = painterResource(id = workout.imageRes),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                Column {
+                    Text(
+                        text = workout.title,
+                        color = workout.textColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 24.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = cardMetaText(workout),
+                        color = workout.textColor.copy(alpha = 0.85f),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
 
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .background(Color.Black.copy(alpha = 0.38f))
-//                        .padding(horizontal = 8.dp, vertical = 6.dp),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    Text(
-//                        text = workout.muscleGroup,
-//                        color = Color.White,
-//                        fontSize = 11.sp,
-//                        fontWeight = FontWeight.Bold,
-//                        textAlign = TextAlign.Center,
-//                        maxLines = 1,
-//                        modifier = Modifier.fillMaxWidth(),
-//                        overflow = TextOverflow.Ellipsis
-//                    )
-//                }
+                Button(
+                    onClick = onClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = workout.buttonBgColor,
+                        contentColor = workout.buttonTextColor
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(
+                        text = "START",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewPushYourLimitsCardFull() {
+    val sampleWorkout = PushYourLimitsCatalog.findById("upper_push")
+    if (sampleWorkout != null) {
+        Box(modifier = Modifier.padding(16.dp)) {
+            PushYourLimitsCard(workout = sampleWorkout, onClick = {})
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewPushYourLimitsCardAnatomy() {
+    val sampleWorkout = PushYourLimitsCatalog.findById("core_abs")
+    if (sampleWorkout != null) {
+        Box(modifier = Modifier.padding(16.dp)) {
+            PushYourLimitsCard(workout = sampleWorkout, onClick = {})
         }
     }
 }

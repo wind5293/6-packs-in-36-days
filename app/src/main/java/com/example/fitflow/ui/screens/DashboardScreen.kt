@@ -52,6 +52,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.composables.icons.lucide.Eye
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
 import com.composables.icons.lucide.Lucide
@@ -632,37 +633,23 @@ fun WeeklyGoalSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.dashboard_weekly_goal),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    IconButton(
-                        onClick = onViewHistory,
-                        modifier = Modifier.size(20.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Visibility,
-                            contentDescription = "View History",
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
                 Text(
-                    stringResource(R.string.dashboard_weekly_goal_progress, completedCount, weeklyGoal),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (completedCount >= weeklyGoal)
-                        MaterialTheme.colorScheme.secondary
-                    else
-                        MaterialTheme.colorScheme.primary
+                    stringResource(R.string.dashboard_weekly_goal),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
+                IconButton(
+                    onClick = onViewHistory,
+                    modifier = Modifier.size(20.dp)
+                ) {
+                    Icon(
+                        Lucide.Eye,
+                        contentDescription = "View History",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
