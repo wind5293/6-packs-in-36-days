@@ -211,6 +211,7 @@ class MainActivity : ComponentActivity() {
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
 
                             LaunchedEffect(workoutPlan, completedDays, todayHealthMetrics) {
                                 val nextDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }
@@ -230,10 +231,10 @@ class MainActivity : ComponentActivity() {
                                 FitnessNotificationService.waterGoal    = todayHealthMetrics.waterGoalMl
                                 FitnessNotificationService.refresh(this@MainActivity)
                             }
-
                             DashboardScreen(
                                 completedDays = completedDays,
                                 completedDateMap = completedDateMap,
+                                globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
@@ -286,15 +287,9 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("history") {
-                            val completedDays by viewModel.completedDays.collectAsState()
-                            val completedDateMap by viewModel.completedDateMap.collectAsState()
-                            val workoutTimestamps by viewModel.workoutTimestamps.collectAsState()
-                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             WorkoutHistoryScreen(
-                                completedDays = completedDays,
-                                completedDateMap = completedDateMap,
-                                workoutTimestamps = workoutTimestamps,
-                                workoutPlan = workoutPlan,
+                                globalWorkoutLogs = globalWorkoutLogs,
                                 onBack = { navController.popBackStack() }
                             )
                         }
