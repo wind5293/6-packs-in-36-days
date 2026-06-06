@@ -51,22 +51,68 @@ class ExerciseRepository(context: Context) {
 
     suspend fun getByName(name: String): Exercise? = dao.getByName(name)?.toExercise()
 
-    suspend fun getGifFileName(name: String): String? =
-        dao.getByName(name)?.local_gifs?.firstOrNull()
+    companion object {
+        private var allExercisesCache: List<Exercise>? = null
+        private val matchCache = mutableMapOf<String, Exercise?>()
+    }
 
+    suspend fun getGifFileName(name: String): String? =
+        findBestMatchByName(name)?.local_gifs?.firstOrNull()
 
     suspend fun findBestMatchByName(name: String): Exercise? {
-        dao.getByName(name)?.let {
-            return it.toExercise()
-        }
-        dao.getByNameIgnoreCase(name)?.let {
-            return it.toExercise()
+        if (matchCache.containsKey(name)) {
+            return matchCache[name]
         }
 
-        val normalizedTarget = normalizeName(name)
-        return getAll().first().firstOrNull { exercise ->
-            normalizeName(exercise.name) == normalizedTarget
+        var result: Exercise? = null
+        dao.getByName(name)?.let { result = it.toExercise() }
+        if (result == null) {
+            dao.getByNameIgnoreCase(name)?.let { result = it.toExercise() }
         }
+
+        if (result == null) {
+            val normalizedTarget = normalizeName(name)
+            val allExercises = allExercisesCache ?: getAll().first().also { allExercisesCache = it }
+
+            result = allExercises.firstOrNull { normalizeName(it.name) == normalizedTarget }
+
+            if (result == null) {
+                val targetWords = name.lowercase().split(Regex("[^a-z0-9]+")).filter { it.length > 2 }.toSet()
+                if (targetWords.isNotEmpty()) {
+                    var bestMatch: Exercise? = null
+                    var maxScore = 0
+                    
+                    for (exercise in allExercises) {
+                        val exWords = exercise.name.lowercase().split(Regex("[^a-z0-9]+")).filter { it.length > 2 }.toSet()
+                        val intersect = targetWords.intersect(exWords).size
+                        
+                        if (intersect > maxScore) {
+                            maxScore = intersect
+                            bestMatch = exercise
+                        } else if (intersect > 0 && intersect == maxScore && bestMatch != null) {
+                            // Tie-breaker: pick the one with the shorter name
+                            if (exercise.name.length < bestMatch.name.length) {
+                                bestMatch = exercise
+                            }
+                        }
+                    }
+                    if (maxScore > 0 && bestMatch != null) {
+                        result = bestMatch
+                    }
+                }
+            }
+            
+            // Substring match
+            if (result == null) {
+                result = allExercises.firstOrNull { 
+                    val normEx = normalizeName(it.name)
+                    normEx.contains(normalizedTarget) || normalizedTarget.contains(normEx)
+                }
+            }
+        }
+
+        matchCache[name] = result
+        return result
     }
 
     private fun normalizeName(value: String): String {
