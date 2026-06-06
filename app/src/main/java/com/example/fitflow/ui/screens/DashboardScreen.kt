@@ -96,9 +96,9 @@ fun DashboardScreen(
     onOpenChangeGoal: () -> Unit = {},
     libraryFilterState: LibraryFilterState = LibraryFilterState(),
     libraryExercises: List<Exercise> = emptyList(),
-    libraryCategories: List<String> = listOf("ALL"),
+    libraryMuscleGroups: List<String> = listOf("ALL"),
     onLibrarySearchQueryChange: (String) -> Unit = {},
-    onLibraryCategoryChange: (String) -> Unit = {},
+    onLibraryMuscleGroupChange: (String) -> Unit = {},
     onOpenLibrary: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
@@ -175,9 +175,9 @@ fun DashboardScreen(
             DashboardLibrarySection(
                 filterState = libraryFilterState,
                 filteredExercises = libraryExercises,
-                categories = libraryCategories,
+                muscleGroups = libraryMuscleGroups,
                 onSearchQueryChange = onLibrarySearchQueryChange,
-                onCategoryChange = onLibraryCategoryChange,
+                onMuscleGroupChange = onLibraryMuscleGroupChange,
                 onViewAll = onOpenLibrary
             )
         }
@@ -188,9 +188,9 @@ fun DashboardScreen(
 private fun DashboardLibrarySection(
     filterState: LibraryFilterState,
     filteredExercises: List<Exercise>,
-    categories: List<String>,
+    muscleGroups: List<String>,
     onSearchQueryChange: (String) -> Unit,
-    onCategoryChange: (String) -> Unit,
+    onMuscleGroupChange: (String) -> Unit,
     onViewAll: () -> Unit
 ) {
     val exercisePages = remember(filteredExercises) { filteredExercises.chunked(5) }
@@ -252,10 +252,10 @@ private fun DashboardLibrarySection(
             )
 
             LibraryFilterRow(
-                title = stringResource(R.string.dashboard_library_filter_category),
-                options = categories,
-                selected = filterState.category,
-                onSelect = onCategoryChange
+                title = stringResource(R.string.dashboard_library_filter_muscle),
+                options = muscleGroups,
+                selected = filterState.muscleGroup,
+                onSelect = onMuscleGroupChange
             )
 
             Text(

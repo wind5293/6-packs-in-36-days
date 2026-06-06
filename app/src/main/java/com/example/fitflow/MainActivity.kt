@@ -213,9 +213,10 @@ class MainActivity : ComponentActivity() {
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             val libraryFilterState by libraryViewModel.filterState.collectAsState()
                             val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
-                            val libraryCategories by libraryViewModel.categories.collectAsState()
+                            val libraryMuscleGroups by libraryViewModel.muscleGroups.collectAsState()
 
                             LaunchedEffect(workoutPlan, completedDays, todayHealthMetrics) {
                                 val nextDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }
@@ -239,6 +240,7 @@ class MainActivity : ComponentActivity() {
                             DashboardScreen(
                                 completedDays = completedDays,
                                 completedDateMap = completedDateMap,
+                                globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
@@ -290,9 +292,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 libraryFilterState = libraryFilterState,
                                 libraryExercises = libraryExercises,
-                                libraryCategories = libraryCategories,
+                                libraryMuscleGroups = libraryMuscleGroups,
                                 onLibrarySearchQueryChange = libraryViewModel::setSearchQuery,
-                                onLibraryCategoryChange = libraryViewModel::setCategory,
+                                onLibraryMuscleGroupChange = libraryViewModel::setMuscleGroup,
                                 onOpenLibrary = {
                                     navController.navigate("library") {
                                         popUpTo("dashboard") { saveState = true }
@@ -303,15 +305,9 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("history") {
-                            val completedDays by viewModel.completedDays.collectAsState()
-                            val completedDateMap by viewModel.completedDateMap.collectAsState()
-                            val workoutTimestamps by viewModel.workoutTimestamps.collectAsState()
-                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             WorkoutHistoryScreen(
-                                completedDays = completedDays,
-                                completedDateMap = completedDateMap,
-                                workoutTimestamps = workoutTimestamps,
-                                workoutPlan = workoutPlan,
+                                globalWorkoutLogs = globalWorkoutLogs,
                                 onBack = { navController.popBackStack() }
                             )
                         }
