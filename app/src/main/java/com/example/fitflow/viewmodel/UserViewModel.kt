@@ -434,8 +434,8 @@ class UserViewModel(
         _partialProgressMap.value = userPreferences.getPartialWorkoutProgressMap(goal)
     }
 
-    fun recordWeight(weight: Float) {
-        userPreferences.recordWeight(weight)
+    fun recordWeight(weight: Float, date: LocalDate = LocalDate.now()) {
+        userPreferences.recordWeight(weight, date)
         loadUserProfile()
     }
 

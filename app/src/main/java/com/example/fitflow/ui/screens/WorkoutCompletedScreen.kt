@@ -24,7 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.UserProfile
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
@@ -34,7 +36,7 @@ fun WorkoutCompletedScreen(
     dayPlan: DayPlan?,
     totalActiveSeconds: Int,
     userProfile: UserProfile?,
-    onSaveWeight: (Float) -> Unit = {},
+    onSaveWeight: (Float, LocalDate) -> Unit = { _, _ -> },
     onNext: () -> Unit
 ) {
     val totalExercises = dayPlan?.workoutExercises?.size ?: 0
@@ -301,9 +303,9 @@ fun WorkoutCompletedScreen(
         WeightPickerSheet(
             initialWeight = currentWeightKg,
             onDismiss = { showWeightSheet = false },
-            onSave = { newWeight ->
+            onSave = { newWeight, date ->
                 currentWeightKg = newWeight
-                onSaveWeight(newWeight)
+                onSaveWeight(newWeight, date)
                 showWeightSheet = false
             }
         )
@@ -424,20 +426,46 @@ fun BmiSlider(bmi: Float) {
 fun WeightPickerSheet(
     initialWeight: Float,
     onDismiss: () -> Unit,
-    onSave: (Float) -> Unit
+    onSave: (Float, LocalDate) -> Unit
 ) {
     var weightKg by remember { mutableStateOf(initialWeight) }
     var useKg by remember { mutableStateOf(true) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    // Hiển thị giá trị theo đơn vị đang chọn
     val displayValue = if (useKg) weightKg else weightKg * 2.20462f
     val displayUnit  = if (useKg) "kg" else "lbs"
 
-    // Drag accumulator để chuyển đổi pixel → kg
     var dragAccumulator by remember { mutableStateOf(0f) }
-    val kgPerPixel = 0.05f   // 1 pixel kéo = 0.05 kg (có thể chỉnh)
+    val kgPerPixel = 0.05f
 
-    val today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+    val formattedDate = selectedDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        selectedDate = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -466,10 +494,11 @@ fun WeightPickerSheet(
                 )
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.clickable { showDatePicker = true }
                 ) {
                     Text(
-                        text = today,
+                        text = formattedDate,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -617,7 +646,7 @@ fun WeightPickerSheet(
                     )
                 }
                 Button(
-                    onClick = { onSave(weightKg) },
+                    onClick = { onSave(weightKg, selectedDate) },
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),
@@ -626,7 +655,7 @@ fun WeightPickerSheet(
                     ),
                     shape = RoundedCornerShape(28.dp)
                 ) {
-                    Text("SAVE", fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("SAVE", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }

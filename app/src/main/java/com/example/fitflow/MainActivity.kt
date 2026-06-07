@@ -458,7 +458,7 @@ class MainActivity : ComponentActivity() {
                                 isActivityRecognitionGranted = activityGranted,
                                 isStepSensorEnabled = stepSensorEnabled,
                                 isStepTrackingActive = stepTrackingActive,
-                                onRecordWeight = { viewModel.recordWeight(it) },
+                                onRecordWeight = { weight, date -> viewModel.recordWeight(weight, date) },
                                 onReCalibrate = { navController.navigate("onboarding") },
                                 onUnlockStepSensor = {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -628,7 +628,7 @@ class MainActivity : ComponentActivity() {
                                 dayPlan = dayPlan,
                                 totalActiveSeconds = activeSeconds,
                                 userProfile = userProfile,
-                                onSaveWeight = { newWeight -> viewModel.recordWeight(newWeight) },
+                                onSaveWeight = { newWeight, date -> viewModel.recordWeight(newWeight, date) },
                                 onNext = {
                                     navController.navigate("dashboard") {
                                         popUpTo("dashboard") { inclusive = false }
@@ -790,7 +790,7 @@ class MainActivity : ComponentActivity() {
                                     dayPlan = dayPlan,
                                     totalActiveSeconds = activeSeconds,
                                     userProfile = userProfile,
-                                    onSaveWeight = { newWeight -> viewModel.recordWeight(newWeight) },
+                                    onSaveWeight = { newWeight, date -> viewModel.recordWeight(newWeight, date) },
                                     onNext = {
                                         navController.navigate("dashboard") {
                                             popUpTo("dashboard") { inclusive = false }

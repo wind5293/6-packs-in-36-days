@@ -1,5 +1,6 @@
 package com.example.fitflow.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +23,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,7 +57,7 @@ fun ProfileScreen(
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
     isStepTrackingActive: Boolean = false,
-    onRecordWeight: (Float) -> Unit = {},
+    onRecordWeight: (Float, LocalDate) -> Unit = { _, _ -> },
     onReCalibrate: () -> Unit = {},
     onUnlockStepSensor: () -> Unit = {},
     onAddWater: (Int) -> Unit = {},
@@ -442,9 +449,9 @@ fun ProfileScreen(
         WeightPickerSheet(
             initialWeight = currentWeightKg,
             onDismiss = { showWeightSheet = false },
-            onSave = { newWeight ->
+            onSave = { newWeight, date ->
                 currentWeightKg = newWeight
-                onRecordWeight(newWeight)
+                onRecordWeight(newWeight, date)
                 showWeightSheet = false
             }
         )
@@ -720,44 +727,135 @@ fun WeightHistoryMiniChart(
     history: List<Pair<LocalDate, Float>>,
     color: Color
 ) {
-    val points = history.takeLast(7)
-    val maxValue = points.maxOfOrNull { it.second } ?: 1f
-    val minValue = points.minOfOrNull { it.second } ?: 0f
-    val range = (maxValue - minValue).coerceAtLeast(0.5f)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(96.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        if (points.isEmpty()) {
+    val points = history
+    
+    if (points.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxWidth().height(160.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 "No weight records yet",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                 fontSize = 12.sp
             )
-        } else {
-            points.forEach { (date, value) ->
-                val ratio = ((value - minValue) / range).coerceIn(0f, 1f)
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom,
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(12.dp)
-                            .height((22.dp + 54.dp * ratio))
-                            .background(color.copy(alpha = 0.75f), RoundedCornerShape(5.dp))
+        }
+        return
+    }
+
+    val maxValue = points.maxOfOrNull { it.second } ?: 1f
+    val minValue = points.minOfOrNull { it.second } ?: 0f
+    
+    val range = (maxValue - minValue).coerceAtLeast(1f)
+    val yMax = maxValue + (range * 0.1f)
+    val yMin = (minValue - (range * 0.1f)).coerceAtLeast(0f)
+    val yRange = (yMax - yMin).coerceAtLeast(1f)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+            .padding(top = 16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(bottom = 24.dp, end = 12.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.End
+        ) {
+            Text(String.format("%.1f", yMax), fontSize = 10.sp, color = Color(0xFFAEB5C4), fontWeight = FontWeight.Medium)
+            Text(String.format("%.1f", (yMax + yMin) / 2), fontSize = 10.sp, color = Color(0xFFAEB5C4), fontWeight = FontWeight.Medium)
+            Text(String.format("%.1f", yMin), fontSize = 10.sp, color = Color(0xFFAEB5C4), fontWeight = FontWeight.Medium)
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                repeat(3) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f), thickness = 1.dp)
+                }
+            }
+
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 24.dp, start = 4.dp, end = 4.dp)
+            ) {
+                val width = size.width
+                val height = size.height
+                val stepX = if (points.size > 1) width / (points.size - 1) else width / 2
+                val startX = if (points.size == 1) width / 2 else 0f
+
+                val coordinates = points.mapIndexed { index, pair ->
+                    val value = pair.second
+                    val ratio = ((value - yMin) / yRange).coerceIn(0f, 1f)
+                    val x = startX + index * stepX
+                    val y = height - (ratio * height)
+                    Offset(x, y)
+                }
+
+                if (coordinates.size > 1) {
+                    val path = Path().apply {
+                        moveTo(coordinates.first().x, coordinates.first().y)
+                        for (i in 1 until coordinates.size) {
+                            lineTo(coordinates[i].x, coordinates[i].y)
+                        }
+                    }
+                    drawPath(
+                        path = path,
+                        color = color.copy(alpha = 0.7f),
+                        style = Stroke(
+                            width = 3.dp.toPx(),
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round
+                        )
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "${date.dayOfMonth}",
-                        fontSize = 9.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontWeight = FontWeight.Bold
+                }
+
+                coordinates.forEach { offset ->
+                    drawCircle(
+                        color = color,
+                        radius = 4.dp.toPx(),
+                        center = offset
+                    )
+                    drawCircle(
+                        color = Color(0xFF171A21),
+                        radius = 2.dp.toPx(),
+                        center = offset
+                    )
+                }
+
+                val paint = android.graphics.Paint().apply {
+                    this.color = android.graphics.Color.parseColor("#AEB5C4")
+                    this.textSize = 10.sp.toPx()
+                    this.textAlign = android.graphics.Paint.Align.CENTER
+                    this.isAntiAlias = true
+                }
+
+                val labelIndices = if (points.size <= 5) {
+                    points.indices.toList()
+                } else {
+                    listOf(0, points.size / 2, points.lastIndex)
+                }
+
+                labelIndices.forEach { index ->
+                    val x = startX + index * stepX
+                    val date = points[index].first
+                    val text = "${date.dayOfMonth}/${date.monthValue}"
+                    drawContext.canvas.nativeCanvas.drawText(
+                        text,
+                        x,
+                        height + 18.dp.toPx(),
+                        paint
                     )
                 }
             }
