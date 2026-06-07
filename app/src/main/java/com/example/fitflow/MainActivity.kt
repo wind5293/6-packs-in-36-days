@@ -462,13 +462,12 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable(
-                            route = "library",
-                            enterTransition = { EnterTransition.None },
-                            exitTransition = { ExitTransition.None },
-                            popEnterTransition = { EnterTransition.None },
-                            popExitTransition = { ExitTransition.None }
+                            route = "library"
                         ) {
-                            LibraryScreen(viewModel = libraryViewModel)
+                            LibraryScreen(
+                                viewModel = libraryViewModel,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
                         composable("loading") {
                             val provisioningState by viewModel.planProvisioningState.collectAsState()

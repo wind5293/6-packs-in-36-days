@@ -3,42 +3,55 @@ package com.example.fitflow.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.fitflow.FitFlowApplication
+//import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.ui.theme.FitflowTheme
+import com.example.fitflow.utils.GifUrlHelper
 import com.example.fitflow.viewmodel.LibraryViewModel
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import com.example.fitflow.data.model.Exercise
 
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = viewModel()
+    viewModel: LibraryViewModel = viewModel(),
+    onBack: () -> Unit = {}
 ) {
     val filterState by viewModel.filterState.collectAsState()
     val filteredExercises by viewModel.filteredExercises.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val difficulties by viewModel.difficulties.collectAsState()
     val muscleGroups by viewModel.muscleGroups.collectAsState()
+
+    var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
 
     Column(
         modifier = Modifier
@@ -54,37 +67,58 @@ fun LibraryScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
-                    "KNOWLEDGE",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 3.sp
-                )
-                Row {
-                    Text(
-                        "LIBRARY",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                            RoundedCornerShape(12.dp)
+                        )
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
+
+                Column {
+                    Text(
+                        "KNOWLEDGE",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 3.sp
+                    )
+                    Row {
+                        Text(
+                            "LIBRARY",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            fontStyle = FontStyle.Italic
+                        )
+                    }
+                }
             }
-            IconButton(
-                onClick = {},
-                modifier = Modifier.background(
-                    MaterialTheme.colorScheme.primary,
-                    RoundedCornerShape(16.dp)
-                )
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Add",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            }
+//            IconButton(
+//                onClick = {},
+//                modifier = Modifier.background(
+//                    MaterialTheme.colorScheme.primary,
+//                    RoundedCornerShape(16.dp)
+//                )
+//            ) {
+//                Icon(
+//                    Icons.Default.Add,
+//                    contentDescription = "Add",
+//                    tint = MaterialTheme.colorScheme.onPrimary
+//                )
+//            }
         }
 
         // Search TextField
@@ -194,9 +228,19 @@ fun LibraryScreen(
             }
 
             items(filteredExercises) { exercise ->
-                ExerciseListItem(exercise = exercise)
+                ExerciseListItem(
+                    exercise = exercise,
+                    onClick = { selectedExercise = exercise }
+                )
             }
         }
+    }
+
+    if (selectedExercise != null) {
+        LibraryExerciseInstructionOverlayScreen(
+            exercise = selectedExercise!!,
+            onClose = { selectedExercise = null }
+        )
     }
 }
 
@@ -260,73 +304,118 @@ fun ExerciseListItem(
     exercise: Exercise,
     onClick: () -> Unit = {}
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Thumbnail placeholder (sau này thay bằng GIF)
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    RoundedCornerShape(12.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                exercise.exercise_type.take(3).uppercase(),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        // Thông tin chính
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                exercise.name,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            val muscles = exercise.target_muscles
-                .filter { it != "Main" }
-                .take(2)
-                .joinToString(" · ")
-            Text(
-                muscles,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
-                maxLines = 1
-            )
-        }
-
-        // Difficulty badge
-        val badgeColor = when (exercise.difficulty) {
-            "beginner" -> MaterialTheme.colorScheme.secondary
-            "advanced" -> MaterialTheme.colorScheme.error
-            else -> MaterialTheme.colorScheme.primary
-        }
-        Text(
-            exercise.difficulty.replaceFirstChar { it.uppercase() },
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Black,
-            color = badgeColor,
-            modifier = Modifier
-                .background(badgeColor.copy(alpha = 0.1f), RoundedCornerShape(50))
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        )
+    val context = LocalContext.current
+    val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+    
+    val badgeColor = when (exercise.difficulty) {
+        "beginner" -> MaterialTheme.colorScheme.secondary
+        "advanced" -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.primary
     }
 
-    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Media Area
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            ) {
+                if (exercise.local_gifs.isNotEmpty()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(GifUrlHelper.getUrl(exercise.local_gifs.first()))
+                            .crossfade(true)
+                            .build(),
+                        imageLoader = imageLoader,
+                        contentDescription = exercise.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            exercise.exercise_type.take(3).uppercase(),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+                
+                // Gradient Overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.6f)
+                                )
+                            )
+                        )
+                )
+
+                // Difficulty badge on top-right
+                Text(
+                    text = exercise.difficulty.replaceFirstChar { it.uppercase() },
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    color = badgeColor,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(badgeColor.copy(alpha = 0.15f))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                )
+            }
+
+            // Info Area
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = exercise.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                val muscles = exercise.target_muscles
+                    .filter { it != "Main" }
+                    .take(3)
+                    .joinToString(" · ")
+                Text(
+                    text = muscles.ifBlank { exercise.exercise_type },
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    maxLines = 1
+                )
+            }
+        }
+    }
 }
 
 @Composable
