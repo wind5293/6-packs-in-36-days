@@ -15,6 +15,12 @@ data class SupplementaryWorkout(
     val gradientStart: Color,
     val gradientEnd: Color,
     val imageRes: Int? = null,
+    val isFullBackground: Boolean = false,
+    val mirrorImage: Boolean = true,
+    val imageOffsetDp: Int = 0,
+    val textColor: Color = Color.White,
+    val buttonBgColor: Color = Color.White,
+    val buttonTextColor: Color = Color(0xFF1A1A2E),
     val exercises: List<WorkoutExercise>
 ) {
     fun toDayPlan(): DayPlan = DayPlan(

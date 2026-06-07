@@ -63,6 +63,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.notification.FitnessNotificationService
+import com.example.fitflow.viewmodel.LibraryViewModel
 
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
@@ -116,6 +117,7 @@ class MainActivity : ComponentActivity() {
             UserViewModelFactory(app.userPreferences, app.exerciseRepository, PlanRepository(applicationContext))
         }
         val plannerViewModel: WorkoutPlannerViewModel by viewModels()
+        val libraryViewModel: LibraryViewModel by viewModels()
         uiViewModel = viewModel
         val startDestination = if (app.userPreferences.isOnboarded()) "dashboard" else "onboarding"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -212,25 +214,29 @@ class MainActivity : ComponentActivity() {
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
                             val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
+                            val libraryFilterState by libraryViewModel.filterState.collectAsState()
+                            val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
+                            val libraryMuscleGroups by libraryViewModel.muscleGroups.collectAsState()
 
                             LaunchedEffect(workoutPlan, completedDays, todayHealthMetrics) {
                                 val nextDay = workoutPlan.firstOrNull { it.dayNumber !in completedDays }
 
                                 if (nextDay != null) {
-                                    FitnessNotificationService.currentDay    = nextDay.dayNumber
-                                    FitnessNotificationService.totalDays     = workoutPlan.size
+                                    FitnessNotificationService.currentDay = nextDay.dayNumber
+                                    FitnessNotificationService.totalDays = workoutPlan.size
                                     FitnessNotificationService.challengeName = nextDay.title
                                     FitnessNotificationService.challengeState = when {
-                                        nextDay.isRest                       -> "rest"
-                                        nextDay.dayNumber in completedDays   -> "done"
-                                        else                                 -> "todo"
+                                        nextDay.isRest -> "rest"
+                                        nextDay.dayNumber in completedDays -> "done"
+                                        else -> "todo"
                                     }
                                 }
 
                                 FitnessNotificationService.waterCurrent = todayHealthMetrics.waterIntakeMl
-                                FitnessNotificationService.waterGoal    = todayHealthMetrics.waterGoalMl
+                                FitnessNotificationService.waterGoal = todayHealthMetrics.waterGoalMl
                                 FitnessNotificationService.refresh(this@MainActivity)
                             }
+
                             DashboardScreen(
                                 completedDays = completedDays,
                                 completedDateMap = completedDateMap,
@@ -254,7 +260,7 @@ class MainActivity : ComponentActivity() {
                                         (FitnessNotificationService.waterCurrent + amount)
                                             .coerceAtMost(FitnessNotificationService.waterGoal)
                                     FitnessNotificationService.refresh(this@MainActivity)
-                                             },
+                                },
                                 onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
                                 onSetStepGoal = { goal -> viewModel.setStepGoal(goal) },
                                 onStartWorkout = {
@@ -283,6 +289,18 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onOpenChangeGoal = {
                                     navController.navigate("update_goal")
+                                },
+                                libraryFilterState = libraryFilterState,
+                                libraryExercises = libraryExercises,
+                                libraryMuscleGroups = libraryMuscleGroups,
+                                onLibrarySearchQueryChange = libraryViewModel::setSearchQuery,
+                                onLibraryMuscleGroupChange = libraryViewModel::setMuscleGroup,
+                                onOpenLibrary = {
+                                    navController.navigate("library") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
                             )
                         }
@@ -457,7 +475,7 @@ class MainActivity : ComponentActivity() {
                             popEnterTransition = { EnterTransition.None },
                             popExitTransition = { ExitTransition.None }
                         ) {
-                            LibraryScreen()
+                            LibraryScreen(viewModel = libraryViewModel)
                         }
                         composable("loading") {
                             val provisioningState by viewModel.planProvisioningState.collectAsState()
@@ -477,14 +495,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable("workout_setup") {
-                            WorkoutSetupScreen(onComplete = { goal ->
-                                viewModel.startPlanProvisioning(applicationContext, goal)
-                                navController.navigate("loading") {
-                                    popUpTo("workout_setup") { inclusive = true }
-                                }
-                            })
-                        }
                         composable("update_goal") {
                             val userProfile by viewModel.userProfile.collectAsState()
                             if (userProfile != null) {
@@ -493,11 +503,8 @@ class MainActivity : ComponentActivity() {
                                     onBack = { navController.popBackStack() },
                                     onComplete = { goal, resetProgress ->
                                         if (resetProgress) {
-                                            // User chose Day 1 — wipe frozen data for this goal
                                             viewModel.clearProgressForGoal(goal)
                                         }
-                                        // startPlanProvisioning saves the new goal and regenerates
-                                        // the plan; it no longer touches completedDays itself.
                                         viewModel.startPlanProvisioning(applicationContext, goal)
                                         navController.navigate("loading") {
                                             popUpTo("update_goal") { inclusive = true }
@@ -505,6 +512,14 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
+                        }
+                        composable("workout_setup") {
+                            WorkoutSetupScreen(onComplete = { goal ->
+                                viewModel.startPlanProvisioning(applicationContext, goal)
+                                navController.navigate("loading") {
+                                    popUpTo("workout_setup") { inclusive = true }
+                                }
+                            })
                         }
                         composable(
                             route = "workout_session/{dayNumber}",
