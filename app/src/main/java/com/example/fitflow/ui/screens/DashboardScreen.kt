@@ -71,7 +71,14 @@ fun DashboardScreen(
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
     startDate: LocalDate? = null,
-    healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, stepGoal = 6000, stepSource = StepSource.MANUAL),
+    healthMetrics: DailyHealthMetrics = DailyHealthMetrics(
+        LocalDate.now(),
+        0,
+        0,
+        2000,
+        stepGoal = 6000,
+        stepSource = StepSource.MANUAL
+    ),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
     isStepTrackingActive: Boolean = false,
@@ -124,7 +131,7 @@ fun DashboardScreen(
                     val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
                     val startOfWeek = today.minusDays(todayIndex.toLong())
                     val date = startOfWeek.plusDays(weekIndex.toLong())
-                    
+
                     val dayNum = completedDateMap[date] ?: -1
                     onOpenDaySummary(dayNum, date.toEpochDay())
                 }
@@ -348,7 +355,8 @@ fun WeeklyGoalSection(
         !d.isBefore(startOfWeek) && !d.isAfter(endOfWeek)
     }
     val completedCount = weekLogs.distinctBy { it.dateEpochDay }.size
-    val completedDateSetGlobal = globalWorkoutLogs.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
+    val completedDateSetGlobal =
+        globalWorkoutLogs.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
 
     var todayOffsetX by remember { mutableStateOf(0f) }
     var rowWidth by remember { mutableStateOf(0f) }
@@ -393,7 +401,11 @@ fun WeeklyGoalSection(
                     }
                 }
                 Text(
-                    stringResource(R.string.dashboard_weekly_goal_progress, completedCount, weeklyGoal),
+                    stringResource(
+                        R.string.dashboard_weekly_goal_progress,
+                        completedCount,
+                        weeklyGoal
+                    ),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = if (completedCount >= weeklyGoal)
@@ -593,12 +605,14 @@ fun DailyChallengeSection(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(
-                            topStart = 32.dp,
-                            bottomStart = 32.dp,
-                            topEnd = 16.dp,
-                            bottomEnd = 16.dp
-                        ))
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 32.dp,
+                                bottomStart = 32.dp,
+                                topEnd = 16.dp,
+                                bottomEnd = 16.dp
+                            )
+                        )
                         .alpha(0.9f)
                 )
             }
@@ -799,9 +813,11 @@ fun HealthMetricsSection(
     var customWaterInput by remember { mutableStateOf("") }
 
     // Step progress
-    val stepProgress = (metrics.steps.toFloat() / metrics.stepGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
+    val stepProgress =
+        (metrics.steps.toFloat() / metrics.stepGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
     // Water progress
-    val waterProgress = (metrics.waterIntakeMl.toFloat() / metrics.waterGoalMl.coerceAtLeast(1)).coerceIn(0f, 1f)
+    val waterProgress =
+        (metrics.waterIntakeMl.toFloat() / metrics.waterGoalMl.coerceAtLeast(1)).coerceIn(0f, 1f)
 
     Text(
         stringResource(R.string.dashboard_health_metrics),
@@ -916,7 +932,11 @@ fun HealthMetricsSection(
                 ) { Text("Add") }
             },
             dismissButton = {
-                TextButton(onClick = { showAddWaterDialog = false; customWaterInput = "" }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = { showAddWaterDialog = false; customWaterInput = "" }) {
+                    Text(
+                        stringResource(R.string.common_cancel)
+                    )
+                }
             }
         )
     }
@@ -925,7 +945,12 @@ fun HealthMetricsSection(
     if (showWaterGoalDialog) {
         AlertDialog(
             onDismissRequest = { showWaterGoalDialog = false },
-            title = { Text(stringResource(R.string.dashboard_water_goal_title), fontWeight = FontWeight.Black) },
+            title = {
+                Text(
+                    stringResource(R.string.dashboard_water_goal_title),
+                    fontWeight = FontWeight.Black
+                )
+            },
             text = {
                 OutlinedTextField(
                     value = waterGoalInput,
@@ -947,7 +972,9 @@ fun HealthMetricsSection(
                 ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
-                TextButton(onClick = { showWaterGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = {
+                    showWaterGoalDialog = false
+                }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
@@ -971,7 +998,11 @@ fun HealthMetricsSection(
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(4.dp)
                             ) {
-                                Text("${goal/1000}K", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "${goal / 1000}K",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }
@@ -997,7 +1028,9 @@ fun HealthMetricsSection(
                 ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
-                TextButton(onClick = { showStepGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = {
+                    showStepGoalDialog = false
+                }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
