@@ -43,7 +43,7 @@ fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
 
 
 
-            NavItem("Me", Lucide.User, currentRoute == "profile") {
+            NavItem("Profile", Lucide.User, currentRoute == "profile") {
                 onNavigate("profile")
             }
         }
