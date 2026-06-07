@@ -200,7 +200,7 @@ fun WorkoutSettingsScreen(
                                             color = Color.White,
                                             fontWeight = FontWeight.Black,
                                             fontSize = 14.sp,
-                                            fontStyle = FontStyle.Italic
+                                            fontStyle = FontStyle.Normal
                                         )
                                         Text(
                                             text = currentSong.artist,
@@ -507,7 +507,7 @@ fun WorkoutSettingsScreen(
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic,
+                        fontStyle = FontStyle.Normal,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )

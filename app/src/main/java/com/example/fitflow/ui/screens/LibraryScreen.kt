@@ -101,7 +101,7 @@ fun LibraryScreen(
                             color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Black,
-                            fontStyle = FontStyle.Italic
+                            fontStyle = FontStyle.Normal
                         )
                     }
                 }
@@ -396,7 +396,7 @@ fun ExerciseListItem(
                     text = exercise.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic,
+                    fontStyle = FontStyle.Normal,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -496,7 +496,7 @@ fun ExerciseCard(
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Normal
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(

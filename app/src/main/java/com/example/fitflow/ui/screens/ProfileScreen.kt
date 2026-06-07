@@ -46,6 +46,7 @@ fun ProfileScreen(
     weightHistory: List<Pair<LocalDate, Float>> = emptyList(),
     healthMetricsHistory: List<DailyHealthMetrics> = emptyList(),
     todayHealthMetrics: DailyHealthMetrics? = null,
+    globalWorkoutLogs: List<com.example.fitflow.data.model.WorkoutLogEntry> = emptyList(),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
     isStepTrackingActive: Boolean = false,
@@ -73,7 +74,7 @@ fun ProfileScreen(
     }
 
     val today = LocalDate.now()
-    val weekStart = today.with(DayOfWeek.SUNDAY)
+    val weekStart = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
     val dayLabels = listOf("S", "M", "T", "W", "T", "F", "S")
     val todayLabelIndex = dayLabels.indices.firstOrNull { idx ->
         weekStart.plusDays(idx.toLong()) == today
@@ -82,22 +83,17 @@ fun ProfileScreen(
     var currentWeightKg by remember(latestRecordedWeight) { mutableStateOf(latestRecordedWeight) }
     var showWeightSheet by remember { mutableStateOf(false) }
 
-    val weeklyDayNumbers = remember(completedDays, completedDateMap, startDate) {
-        (0..6).map { offset ->
-            val date = weekStart.plusDays(offset.toLong())
-            if (startDate != null) {
-                val mappedDay = java.time.temporal.ChronoUnit.DAYS.between(startDate, date).toInt() + 1
-                if (mappedDay in completedDays) mappedDay else null
-            } else {
-                completedDateMap[date]
-            }
-        }
+    val weeklyDayDates = remember(weekStart) {
+        (0..6).map { offset -> weekStart.plusDays(offset.toLong()) }
     }
 
-    val weeklyDurationSeconds = remember(weeklyDayNumbers, workoutPlan) {
-        weeklyDayNumbers.map { dayNumber ->
-            val exercises = planByDayNumber[dayNumber]?.workoutExercises ?: emptyList()
-            exercises.sumOf { ex -> if (ex.durationSec > 0) ex.durationSec else ex.reps * 3 }
+    val logsByDate = remember(globalWorkoutLogs) {
+        globalWorkoutLogs.groupBy { LocalDate.ofEpochDay(it.dateEpochDay) }
+    }
+
+    val weeklyDurationSeconds = remember(weeklyDayDates, logsByDate) {
+        weeklyDayDates.map { date ->
+            logsByDate[date]?.sumOf { it.durationSec } ?: 0
         }
     }
 
@@ -105,9 +101,9 @@ fun ProfileScreen(
         weeklyDurationSeconds.map { seconds -> (seconds / 60f).roundToInt() }
     }
 
-    val weeklyKcal = remember(weeklyDayNumbers, workoutPlan) {
-        weeklyDayNumbers.map { dayNumber ->
-            planByDayNumber[dayNumber]?.workoutExercises?.sumOf { it.kcal } ?: 0
+    val weeklyKcal = remember(weeklyDayDates, logsByDate) {
+        weeklyDayDates.map { date ->
+            (logsByDate[date]?.sumOf { it.kcal } ?: 0) / 10
         }
     }
 
@@ -146,7 +142,7 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                 }
             }
@@ -182,7 +178,7 @@ fun ProfileScreen(
                 Text(
                     "Welcome, my friend!",
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 18.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic
+                    fontSize = 18.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Normal
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
@@ -312,9 +308,7 @@ fun ProfileScreen(
         // Re-calibrate card
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.onBackground.copy(
-                    alpha = 0.05f
-                )
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier
@@ -380,9 +374,7 @@ fun ProfileScreen(
         // Demo Notification card
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.onBackground.copy(
-                    alpha = 0.05f
-                )
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier
@@ -471,7 +463,7 @@ fun ActivityStatItem(label: String, value: String, unit: String) {
         Text(
             value,
             color = MaterialTheme.colorScheme.primary,
-            fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic
+            fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Normal
         )
         Text(
             unit,
@@ -493,11 +485,15 @@ fun WeeklyChartCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF171A21)),
-        modifier = modifier
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = modifier.border(
+            1.dp,
+            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+            RoundedCornerShape(24.dp)
+        )
     ) {
-        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -505,7 +501,7 @@ fun WeeklyChartCard(
             ) {
                 Text(
                     title,
-                    color = Color(0xFFF2F4FA),
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -515,7 +511,7 @@ fun WeeklyChartCard(
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     totalValue,
-                    color = Color(0xFFF4F7FF),
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Black,
                     fontStyle = FontStyle.Normal
@@ -523,7 +519,7 @@ fun WeeklyChartCard(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     unit,
-                    color = Color(0xFF9AA0AE),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     fontSize = 11.sp,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
@@ -551,8 +547,8 @@ fun WeeklyBarChart(
 ) {
     val maxValue = values.maxOrNull()?.coerceAtLeast(1) ?: 1
     Box(modifier = Modifier.fillMaxWidth()) {
-        Divider(
-            color = Color(0xFF656B79).copy(alpha = 0.35f),
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
             thickness = 1.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -580,7 +576,7 @@ fun WeeklyBarChart(
                         .padding(horizontal = 1.dp)
                         .height((52f * value / maxValue).dp.coerceAtLeast(6.dp))
                         .background(
-                            if (value > 0) color else Color(0xFF232730),
+                            if (value > 0) color else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                             RoundedCornerShape(6.dp)
                         )
                 )
@@ -588,7 +584,7 @@ fun WeeklyBarChart(
                     Text(
                         label,
                         fontSize = 10.sp,
-                        color = if (index == highlightedLabelIndex) color else Color(0xFFA1A7B4),
+                        color = if (index == highlightedLabelIndex) color else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -614,7 +610,7 @@ fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) 
                 color = if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Normal
             )
             if (unit.isNotEmpty()) {
                 Text(
@@ -645,14 +641,18 @@ fun WeightTrackingSection(
     val todayLabel = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
 
     Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF171A21)),
-        modifier = Modifier.fillMaxWidth()
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = Modifier.fillMaxWidth().border(
+            1.dp,
+            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+            RoundedCornerShape(32.dp)
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(
@@ -662,23 +662,23 @@ fun WeightTrackingSection(
             ) {
                 Text(
                     "Weight",
-                    color = Color(0xFFF2F4FA),
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black
                 )
                 Text(
                     todayLabel,
-                    color = Color(0xFFCBD0DB),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     fontSize = 12.sp,
                     modifier = Modifier
-                        .background(Color(0xFF232730), RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 )
             }
 
             Text(
-                latest?.let { String.format("%.1f", it) } ?: "-",
-                color = Color(0xFFF4F7FF),
+                latest?.let { String.format(java.util.Locale.US, "%.1f", it) } ?: "-",
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 56.sp,
                 fontWeight = FontWeight.Black,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -686,14 +686,14 @@ fun WeightTrackingSection(
 
             Text(
                 progressText,
-                color = Color(0xFFAEB5C4),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 fontSize = 12.sp,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
             WeightHistoryMiniChart(
                 history = weightHistory,
-                color = Color(0xFF3B66FF)
+                color = MaterialTheme.colorScheme.primary
             )
 
             Button(
@@ -702,12 +702,12 @@ fun WeightTrackingSection(
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2F56E9))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
                     "UPDATE WEIGHT",
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     letterSpacing = 1.sp
                 )
             }
@@ -756,7 +756,7 @@ fun WeightHistoryMiniChart(
                     Text(
                         "${date.dayOfMonth}",
                         fontSize = 9.sp,
-                        color = Color(0xFFAEB5C4),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
                         fontWeight = FontWeight.Bold
                     )
                 }

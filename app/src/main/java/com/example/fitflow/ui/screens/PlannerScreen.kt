@@ -197,7 +197,7 @@ fun PlannerScreen(
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                 }
 
@@ -233,7 +233,7 @@ fun PlannerScreen(
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
@@ -362,7 +362,7 @@ fun PlannerScreen(
                         color = Color.White.copy(alpha = (topBarAlpha - 0.3f) / 0.7f),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                 }
             }
@@ -385,7 +385,7 @@ fun PlannerScreen(
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
@@ -454,7 +454,7 @@ fun DayPlanItemRedesigned(
                     color = textColor,
                     fontWeight = FontWeight.Black,
                     fontSize = 18.sp,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Normal
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 

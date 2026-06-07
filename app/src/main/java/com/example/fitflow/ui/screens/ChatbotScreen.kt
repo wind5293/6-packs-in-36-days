@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.animation.core.*
+import kotlinx.coroutines.delay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -35,10 +39,18 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Image
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.example.fitflow.data.ClaudeApiService
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Bot
+import com.composables.icons.lucide.User
+import com.example.fitflow.data.ChatbotApiService
 import com.example.fitflow.ui.theme.FitflowTheme
+import dev.jeziellago.compose.markdowntext.MarkdownText
 
 data class ChatMessage(
     val text: String,
@@ -52,12 +64,12 @@ fun ChatbotScreen(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val isOnline by rememberIsNetworkAvailable(context)
 
     var inputText by remember { mutableStateOf("") }
-    val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
-    var showImageSourceDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
     var messages by remember {
@@ -125,88 +137,6 @@ fun ChatbotScreen(
         }
     }
 
-    if (showImageSourceDialog) {
-        AlertDialog(
-            onDismissRequest = { showImageSourceDialog = false },
-            title = {
-                Text(
-                    "ADD PHOTO",
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp,
-                    fontSize = 13.sp
-                )
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Chụp ảnh
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-                            .clickable {
-                                showImageSourceDialog = false
-                                launchCamera()
-                            }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("📷", fontSize = 24.sp)
-                        Column {
-                            Text(
-                                "Take a photo",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                "Use your camera",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                            )
-                        }
-                    }
-                    // Chọn từ thư viện
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-                            .clickable {
-                                showImageSourceDialog = false
-                                galleryLauncher.launch("image/*")
-                            }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("🖼️", fontSize = 24.sp)
-                        Column {
-                            Text(
-                                "Choose from gallery",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                "Pick an existing photo",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showImageSourceDialog = false }) {
-                    Text("CANCEL", fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-                }
-            },
-            shape = RoundedCornerShape(12.dp)
-        )
-    }
 
     Column(
         modifier = Modifier
@@ -247,7 +177,12 @@ fun ChatbotScreen(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🤖", fontSize = 20.sp)
+                Icon(
+                    imageVector = Lucide.Bot,
+                    contentDescription = "AI Coach",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
             }
 
             Column(modifier = Modifier.weight(1f)) {
@@ -262,7 +197,7 @@ fun ChatbotScreen(
                     "FitFlow",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic,
+                    fontStyle = FontStyle.Normal,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -271,7 +206,8 @@ fun ChatbotScreen(
             Box(
                 modifier = Modifier
                     .background(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        if (isOnline) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                        else MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
                         RoundedCornerShape(4.dp)
                     )
                     .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -283,14 +219,19 @@ fun ChatbotScreen(
                     Box(
                         modifier = Modifier
                             .size(6.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .background(
+                                if (isOnline) MaterialTheme.colorScheme.primary 
+                                else MaterialTheme.colorScheme.error, 
+                                CircleShape
+                            )
                     )
                     Text(
-                        "ONLINE",
+                        if (isOnline) "ONLINE" else "OFFLINE",
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.primary
+                        color = if (isOnline) MaterialTheme.colorScheme.primary 
+                                else MaterialTheme.colorScheme.error
                     )
                 }
             }
@@ -326,21 +267,37 @@ fun ChatbotScreen(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("🤖", fontSize = 14.sp)
+                            Icon(
+                                imageVector = Lucide.Bot,
+                                contentDescription = "Bot",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                         Box(
                             modifier = Modifier
                                 .background(
                                     MaterialTheme.colorScheme.surface,
-                                    RoundedCornerShape(5.dp)
+                                    RoundedCornerShape(
+                                        topStart = 10.dp,
+                                        topEnd = 10.dp,
+                                        bottomStart = 0.dp,
+                                        bottomEnd = 10.dp
+                                    )
                                 )
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f),
+                                    RoundedCornerShape(
+                                        topStart = 10.dp,
+                                        topEnd = 10.dp,
+                                        bottomStart = 0.dp,
+                                        bottomEnd = 10.dp
+                                    )
+                                )
+                                .padding(horizontal = 16.dp, vertical = 14.dp)
                         ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            TypingIndicator()
                         }
                     }
                 }
@@ -348,10 +305,18 @@ fun ChatbotScreen(
         }
 
         // ── Quick suggestions ──
-        val suggestions = listOf("Today's workout?", "How much protein?", "Recovery tips")
+        val suggestions = listOf(
+            "How to get shredded abs?", 
+            "Post-workout meal ideas?", 
+            "How many calories in a pizza?", 
+            "How to reduce muscle soreness?", 
+            "Fat-loss breakfast recipes", 
+            "Water intake during workout?"
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -421,24 +386,44 @@ fun ChatbotScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Nút attach ảnh
+                // Camera button
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
+                        .size(44.dp)
                         .background(
                             MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                             RoundedCornerShape(8.dp)
                         )
-                        .border(
-                            1.dp,
-                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { launchCamera() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Camera",
+                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                
+                // Gallery button
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                             RoundedCornerShape(8.dp)
                         )
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { showImageSourceDialog = true },
+                        .clickable { galleryLauncher.launch("image/*") },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("📎", fontSize = 20.sp)
+                    Icon(
+                        imageVector = Icons.Default.Image,
+                        contentDescription = "Gallery",
+                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
 
                 OutlinedTextField(
@@ -467,6 +452,21 @@ fun ChatbotScreen(
                 IconButton(
                     onClick = {
                         if (canSend && !isLoading) {
+                            if (!isOnline) {
+                                val userMsg = ChatMessage(
+                                    text = inputText.trim(),
+                                    isFromUser = true,
+                                    imageUri = selectedImageUri
+                                )
+                                messages = messages + userMsg + ChatMessage(
+                                    text = "Hiện tại bạn đang **Offline**. Không có kết nối mạng, vui lòng kiểm tra lại Wifi/4G để tôi có thể kết nối với server nhé!",
+                                    isFromUser = false
+                                )
+                                inputText = ""
+                                selectedImageUri = null
+                                return@IconButton
+                            }
+
                             val userMsg = ChatMessage(
                                 text = inputText.trim(),
                                 isFromUser = true,
@@ -482,7 +482,39 @@ fun ChatbotScreen(
                                 // Truyền history (bỏ tin nhắn vừa thêm)
                                 val history = messages.dropLast(1).map { it.text to it.isFromUser }
 
-                                val result = ClaudeApiService.sendMessage(currentInput, history)
+                                var imageBytes: ByteArray? = null
+                                var imageMimeType: String? = null
+                                
+                                if (userMsg.imageUri != null) {
+                                    try {
+                                        context.contentResolver.openInputStream(userMsg.imageUri)?.use { inputStream ->
+                                            val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+                                            if (bitmap != null) {
+                                                // Nén ảnh để tránh payload quá to
+                                                val maxDim = 1024
+                                                val scale = minOf(maxDim.toFloat() / bitmap.width, maxDim.toFloat() / bitmap.height)
+                                                val scaledBitmap = if (scale < 1f) {
+                                                    android.graphics.Bitmap.createScaledBitmap(
+                                                        bitmap,
+                                                        (bitmap.width * scale).toInt(),
+                                                        (bitmap.height * scale).toInt(),
+                                                        true
+                                                    )
+                                                } else {
+                                                    bitmap
+                                                }
+                                                val outputStream = java.io.ByteArrayOutputStream()
+                                                scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                                                imageBytes = outputStream.toByteArray()
+                                                imageMimeType = "image/jpeg"
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                }
+
+                                val result = ChatbotApiService.sendMessage(currentInput, history, imageBytes, imageMimeType)
                                 isLoading = false
 
                                 result.fold(
@@ -521,6 +553,49 @@ fun ChatbotScreen(
 }
 
 @Composable
+fun rememberIsNetworkAvailable(context: android.content.Context): State<Boolean> {
+    val isAvailable = remember { mutableStateOf(checkIfOnline(context)) }
+
+    DisposableEffect(context) {
+        val connectivityManager = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                isAvailable.value = true
+            }
+
+            override fun onLost(network: Network) {
+                isAvailable.value = false
+            }
+        }
+        
+        try {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager.registerNetworkCallback(request, networkCallback)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        onDispose {
+            try {
+                connectivityManager.unregisterNetworkCallback(networkCallback)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    return isAvailable
+}
+
+fun checkIfOnline(context: android.content.Context): Boolean {
+    val connectivityManager = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivityManager.activeNetwork ?: return false
+    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+}
+
+@Composable
 fun ChatBubble(message: ChatMessage) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -539,7 +614,12 @@ fun ChatBubble(message: ChatMessage) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🤖", fontSize = 14.sp)
+                Icon(
+                    imageVector = Lucide.Bot,
+                    contentDescription = "Bot",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -586,10 +666,9 @@ fun ChatBubble(message: ChatMessage) {
                     )
                 }
                 if (message.text.isNotEmpty()) {
-                    Text(
-                        text = message.text,
+                    MarkdownText(
+                        markdown = message.text,
                         fontSize = 14.sp,
-                        lineHeight = 20.sp,
                         color = if (message.isFromUser)
                             MaterialTheme.colorScheme.onPrimary
                         else
@@ -610,8 +689,51 @@ fun ChatBubble(message: ChatMessage) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🧑", fontSize = 14.sp)
+                Icon(
+                    imageVector = Lucide.User,
+                    contentDescription = "User",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                    modifier = Modifier.size(18.dp)
+                )
             }
+        }
+    }
+}
+
+@Composable
+fun TypingIndicator(modifier: Modifier = Modifier) {
+    val dots = listOf(
+        remember { Animatable(0f) },
+        remember { Animatable(0f) },
+        remember { Animatable(0f) }
+    )
+
+    dots.forEachIndexed { index, animatable ->
+        LaunchedEffect(animatable) {
+            delay(index * 150L)
+            animatable.animateTo(
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(400, easing = LinearOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+        }
+    }
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        dots.forEach { animatable ->
+            val yOffset = (-6 * animatable.value).dp
+            Box(
+                modifier = Modifier
+                    .offset(y = yOffset)
+                    .size(6.dp)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+            )
         }
     }
 }

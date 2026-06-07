@@ -79,7 +79,7 @@ fun RestDayDetailScreen(
                 text = "Recovery Day",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic,
+                fontStyle = FontStyle.Normal,
                 color = MaterialTheme.colorScheme.onBackground
             )
             

@@ -55,10 +55,11 @@ fun WorkoutHistoryScreen(
     // Calendar marks: all dates that appear in global logs
     val completedDates = historyEntries.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
 
-    // Weekly report: current week (Mon-Sun) containing today
+    // Weekly report: current week (Sun-Sat) containing today
     val today = LocalDate.now()
-    val startOfWeek = today.with(DayOfWeek.MONDAY)
-    val endOfWeek = today.with(DayOfWeek.SUNDAY)
+    val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
+    val startOfWeek = today.minusDays(todayIndex.toLong())
+    val endOfWeek = startOfWeek.plusDays(6)
 
     val weekEntries = historyEntries.filter {
         val date = LocalDate.ofEpochDay(it.dateEpochDay)
@@ -363,7 +364,7 @@ private fun WeekSummaryCard(
                 ) {
                     Text("🔥", fontSize = 12.sp)
                     Text(
-                        "${String.format("%.1f", totalKcal.toFloat() / 10)} Kcal",
+                        "${totalKcal.toInt()} Kcal",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.secondary
@@ -438,79 +439,80 @@ private fun WorkoutHistoryItem(entry: WorkoutLogEntry) {
 
             Spacer(Modifier.width(12.dp))
 
-            // Title + meta
+            // Title + meta + timestamp
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    "Day ${entry.dayNumber}",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(3.dp))
+                // Top row: Title and Timestamp
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val titleText = if (entry.dayNumber == -1) "Supplementary" else "Day ${entry.dayNumber}"
+                    Text(
+                        titleText,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        dateTimeLabel,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                
+                Spacer(Modifier.height(4.dp))
+                
+                // Bottom row: Goal • Duration • Kcal
                 if (isRest) {
                     Text(
-                        "${entry.goalName} • Rest Day",
+                        "${entry.goalName.replace("_", " ")} • Rest Day",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                     )
                 } else {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            entry.goalName,
+                            entry.goalName.replace("_", " "),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
                         )
-                        // Duration
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(7.dp)
-                                    .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            )
-                            Text(
-                                timeLabel,
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                        // Kcal
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            Text("🔥", fontSize = 10.sp)
-                            Text(
-                                "${String.format("%.1f", kcal.toFloat() / 10)} Kcal",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.secondary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                        
+                        Text("•", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f), fontSize = 12.sp)
+                        
+                        Text(
+                            timeLabel,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1
+                        )
+                        
+                        Text("•", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f), fontSize = 12.sp)
+                        
+                        Text(
+                            "${kcal.toInt()} Kcal",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1
+                        )
                     }
                 }
             }
-
-            Spacer(Modifier.width(8.dp))
-
-            // Timestamp label aligned to end (right side)
-            Text(
-                dateTimeLabel,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f),
-                fontWeight = FontWeight.Medium,
-                textAlign = androidx.compose.ui.text.style.TextAlign.End,
-                maxLines = 2
-            )
         }
     }
 }

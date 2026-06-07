@@ -79,7 +79,7 @@ fun StreakAchievedScreen(
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic,
+                fontStyle = FontStyle.Normal,
                 letterSpacing = 2.sp
             )
             Spacer(modifier = Modifier.height(8.dp))

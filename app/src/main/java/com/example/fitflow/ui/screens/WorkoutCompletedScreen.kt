@@ -112,7 +112,7 @@ fun WorkoutCompletedScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     StatItem("Exercises", totalExercises.toString(), primaryColor, textColor)
-                    StatItem("Calories Burned", String.format("%.1f", estimatedCalories), primaryColor, textColor)
+                    StatItem("Calories Burned", estimatedCalories.toInt().toString(), primaryColor, textColor)
                     StatItem("Time", timeFormatted, primaryColor, textColor)
                 }
             }
@@ -287,7 +287,7 @@ fun WorkoutCompletedScreen(
                 shape = RoundedCornerShape(28.dp)
             ) {
                 Text(
-                    text = "Next",
+                    text = "BACK TO DASHBOARD",
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
