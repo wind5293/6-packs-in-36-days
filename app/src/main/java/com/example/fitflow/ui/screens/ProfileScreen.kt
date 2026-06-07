@@ -74,7 +74,7 @@ fun ProfileScreen(
     }
 
     val today = LocalDate.now()
-    val weekStart = today.with(DayOfWeek.SUNDAY)
+    val weekStart = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
     val dayLabels = listOf("S", "M", "T", "W", "T", "F", "S")
     val todayLabelIndex = dayLabels.indices.firstOrNull { idx ->
         weekStart.plusDays(idx.toLong()) == today
@@ -103,7 +103,7 @@ fun ProfileScreen(
 
     val weeklyKcal = remember(weeklyDayDates, logsByDate) {
         weeklyDayDates.map { date ->
-            logsByDate[date]?.sumOf { it.kcal } ?: 0
+            (logsByDate[date]?.sumOf { it.kcal } ?: 0) / 10
         }
     }
 
