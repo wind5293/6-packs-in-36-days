@@ -287,12 +287,34 @@ class UserViewModel(
         startPlanProvisioning(context.applicationContext, goal)
     }
 
-    fun markDayComplete(dayNumber: Int): Boolean {
+    fun markDayComplete(dayNumber: Int, activeSeconds: Int? = null): Boolean {
         var isNewStreak = false
+        val today = LocalDate.now()
+        val nowMillis = System.currentTimeMillis()
+        val activeGoal = _userProfile.value?.goal
+        
+        // Save global workout log EVERY time a session finishes (including re-dos)
+        val plan = _workoutPlan.value.find { it.dayNumber == dayNumber }
+        val plannedDurationSec = plan?.workoutExercises?.sumOf { it.durationSec } ?: 0
+        val finalDurationSec = activeSeconds ?: plannedDurationSec
+        val kcal = plan?.workoutExercises?.sumOf { it.kcal } ?: 0
+        val isRest = plan?.isRest ?: false
+        val goalName = activeGoal?.name ?: "UNKNOWN"
+        val logEntry = WorkoutLogEntry(
+            dateEpochDay = today.toEpochDay(),
+            timestampMillis = nowMillis,
+            dayNumber = dayNumber,
+            goalName = goalName,
+            durationSec = finalDurationSec,
+            kcal = kcal,
+            isRest = isRest
+        )
+        userPreferences.addGlobalWorkoutLog(logEntry)
+        _globalWorkoutLogs.value = _globalWorkoutLogs.value + logEntry
+
         val current = _completedDays.value.toMutableSet()
         if (!current.contains(dayNumber)) {
             current.add(dayNumber)
-            val activeGoal = _userProfile.value?.goal
             if (activeGoal != null) {
                 userPreferences.saveCompletedDaysForGoal(activeGoal, current)
             } else {
@@ -301,7 +323,7 @@ class UserViewModel(
             _completedDays.value = current
 
             val dateMap = _completedDateMap.value.toMutableMap()
-            dateMap[LocalDate.now()] = dayNumber
+            dateMap[today] = dayNumber
             if (activeGoal != null) {
                 userPreferences.saveCompletedDateMapForGoal(activeGoal, dateMap)
             } else {
@@ -315,30 +337,9 @@ class UserViewModel(
                 _partialProgressMap.value = userPreferences.getPartialWorkoutProgressMap(activeGoal)
             }
 
-            // Save exact timestamp
-            val nowMillis = System.currentTimeMillis()
+            // Save exact timestamp for progression
             userPreferences.saveWorkoutTimestamp(dayNumber, nowMillis)
             _workoutTimestamps.value = _workoutTimestamps.value.toMutableMap().also { it[dayNumber] = nowMillis }
-
-            val today = LocalDate.now()
-            
-            // Save global workout log
-            val plan = _workoutPlan.value.find { it.dayNumber == dayNumber }
-            val durationSec = plan?.workoutExercises?.sumOf { it.durationSec } ?: 0
-            val kcal = plan?.workoutExercises?.sumOf { it.kcal } ?: 0
-            val isRest = plan?.isRest ?: false
-            val goalName = activeGoal?.name ?: "UNKNOWN"
-            val logEntry = WorkoutLogEntry(
-                dateEpochDay = today.toEpochDay(),
-                timestampMillis = nowMillis,
-                dayNumber = dayNumber,
-                goalName = goalName,
-                durationSec = durationSec,
-                kcal = kcal,
-                isRest = isRest
-            )
-            userPreferences.addGlobalWorkoutLog(logEntry)
-            _globalWorkoutLogs.value = _globalWorkoutLogs.value + logEntry
 
             val lastWorkout = userPreferences.getLastWorkoutDate()
             var streak = userPreferences.getCurrentStreak()
@@ -402,6 +403,23 @@ class UserViewModel(
             _completedDateMap.value = emptyMap()
             _partialProgressMap.value = emptyMap()
         }
+    }
+
+    fun markSupplementaryComplete(title: String, activeSeconds: Int, kcal: Int) {
+        val today = LocalDate.now()
+        val nowMillis = System.currentTimeMillis()
+        
+        val logEntry = WorkoutLogEntry(
+            dateEpochDay = today.toEpochDay(),
+            timestampMillis = nowMillis,
+            dayNumber = -1, // Use -1 to indicate it's a supplementary workout
+            goalName = title,
+            durationSec = activeSeconds,
+            kcal = kcal,
+            isRest = false
+        )
+        userPreferences.addGlobalWorkoutLog(logEntry)
+        _globalWorkoutLogs.value = _globalWorkoutLogs.value + logEntry
     }
 
     fun savePartialProgress(dayNumber: Int, currentExerciseIndex: Int) {
