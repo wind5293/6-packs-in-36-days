@@ -217,6 +217,7 @@ class MainActivity : ComponentActivity() {
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
+                            val longestStreak by viewModel.longestStreak.collectAsState()
                             val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             val libraryFilterState by libraryViewModel.filterState.collectAsState()
                             val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
@@ -246,6 +247,7 @@ class MainActivity : ComponentActivity() {
                                 completedDateMap = completedDateMap,
                                 globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
+                                longestStreak = longestStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
                                 startDate = startDate,
