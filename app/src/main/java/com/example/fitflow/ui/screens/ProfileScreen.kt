@@ -56,14 +56,19 @@ fun ProfileScreen(
     onSetStepGoal: (Int) -> Unit = {}
 ) {
     val completedCount = completedDays.size
-    val totalKcal = workoutPlan
-        .filter { it.dayNumber in completedDays }
-        .flatMap { it.workoutExercises }
-        .sumOf { it.kcal }
-    val totalMinutes = workoutPlan
-        .filter { it.dayNumber in completedDays }
-        .flatMap { it.workoutExercises }
-        .sumOf { ex -> if (ex.durationSec > 0) ex.durationSec else ex.reps * 3 } / 60
+    val planByDayNumber = remember(workoutPlan) { workoutPlan.associateBy { it.dayNumber } }
+    val totalKcal = remember(completedDays, workoutPlan) {
+        workoutPlan
+            .filter { it.dayNumber in completedDays }
+            .flatMap { it.workoutExercises }
+            .sumOf { it.kcal }
+    }
+    val totalMinutes = remember(completedDays, workoutPlan) {
+        workoutPlan
+            .filter { it.dayNumber in completedDays }
+            .flatMap { it.workoutExercises }
+            .sumOf { ex -> if (ex.durationSec > 0) ex.durationSec else ex.reps * 3 } / 60
+    }
 
     val today = LocalDate.now()
     val weekStart = today.with(DayOfWeek.SUNDAY)
@@ -75,31 +80,40 @@ fun ProfileScreen(
     var currentWeightKg by remember(latestRecordedWeight) { mutableStateOf(latestRecordedWeight) }
     var showWeightSheet by remember { mutableStateOf(false) }
 
-    val planByDayNumber = remember(workoutPlan) { workoutPlan.associateBy { it.dayNumber } }
-
-    val weeklyDayNumbers = (0..6).map { offset ->
-        val date = weekStart.plusDays(offset.toLong())
-        if (startDate != null) {
-            val mappedDay = ChronoUnit.DAYS.between(startDate, date).toInt() + 1
-            if (mappedDay in completedDays) mappedDay else null
-        } else {
-            completedDateMap[date]
+    val weeklyDayNumbers = remember(completedDays, completedDateMap, startDate) {
+        (0..6).map { offset ->
+            val date = weekStart.plusDays(offset.toLong())
+            if (startDate != null) {
+                val mappedDay = java.time.temporal.ChronoUnit.DAYS.between(startDate, date).toInt() + 1
+                if (mappedDay in completedDays) mappedDay else null
+            } else {
+                completedDateMap[date]
+            }
         }
     }
 
-    val weeklyDurationSeconds = weeklyDayNumbers.map { dayNumber ->
-        val exercises = planByDayNumber[dayNumber]?.workoutExercises ?: emptyList()
-        exercises.sumOf { ex -> if (ex.durationSec > 0) ex.durationSec else ex.reps * 3 }
+    val weeklyDurationSeconds = remember(weeklyDayNumbers, workoutPlan) {
+        weeklyDayNumbers.map { dayNumber ->
+            val exercises = planByDayNumber[dayNumber]?.workoutExercises ?: emptyList()
+            exercises.sumOf { ex -> if (ex.durationSec > 0) ex.durationSec else ex.reps * 3 }
+        }
     }
 
-    val weeklyMinutes = weeklyDurationSeconds.map { seconds -> (seconds / 60f).roundToInt() }
-
-    val weeklyKcal = weeklyDayNumbers.map { dayNumber ->
-        planByDayNumber[dayNumber]?.workoutExercises?.sumOf { it.kcal } ?: 0
+    val weeklyMinutes = remember(weeklyDurationSeconds) {
+        weeklyDurationSeconds.map { seconds -> (seconds / 60f).roundToInt() }
     }
 
-    val weeklyTotalMinutes = (weeklyDurationSeconds.sum() / 60f).roundToInt()
-    val weeklyTotalKcal = weeklyKcal.sum()
+    val weeklyKcal = remember(weeklyDayNumbers, workoutPlan) {
+        weeklyDayNumbers.map { dayNumber ->
+            planByDayNumber[dayNumber]?.workoutExercises?.sumOf { it.kcal } ?: 0
+        }
+    }
+
+    val weeklyTotalMinutes = remember(weeklyDurationSeconds) {
+        (weeklyDurationSeconds.sum() / 60f).roundToInt()
+    }
+    val weeklyTotalKcal = remember(weeklyKcal) { weeklyKcal.sum() }
+
 
     Column(
         modifier = Modifier

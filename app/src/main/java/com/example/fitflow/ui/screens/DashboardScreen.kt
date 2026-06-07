@@ -55,6 +55,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.composables.icons.lucide.Eye
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
+import com.composables.icons.lucide.Flame
 import com.composables.icons.lucide.Lucide
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
@@ -70,6 +71,7 @@ import com.example.fitflow.viewmodel.LibraryFilterState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DashboardScreen(
     paddingValues: PaddingValues = PaddingValues(0.dp),
@@ -77,6 +79,7 @@ fun DashboardScreen(
     completedDateMap: Map<LocalDate, Int> = emptyMap(),
     globalWorkoutLogs: List<WorkoutLogEntry> = emptyList(),
     currentStreak: Int = 0,
+    longestStreak: Int = 0,
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
     startDate: LocalDate? = null,
@@ -124,21 +127,23 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 16.dp,
+            top = 8.dp,
             start = 16.dp,
             end = 16.dp,
             bottom = paddingValues.calculateBottomPadding() + 16.dp,
         )
     ) {
-        item {
+        stickyHeader {
             HeaderSection(onOpenChatbot = onOpenChatbot)
         }
         item {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
         item {
             WeeklyGoalSection(
                 globalWorkoutLogs = globalWorkoutLogs,
+                currentStreak = currentStreak,
+                longestStreak = longestStreak,
                 onViewHistory = onOpenHistory,
                 onEditGoal = onOpenChangeGoal,
                 onToggleDay = { weekIndex ->
@@ -544,27 +549,28 @@ fun HeaderSection(
     onOpenChatbot: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.dashboard_status_report),
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 10.sp,
+                text = "FIT",
+                color = Color(0xFFFF6B00),
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
-                letterSpacing = 3.sp
+                fontStyle = FontStyle.Italic
             )
-            Row {
-                Text(
-                    stringResource(R.string.dashboard_title),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
-                )
-            }
+            Text(
+                text = "FLOW",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic
+            )
         }
         IconButton(
             onClick = onOpenChatbot,
@@ -604,6 +610,8 @@ fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
 fun WeeklyGoalSection(
     weeklyGoal: Int = 3,
     globalWorkoutLogs: List<WorkoutLogEntry> = emptyList(),
+    currentStreak: Int = 0,
+    longestStreak: Int = 0,
     onViewHistory: () -> Unit = {},
     onEditGoal: () -> Unit = {},
     onToggleDay: (Int) -> Unit = {}
@@ -647,16 +655,23 @@ fun WeeklyGoalSection(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                IconButton(
-                    onClick = onViewHistory,
-                    modifier = Modifier.size(20.dp)
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        Lucide.Eye,
-                        contentDescription = "View History",
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                        modifier = Modifier.size(18.dp)
-                    )
+
+                    IconButton(
+                        onClick = onViewHistory,
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            Lucide.Eye,
+                            contentDescription = "View History",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
@@ -738,6 +753,91 @@ fun WeeklyGoalSection(
                 }
             }
 
+            // Streak info row
+            if (currentStreak > 0 || longestStreak > 0) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.04f))
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Current streak
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Text(
+                            text = "CURRENT STREAK",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(text = "🔥", fontSize = 16.sp)
+                            Text(
+                                text = "$currentStreak day${if (currentStreak != 1) "s" else ""}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFFF6B00)
+                            )
+                        }
+                    }
+
+                    // Divider
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(36.dp)
+                            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f))
+                    )
+
+                    // Longest streak
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "LONGEST STREAK",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "$longestStreak day${if (longestStreak != 1) "s" else ""}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
+                            )
+                            // NEW RECORD badge
+                            if (currentStreak > 0 && currentStreak >= longestStreak) {
+                                Text(
+                                    text = "🏆",
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                        if (currentStreak > 0 && currentStreak >= longestStreak) {
+                            Text(
+                                text = "NEW RECORD!",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                                color = Color(0xFFFFAA00)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Coach quote dialog
             Card(
                 colors = CardDefaults.cardColors(
@@ -788,6 +888,15 @@ fun DailyChallengeSection(
     onOpenSettings: () -> Unit = {}
 ) {
     val completedDays = currentDay - 1
+    val titleUppercase = remember(dayTitle) { dayTitle.uppercase() }
+    val cardBrush = remember {
+        Brush.linearGradient(
+            colors = listOf(
+                Color(0xFFFF6D00),
+                Color(0xFFFF3D00)
+            )
+        )
+    }
 
     Row(
         modifier = Modifier
@@ -815,7 +924,7 @@ fun DailyChallengeSection(
         }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
     Card(
         shape = RoundedCornerShape(14.dp),
@@ -829,14 +938,7 @@ fun DailyChallengeSection(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFFFF6D00),
-                            Color(0xFFFF3D00)
-                        )
-                    )
-                )
+                .background(brush = cardBrush)
         ) {
             Box(
                 modifier = Modifier
@@ -866,8 +968,8 @@ fun DailyChallengeSection(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // Program name + difficulty
                 Row(
@@ -875,7 +977,7 @@ fun DailyChallengeSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        dayTitle.uppercase(),
+                        titleUppercase,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,

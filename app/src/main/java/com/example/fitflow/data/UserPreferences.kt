@@ -50,6 +50,7 @@ class UserPreferences(context: Context) {
 
     companion object {
         const val KEY_CURRENT_STREAK = "current_streak"
+        const val KEY_LONGEST_STREAK = "longest_streak"
         const val KEY_LAST_WORKOUT_DATE = "last_workout_date"
         const val KEY_HEIGHT = "height"
         const val KEY_WEIGHT = "weight"
@@ -236,6 +237,9 @@ class UserPreferences(context: Context) {
 
     fun getCurrentStreak(): Int = prefs.getInt(KEY_CURRENT_STREAK, 0)
     fun setCurrentStreak(streak: Int) = prefs.edit().putInt(KEY_CURRENT_STREAK, streak).apply()
+
+    fun getLongestStreak(): Int = prefs.getInt(KEY_LONGEST_STREAK, 0)
+    fun setLongestStreak(streak: Int) = prefs.edit().putInt(KEY_LONGEST_STREAK, streak).apply()
 
     fun getLastWorkoutDate(): LocalDate? {
         val epoch = prefs.getLong(KEY_LAST_WORKOUT_DATE, -1L)
