@@ -55,13 +55,10 @@ fun WorkoutSettingsScreen(
     val playbackProgress by viewModel.playbackProgress.collectAsState()
 
     val isVoiceGuideEnabled by viewModel.isVoiceGuideEnabled.collectAsState()
-    val coachName by viewModel.coachName.collectAsState()
     val coachVolume by viewModel.coachVolume.collectAsState()
     val isSoundEffectEnabled by viewModel.isSoundEffectEnabled.collectAsState()
 
-    val autoCounting by viewModel.autoCounting.collectAsState()
     val restTimer by viewModel.restTimer.collectAsState()
-    val countdown by viewModel.countdown.collectAsState()
 
     // Dialog trigger states
     var activeDialog by remember { mutableStateOf<String?>(null) } // "autoCounting", "restTimer", "countdown", "coach"
@@ -327,13 +324,12 @@ fun WorkoutSettingsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
-                                // Coach Name selector row
+                                // Coach Name row (Static to Sarah)
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(CardNested)
-                                        .clickable { activeDialog = "coach" }
                                         .padding(12.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
@@ -348,11 +344,7 @@ fun WorkoutSettingsScreen(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         // Round Coach Avatar
-                                        val avatarUrl = when (coachName) {
-                                            "James" -> "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                                            "Sarah" -> "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                                            else -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                                        }
+                                        val avatarUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
                                         Box(
                                             modifier = Modifier
                                                 .size(36.dp)
@@ -361,22 +353,16 @@ fun WorkoutSettingsScreen(
                                         ) {
                                             AsyncImage(
                                                 model = avatarUrl,
-                                                contentDescription = coachName,
+                                                contentDescription = "Sarah",
                                                 modifier = Modifier.fillMaxSize(),
                                                 contentScale = ContentScale.Crop
                                             )
                                         }
                                         Text(
-                                            text = coachName,
+                                            text = "Sarah",
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 14.sp
-                                        )
-                                        Icon(
-                                            imageVector = Icons.Default.ChevronRight,
-                                            contentDescription = null,
-                                            tint = Color.Gray,
-                                            modifier = Modifier.size(20.dp)
                                         )
                                     }
                                 }
@@ -427,32 +413,12 @@ fun WorkoutSettingsScreen(
                             .background(CardBackground)
                             .padding(vertical = 8.dp)
                     ) {
-                        // Auto Counting Item
-                        GeneralSettingRow(
-                            title = "Auto Counting",
-                            subtitle = null,
-                            valueText = autoCounting,
-                            onClick = { activeDialog = "autoCounting" }
-                        )
-
-                        HorizontalDivider(color = Color.White.copy(alpha = 0.05f), modifier = Modifier.padding(horizontal = 16.dp))
-
                         // Rest Timer Item
                         GeneralSettingRow(
                             title = "Rest Timer",
                             subtitle = null,
                             valueText = restTimer,
                             onClick = { activeDialog = "restTimer" }
-                        )
-
-                        HorizontalDivider(color = Color.White.copy(alpha = 0.05f), modifier = Modifier.padding(horizontal = 16.dp))
-
-                        // Countdown before exercise Item
-                        GeneralSettingRow(
-                            title = "Countdown",
-                            subtitle = "Before exercise",
-                            valueText = countdown,
-                            onClick = { activeDialog = "countdown" }
                         )
                     }
                 }
@@ -467,29 +433,11 @@ fun WorkoutSettingsScreen(
             var onSelect: (String) -> Unit = {}
 
             when (dialogType) {
-                "coach" -> {
-                    title = "SELECT COACH"
-                    options = listOf("James", "Sarah", "Emily")
-                    selectedValue = coachName
-                    onSelect = { viewModel.setCoachName(it) }
-                }
-                "autoCounting" -> {
-                    title = "AUTO COUNTING"
-                    options = listOf("Off", "On")
-                    selectedValue = autoCounting
-                    onSelect = { viewModel.setAutoCounting(it) }
-                }
                 "restTimer" -> {
                     title = "REST TIMER"
                     options = listOf("Off", "10s", "20s", "30s", "40s", "50s", "60s")
                     selectedValue = restTimer
                     onSelect = { viewModel.setRestTimer(it) }
-                }
-                "countdown" -> {
-                    title = "COUNTDOWN BEFORE EXERCISE"
-                    options = listOf("Off", "3s", "5s", "10s", "15s")
-                    selectedValue = countdown
-                    onSelect = { viewModel.setCountdown(it) }
                 }
             }
 

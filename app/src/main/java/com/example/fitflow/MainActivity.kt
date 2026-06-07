@@ -769,7 +769,13 @@ class MainActivity : ComponentActivity() {
                                         val encodedId = android.net.Uri.encode(id)
                                         navController.navigate("supplementary_session/$encodedId")
                                     },
-                                    onEditPlan = { },
+                                    onEditPlan = {
+                                        android.widget.Toast.makeText(
+                                            this@MainActivity,
+                                            "You can't change supplementary workout plans",
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
                                     onOpenSettings = { navController.navigate("workout_settings") }
                                 )
                             }

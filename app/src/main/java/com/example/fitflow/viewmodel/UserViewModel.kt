@@ -3,8 +3,6 @@ package com.example.fitflow.viewmodel
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
-import coil.request.CachePolicy
-import coil.request.ImageRequest
 import android.content.Intent
 import android.icu.util.Calendar
 import android.util.Log
@@ -12,12 +10,15 @@ import androidx.core.content.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.example.fitflow.data.ExerciseRepository
+import com.example.fitflow.data.PlanRepository
 import com.example.fitflow.data.StepCounterManager
 import com.example.fitflow.data.UserPreferences
-import com.example.fitflow.data.PlanRepository
-import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
+import com.example.fitflow.data.model.DayPlan
+import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.data.model.UserProfile
@@ -25,45 +26,46 @@ import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.data.model.WorkoutLogEntry
 import com.example.fitflow.domain.WorkoutPlanGenerator
 import com.example.fitflow.notification.WorkoutReminderReceiver
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import java.time.LocalDate
-import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.utils.GifUrlHelper
 import com.example.fitflow.utils.NetworkStateHelper
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.Job
+import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class PlanProvisioningState(
-    val firstSegmentProgress: Float = 0f,
-    val secondSegmentProgress: Float = 0f,
-    val isCompleted: Boolean = false,
-    val requiresMobileDataConsent: Boolean = false,
-    val isNoNetwork: Boolean = false,
-    val isInProgress: Boolean = false,
-    val hasError: Boolean = false,
-    val statusMessage: String = "Creating your plan..."
+        val firstSegmentProgress: Float = 0f,
+        val secondSegmentProgress: Float = 0f,
+        val isCompleted: Boolean = false,
+        val requiresMobileDataConsent: Boolean = false,
+        val isNoNetwork: Boolean = false,
+        val isInProgress: Boolean = false,
+        val hasError: Boolean = false,
+        val statusMessage: String = "Creating your plan..."
 )
 
 class UserViewModel(
-    private val userPreferences: UserPreferences,
-    private val exerciseRepository: ExerciseRepository,
-    private val planRepository: PlanRepository
+        private val userPreferences: UserPreferences,
+        private val exerciseRepository: ExerciseRepository,
+        private val planRepository: PlanRepository
 ) : ViewModel() {
     private val _userProfile: MutableStateFlow<UserProfile?> = MutableStateFlow(null)
     val userProfile: StateFlow<UserProfile?> = _userProfile.asStateFlow()
 
-    val allExercises: StateFlow<List<Exercise>> = exerciseRepository.getAll()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    val allExercises: StateFlow<List<Exercise>> =
+            exerciseRepository
+                    .getAll()
+                    .stateIn(
+                            scope = viewModelScope,
+                            started = SharingStarted.WhileSubscribed(5000),
+                            initialValue = emptyList()
+                    )
 
     private val _workoutPlan = MutableStateFlow<List<DayPlan>>(emptyList())
     val workoutPlan: StateFlow<List<DayPlan>> = _workoutPlan.asStateFlow()
@@ -93,20 +95,22 @@ class UserViewModel(
     private val _workoutTimestamps = MutableStateFlow<Map<Int, Long>>(emptyMap())
     val workoutTimestamps: StateFlow<Map<Int, Long>> = _workoutTimestamps.asStateFlow()
 
-    private val _todayHealthMetrics = MutableStateFlow(
-        DailyHealthMetrics(
-            date = LocalDate.now(),
-            steps = 0,
-            waterIntakeMl = 0,
-            waterGoalMl = 2000,
-            stepGoal = 6000,
-            stepSource = StepSource.MANUAL
-        )
-    )
+    private val _todayHealthMetrics =
+            MutableStateFlow(
+                    DailyHealthMetrics(
+                            date = LocalDate.now(),
+                            steps = 0,
+                            waterIntakeMl = 0,
+                            waterGoalMl = 2000,
+                            stepGoal = 6000,
+                            stepSource = StepSource.MANUAL
+                    )
+            )
     val todayHealthMetrics: StateFlow<DailyHealthMetrics> = _todayHealthMetrics.asStateFlow()
 
     private val _healthMetricsHistory = MutableStateFlow<List<DailyHealthMetrics>>(emptyList())
-    val healthMetricsHistory: StateFlow<List<DailyHealthMetrics>> = _healthMetricsHistory.asStateFlow()
+    val healthMetricsHistory: StateFlow<List<DailyHealthMetrics>> =
+            _healthMetricsHistory.asStateFlow()
 
     private val _globalWorkoutLogs = MutableStateFlow<List<WorkoutLogEntry>>(emptyList())
     val globalWorkoutLogs: StateFlow<List<WorkoutLogEntry>> = _globalWorkoutLogs.asStateFlow()
@@ -121,7 +125,8 @@ class UserViewModel(
     val stepTrackingActive: StateFlow<Boolean> = _stepTrackingActive.asStateFlow()
 
     private val _planProvisioningState = MutableStateFlow(PlanProvisioningState())
-    val planProvisioningState: StateFlow<PlanProvisioningState> = _planProvisioningState.asStateFlow()
+    val planProvisioningState: StateFlow<PlanProvisioningState> =
+            _planProvisioningState.asStateFlow()
 
     private var stepCounterManager: StepCounterManager? = null
     private var planProvisioningJob: Job? = null
@@ -136,19 +141,16 @@ class UserViewModel(
         _userProfile.value = profile
         // Load progress scoped to the active goal
         val activeGoal = profile?.goal
-        _completedDays.value = if (activeGoal != null)
-            userPreferences.getCompletedDaysForGoal(activeGoal)
-        else
-            userPreferences.getCompletedDays() // fallback (first-run / no goal yet)
-        _completedDateMap.value = if (activeGoal != null)
-            userPreferences.getCompletedDateMapForGoal(activeGoal)
-        else
-            userPreferences.getCompletedDateMap()
-        
-        _partialProgressMap.value = if (activeGoal != null)
-            userPreferences.getPartialWorkoutProgressMap(activeGoal)
-        else
-            emptyMap()
+        _completedDays.value =
+                if (activeGoal != null) userPreferences.getCompletedDaysForGoal(activeGoal)
+                else userPreferences.getCompletedDays() // fallback (first-run / no goal yet)
+        _completedDateMap.value =
+                if (activeGoal != null) userPreferences.getCompletedDateMapForGoal(activeGoal)
+                else userPreferences.getCompletedDateMap()
+
+        _partialProgressMap.value =
+                if (activeGoal != null) userPreferences.getPartialWorkoutProgressMap(activeGoal)
+                else emptyMap()
 
         _currentStreak.value = userPreferences.getCurrentStreak()
         _longestStreak.value = userPreferences.getLongestStreak()
@@ -159,42 +161,57 @@ class UserViewModel(
         refreshHealthMetrics()
 
         viewModelScope.launch {
-            val basePlan = if (profile != null) {
-                workoutPlanGenerator.generatePlan(profile.goal)
-            } else {
-                emptyList()
-            }
-            _workoutPlan.value = basePlan.map { day ->
-                val custom = userPreferences.getCustomDayPlan(day.dayNumber)
-                if (custom != null) day.copy(workoutExercises = custom) else day
-            }
+            val basePlan =
+                    if (profile != null) {
+                        workoutPlanGenerator.generatePlan(profile.goal)
+                    } else {
+                        emptyList()
+                    }
+            _workoutPlan.value =
+                    basePlan.map { day ->
+                        val custom = userPreferences.getCustomDayPlan(day.dayNumber)
+                        if (custom != null) day.copy(workoutExercises = custom) else day
+                    }
         }
     }
 
     fun updateDayPlan(dayNumber: Int, updatedExercises: List<WorkoutExercise>) {
         userPreferences.saveCustomDayPlan(dayNumber, updatedExercises)
-        _workoutPlan.value = _workoutPlan.value.map { day ->
-            if (day.dayNumber == dayNumber) {
-                day.copy(workoutExercises = updatedExercises)
-            } else {
-                day
-            }
-        }
+        _workoutPlan.value =
+                _workoutPlan.value.map { day ->
+                    if (day.dayNumber == dayNumber) {
+                        day.copy(workoutExercises = updatedExercises)
+                    } else {
+                        day
+                    }
+                }
     }
 
-    suspend fun getSupplementaryWorkout(id: String): com.example.fitflow.data.model.SupplementaryWorkout? {
-        return com.example.fitflow.domain.PushYourLimitsCatalog.findEnrichedById(id, exerciseRepository)
+    suspend fun getSupplementaryWorkout(
+            id: String
+    ): com.example.fitflow.data.model.SupplementaryWorkout? {
+        return com.example.fitflow.domain.PushYourLimitsCatalog.findEnrichedById(
+                id,
+                exerciseRepository
+        )
     }
 
     fun saveProfile(
-        selectedGoal: FitnessGoal,
-        height: Float,
-        weight: Float,
-        birthYear: Int,
-        targetWeight: Float,
-        workoutTime: String
+            selectedGoal: FitnessGoal,
+            height: Float,
+            weight: Float,
+            birthYear: Int,
+            targetWeight: Float,
+            workoutTime: String
     ) {
-        userPreferences.saveUserProfile(selectedGoal, height, weight, birthYear, targetWeight, workoutTime)
+        userPreferences.saveUserProfile(
+                selectedGoal,
+                height,
+                weight,
+                birthYear,
+                targetWeight,
+                workoutTime
+        )
         userPreferences.setOnboarded(true)
         loadUserProfile()
     }
@@ -212,53 +229,59 @@ class UserViewModel(
         pendingHybridUrls = emptyList()
         userPreferences.markHybridGifCachePending(goal.name)
 
-        _planProvisioningState.value = PlanProvisioningState(
-            firstSegmentProgress = 0f,
-            secondSegmentProgress = 0f,
-            isCompleted = false,
-            isInProgress = true,
-            statusMessage = "Creating your plan..."
-        )
-
-        planProvisioningJob = viewModelScope.launch {
-            try {
-                userPreferences.saveGoal(goal)
-                userPreferences.clearCustomDayPlans()
-                _userProfile.value = userPreferences.getUserProfile()
-                // Immediately sync progress state to the NEW goal so UI is correct
-                _completedDays.value = userPreferences.getCompletedDaysForGoal(goal)
-                _completedDateMap.value = userPreferences.getCompletedDateMapForGoal(goal)
-                _partialProgressMap.value = userPreferences.getPartialWorkoutProgressMap(goal)
-
-                val generatedPlan = workoutPlanGenerator.generatePlan(goal)
-                val mergedPlan = generatedPlan.map { day ->
-                    val custom = userPreferences.getCustomDayPlan(day.dayNumber)
-                    if (custom != null) day.copy(workoutExercises = custom) else day
-                }
-                _workoutPlan.value = mergedPlan
-
-                _planProvisioningState.value = _planProvisioningState.value.copy(
-                    firstSegmentProgress = 1f,
-                    statusMessage = "Preparing resources..."
+        _planProvisioningState.value =
+                PlanProvisioningState(
+                        firstSegmentProgress = 0f,
+                        secondSegmentProgress = 0f,
+                        isCompleted = false,
+                        isInProgress = true,
+                        statusMessage = "Creating your plan..."
                 )
 
-                val hybridUrls = collectHybridGifUrls(mergedPlan)
-                pendingHybridUrls = hybridUrls
+        planProvisioningJob =
+                viewModelScope.launch {
+                    try {
+                        userPreferences.saveGoal(goal)
+                        userPreferences.clearCustomDayPlans()
+                        _userProfile.value = userPreferences.getUserProfile()
+                        // Immediately sync progress state to the NEW goal so UI is correct
+                        _completedDays.value = userPreferences.getCompletedDaysForGoal(goal)
+                        _completedDateMap.value = userPreferences.getCompletedDateMapForGoal(goal)
+                        _partialProgressMap.value =
+                                userPreferences.getPartialWorkoutProgressMap(goal)
 
-                if (hybridUrls.isEmpty()) {
-                    completePlanProvisioning(goal.name)
-                    return@launch
+                        val generatedPlan = workoutPlanGenerator.generatePlan(goal)
+                        val mergedPlan =
+                                generatedPlan.map { day ->
+                                    val custom = userPreferences.getCustomDayPlan(day.dayNumber)
+                                    if (custom != null) day.copy(workoutExercises = custom) else day
+                                }
+                        _workoutPlan.value = mergedPlan
+
+                        _planProvisioningState.value =
+                                _planProvisioningState.value.copy(
+                                        firstSegmentProgress = 1f,
+                                        statusMessage = "Preparing resources..."
+                                )
+
+                        val hybridUrls = collectHybridGifUrls(mergedPlan)
+                        pendingHybridUrls = hybridUrls
+
+                        if (hybridUrls.isEmpty()) {
+                            completePlanProvisioning(goal.name)
+                            return@launch
+                        }
+
+                        handlePrefetchGate(context.applicationContext, goal, hybridUrls)
+                    } catch (_: Exception) {
+                        _planProvisioningState.value =
+                                _planProvisioningState.value.copy(
+                                        isInProgress = false,
+                                        hasError = true,
+                                        statusMessage = "Unable to finish setup. Please retry."
+                                )
+                    }
                 }
-
-                handlePrefetchGate(context.applicationContext, goal, hybridUrls)
-            } catch (_: Exception) {
-                _planProvisioningState.value = _planProvisioningState.value.copy(
-                    isInProgress = false,
-                    hasError = true,
-                    statusMessage = "Unable to finish setup. Please retry."
-                )
-            }
-        }
     }
 
     fun confirmUseMobileDataForProvisioning(context: Context) {
@@ -271,11 +294,12 @@ class UserViewModel(
     fun retryPlanProvisioning(context: Context) {
         if (planProvisioningJob?.isActive == true) return
 
-        _planProvisioningState.value = _planProvisioningState.value.copy(
-            hasError = false,
-            isInProgress = true,
-            statusMessage = "Retrying setup..."
-        )
+        _planProvisioningState.value =
+                _planProvisioningState.value.copy(
+                        hasError = false,
+                        isInProgress = true,
+                        statusMessage = "Retrying setup..."
+                )
 
         val urls = pendingHybridUrls
         if (urls.isNotEmpty()) {
@@ -292,7 +316,7 @@ class UserViewModel(
         val today = LocalDate.now()
         val nowMillis = System.currentTimeMillis()
         val activeGoal = _userProfile.value?.goal
-        
+
         // Save global workout log EVERY time a session finishes (including re-dos)
         val plan = _workoutPlan.value.find { it.dayNumber == dayNumber }
         val plannedDurationSec = plan?.workoutExercises?.sumOf { it.durationSec } ?: 0
@@ -300,15 +324,16 @@ class UserViewModel(
         val kcal = plan?.workoutExercises?.sumOf { it.kcal } ?: 0
         val isRest = plan?.isRest ?: false
         val goalName = activeGoal?.name ?: "UNKNOWN"
-        val logEntry = WorkoutLogEntry(
-            dateEpochDay = today.toEpochDay(),
-            timestampMillis = nowMillis,
-            dayNumber = dayNumber,
-            goalName = goalName,
-            durationSec = finalDurationSec,
-            kcal = kcal,
-            isRest = isRest
-        )
+        val logEntry =
+                WorkoutLogEntry(
+                        dateEpochDay = today.toEpochDay(),
+                        timestampMillis = nowMillis,
+                        dayNumber = dayNumber,
+                        goalName = goalName,
+                        durationSec = finalDurationSec,
+                        kcal = kcal,
+                        isRest = isRest
+                )
         userPreferences.addGlobalWorkoutLog(logEntry)
         _globalWorkoutLogs.value = _globalWorkoutLogs.value + logEntry
 
@@ -339,7 +364,8 @@ class UserViewModel(
 
             // Save exact timestamp for progression
             userPreferences.saveWorkoutTimestamp(dayNumber, nowMillis)
-            _workoutTimestamps.value = _workoutTimestamps.value.toMutableMap().also { it[dayNumber] = nowMillis }
+            _workoutTimestamps.value =
+                    _workoutTimestamps.value.toMutableMap().also { it[dayNumber] = nowMillis }
 
             val lastWorkout = userPreferences.getLastWorkoutDate()
             var streak = userPreferences.getCurrentStreak()
@@ -373,8 +399,8 @@ class UserViewModel(
     }
 
     /**
-     * Reset progress for the currently active goal back to Day 1.
-     * All completed-day data for this goal is cleared.
+     * Reset progress for the currently active goal back to Day 1. All completed-day data for this
+     * goal is cleared.
      */
     fun resetPlan() {
         val activeGoal = _userProfile.value?.goal ?: return
@@ -385,15 +411,15 @@ class UserViewModel(
     }
 
     /**
-     * How many workout days the user has completed for the given goal.
-     * Used to decide whether to show the "Resume?" dialog in UpdateGoalScreen.
+     * How many workout days the user has completed for the given goal. Used to decide whether to
+     * show the "Resume?" dialog in UpdateGoalScreen.
      */
     fun getCompletedCountForGoal(goal: FitnessGoal): Int =
-        userPreferences.getCompletedCountForGoal(goal)
+            userPreferences.getCompletedCountForGoal(goal)
 
     /**
-     * Explicitly wipe the frozen progress for a given goal.
-     * Called from MainActivity when the user chooses "Day 1" in the resume dialog.
+     * Explicitly wipe the frozen progress for a given goal. Called from MainActivity when the user
+     * chooses "Day 1" in the resume dialog.
      */
     fun clearProgressForGoal(goal: FitnessGoal) {
         userPreferences.clearCompletedDaysForGoal(goal)
@@ -408,16 +434,17 @@ class UserViewModel(
     fun markSupplementaryComplete(title: String, activeSeconds: Int, kcal: Int) {
         val today = LocalDate.now()
         val nowMillis = System.currentTimeMillis()
-        
-        val logEntry = WorkoutLogEntry(
-            dateEpochDay = today.toEpochDay(),
-            timestampMillis = nowMillis,
-            dayNumber = -1, // Use -1 to indicate it's a supplementary workout
-            goalName = title,
-            durationSec = activeSeconds,
-            kcal = kcal,
-            isRest = false
-        )
+
+        val logEntry =
+                WorkoutLogEntry(
+                        dateEpochDay = today.toEpochDay(),
+                        timestampMillis = nowMillis,
+                        dayNumber = -1, // Use -1 to indicate it's a supplementary workout
+                        goalName = title,
+                        durationSec = activeSeconds,
+                        kcal = kcal,
+                        isRest = false
+                )
         userPreferences.addGlobalWorkoutLog(logEntry)
         _globalWorkoutLogs.value = _globalWorkoutLogs.value + logEntry
     }
@@ -490,37 +517,50 @@ class UserViewModel(
             return
         }
 
-        stepCounterManager = StepCounterManager(context.applicationContext, object : StepCounterManager.Listener {
-            override fun onCounterValue(counterValue: Int) {
-                val today = LocalDate.now()
-                val baselineDay = userPreferences.getStepBaselineDay()
-                val baselineValue = userPreferences.getStepBaselineValue()
+        stepCounterManager =
+                StepCounterManager(
+                        context.applicationContext,
+                        object : StepCounterManager.Listener {
+                            override fun onCounterValue(counterValue: Int) {
+                                val today = LocalDate.now()
+                                val baselineDay = userPreferences.getStepBaselineDay()
+                                val baselineValue = userPreferences.getStepBaselineValue()
 
-                val baseline = if (baselineDay == today && baselineValue >= 0) {
-                    baselineValue
-                } else {
-                    userPreferences.setStepBaseline(today, counterValue)
-                    counterValue
-                }
+                                val baseline =
+                                        if (baselineDay == today && baselineValue >= 0) {
+                                            baselineValue
+                                        } else {
+                                            userPreferences.setStepBaseline(today, counterValue)
+                                            counterValue
+                                        }
 
-                val todaySteps = (counterValue - baseline).coerceAtLeast(0)
-                userPreferences.setTodaySteps(todaySteps, defaultWaterGoalMl(), StepSource.SENSOR)
-                userPreferences.setStepSensorEnabled(true)
-                refreshHealthMetrics()
-            }
+                                val todaySteps = (counterValue - baseline).coerceAtLeast(0)
+                                userPreferences.setTodaySteps(
+                                        todaySteps,
+                                        defaultWaterGoalMl(),
+                                        StepSource.SENSOR
+                                )
+                                userPreferences.setStepSensorEnabled(true)
+                                refreshHealthMetrics()
+                            }
 
-            override fun onStepDetected() {
-                userPreferences.incrementTodaySteps(1, defaultWaterGoalMl(), StepSource.SENSOR)
-                userPreferences.setStepSensorEnabled(true)
-                refreshHealthMetrics()
-            }
+                            override fun onStepDetected() {
+                                userPreferences.incrementTodaySteps(
+                                        1,
+                                        defaultWaterGoalMl(),
+                                        StepSource.SENSOR
+                                )
+                                userPreferences.setStepSensorEnabled(true)
+                                refreshHealthMetrics()
+                            }
 
-            override fun onSensorUnavailable() {
-                _stepTrackingActive.value = false
-                userPreferences.setStepSensorEnabled(false)
-                refreshHealthMetrics()
-            }
-        })
+                            override fun onSensorUnavailable() {
+                                _stepTrackingActive.value = false
+                                userPreferences.setStepSensorEnabled(false)
+                                refreshHealthMetrics()
+                            }
+                        }
+                )
 
         val started = stepCounterManager?.start() == true
         _stepTrackingActive.value = started
@@ -542,52 +582,55 @@ class UserViewModel(
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, WorkoutReminderReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pendingIntent =
+                PendingIntent.getBroadcast(
+                        context,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
 
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
-            set(Calendar.SECOND, 0)
-            if (before(Calendar.getInstance())) {
-                add(Calendar.DATE, 1)
-            }
-        }
+        val calendar =
+                Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, hour)
+                    set(Calendar.MINUTE, minute)
+                    set(Calendar.SECOND, 0)
+                    if (before(Calendar.getInstance())) {
+                        add(Calendar.DATE, 1)
+                    }
+                }
 
         // Lặp lại hàng ngày
         alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
-            pendingIntent
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                AlarmManager.INTERVAL_DAY,
+                pendingIntent
         )
     }
 
     fun scheduleDemoWorkoutReminder(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, WorkoutReminderReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context, 1001, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pendingIntent =
+                PendingIntent.getBroadcast(
+                        context,
+                        1001,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
 
         // Set alarm for 5 seconds from now
         val triggerTime = System.currentTimeMillis() + 5000
-        
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
             )
         } else {
-            alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
         }
     }
 
@@ -601,31 +644,31 @@ class UserViewModel(
     }
 
     private suspend fun handlePrefetchGate(
-        context: Context,
-        goal: FitnessGoal,
-        hybridUrls: List<String>
+            context: Context,
+            goal: FitnessGoal,
+            hybridUrls: List<String>
     ) {
         val network = NetworkStateHelper.getNetworkState(context)
 
         when {
             !network.isConnected -> {
-                _planProvisioningState.value = _planProvisioningState.value.copy(
-                    isInProgress = false,
-                    isNoNetwork = true,
-                    requiresMobileDataConsent = false,
-                    statusMessage = "Connect to Wi-Fi or mobile data to continue setup."
-                )
+                _planProvisioningState.value =
+                        _planProvisioningState.value.copy(
+                                isInProgress = false,
+                                isNoNetwork = true,
+                                requiresMobileDataConsent = false,
+                                statusMessage = "Connect to Wi-Fi or mobile data to continue setup."
+                        )
             }
-
             network.isCellular && !mobileDataConsentGranted -> {
-                _planProvisioningState.value = _planProvisioningState.value.copy(
-                    isInProgress = false,
-                    isNoNetwork = false,
-                    requiresMobileDataConsent = true,
-                    statusMessage = "Using mobile data may consume data. Continue?"
-                )
+                _planProvisioningState.value =
+                        _planProvisioningState.value.copy(
+                                isInProgress = false,
+                                isNoNetwork = false,
+                                requiresMobileDataConsent = true,
+                                statusMessage = "Using mobile data may consume data. Continue?"
+                        )
             }
-
             else -> {
                 runPrefetch(context, goal.name, hybridUrls)
             }
@@ -635,48 +678,48 @@ class UserViewModel(
     private fun continuePrefetch(context: Context, urls: List<String>) {
         val goal = pendingGoal ?: _userProfile.value?.goal ?: FitnessGoal.WEIGHT_LOSS
 
-        planProvisioningJob = viewModelScope.launch {
-            try {
-                handlePrefetchGate(context, goal, urls)
-            } catch (error: Exception) {
-                Log.e("PlanProvisioning", "continuePrefetch failed", error)
-                _planProvisioningState.value = _planProvisioningState.value.copy(
-                    isInProgress = false,
-                    hasError = true,
-                    statusMessage = "Unable to finish setup. Please retry."
-                )
-            }
-        }
+        planProvisioningJob =
+                viewModelScope.launch {
+                    try {
+                        handlePrefetchGate(context, goal, urls)
+                    } catch (error: Exception) {
+                        Log.e("PlanProvisioning", "continuePrefetch failed", error)
+                        _planProvisioningState.value =
+                                _planProvisioningState.value.copy(
+                                        isInProgress = false,
+                                        hasError = true,
+                                        statusMessage = "Unable to finish setup. Please retry."
+                                )
+                    }
+                }
     }
 
-    private suspend fun runPrefetch(
-        context: Context,
-        goalSignature: String,
-        urls: List<String>
-    ) {
-        _planProvisioningState.value = _planProvisioningState.value.copy(
-            isInProgress = true,
-            isNoNetwork = false,
-            requiresMobileDataConsent = false,
-            hasError = false,
-            secondSegmentProgress = 0f,
-            statusMessage = "Finalizing setup..."
-        )
+    private suspend fun runPrefetch(context: Context, goalSignature: String, urls: List<String>) {
+        _planProvisioningState.value =
+                _planProvisioningState.value.copy(
+                        isInProgress = true,
+                        isNoNetwork = false,
+                        requiresMobileDataConsent = false,
+                        hasError = false,
+                        secondSegmentProgress = 0f,
+                        statusMessage = "Finalizing setup..."
+                )
 
-        val imageLoader = (context.applicationContext as com.example.fitflow.FitFlowApplication).imageLoader
+        val imageLoader =
+                (context.applicationContext as com.example.fitflow.FitFlowApplication).imageLoader
         val total = urls.size.coerceAtLeast(1)
 
         withContext(Dispatchers.IO) {
             urls.forEachIndexed { index, url ->
                 try {
                     imageLoader.execute(
-                        ImageRequest.Builder(context)
-                            .data(url)
-                            .memoryCacheKey(url)
-                            .diskCacheKey(url)
-                            .memoryCachePolicy(CachePolicy.ENABLED)
-                            .diskCachePolicy(CachePolicy.ENABLED)
-                            .build()
+                            ImageRequest.Builder(context)
+                                    .data(url)
+                                    .memoryCacheKey(url)
+                                    .diskCacheKey(url)
+                                    .memoryCachePolicy(CachePolicy.ENABLED)
+                                    .diskCachePolicy(CachePolicy.ENABLED)
+                                    .build()
                     )
                 } catch (error: Exception) {
                     Log.w("PlanProvisioning", "Prefetch failed for $url", error)
@@ -684,7 +727,8 @@ class UserViewModel(
                 }
 
                 val progress = (index + 1) / total.toFloat()
-                _planProvisioningState.value = _planProvisioningState.value.copy(secondSegmentProgress = progress)
+                _planProvisioningState.value =
+                        _planProvisioningState.value.copy(secondSegmentProgress = progress)
             }
         }
 
@@ -697,38 +741,36 @@ class UserViewModel(
         // Reload full profile & progress so the dashboard reflects the NEW goal
         loadUserProfile()
 
-        _planProvisioningState.value = _planProvisioningState.value.copy(
-            firstSegmentProgress = 1f,
-            secondSegmentProgress = 1f,
-            isInProgress = false,
-            isCompleted = true,
-            isNoNetwork = false,
-            requiresMobileDataConsent = false,
-            hasError = false,
-            statusMessage = "Setup complete"
-        )
+        _planProvisioningState.value =
+                _planProvisioningState.value.copy(
+                        firstSegmentProgress = 1f,
+                        secondSegmentProgress = 1f,
+                        isInProgress = false,
+                        isCompleted = true,
+                        isNoNetwork = false,
+                        requiresMobileDataConsent = false,
+                        hasError = false,
+                        statusMessage = "Setup complete"
+                )
     }
 
     private fun collectHybridGifUrls(plan: List<DayPlan>): List<String> {
-        return plan
-            .asSequence()
-            .filter { !it.isRest }
-            .take(7)
-            .flatMap { it.workoutExercises.asSequence() }
-            .mapNotNull { exercise ->
-                exercise.gifFileName
-                    .takeIf { it.isNotEmpty() }
-                    ?.let { GifUrlHelper.getUrl(it) }
-            }
-            .distinct()
-            .toList()
+        return plan.asSequence()
+                .filter { !it.isRest }
+                .take(7)
+                .flatMap { it.workoutExercises.asSequence() }
+                .mapNotNull { exercise ->
+                    exercise.gifFileName.takeIf { it.isNotEmpty() }?.let { GifUrlHelper.getUrl(it) }
+                }
+                .distinct()
+                .toList()
     }
 }
 
 class UserViewModelFactory(
-    private val userPreferences: UserPreferences,
-    private val exerciseRepository: ExerciseRepository,
-    private val planRepository: PlanRepository
+        private val userPreferences: UserPreferences,
+        private val exerciseRepository: ExerciseRepository,
+        private val planRepository: PlanRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
