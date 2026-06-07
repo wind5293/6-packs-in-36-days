@@ -142,6 +142,7 @@ fun ChatbotScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .imePadding()
     ) {
         // ── Header ──
         Row(
@@ -194,7 +195,7 @@ fun ChatbotScreen(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
                 )
                 Text(
-                    "FitFlow",
+                    "Fitbro",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
                     fontStyle = FontStyle.Normal,

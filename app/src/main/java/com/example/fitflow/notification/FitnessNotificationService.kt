@@ -38,8 +38,17 @@ class FitnessNotificationService : Service() {
         }
 
         fun addWater(ctx: Context) {
-            waterCurrent = (waterCurrent + inputMl).coerceAtMost(waterGoal)
+            val userPrefs = com.example.fitflow.data.UserPreferences(ctx)
+            userPrefs.addWater(inputMl, 2000)
+            
+            val metrics = userPrefs.getTodayHealthMetrics(2000)
+            waterCurrent = metrics.waterIntakeMl
+            waterGoal = metrics.waterGoalMl
             refresh(ctx)
+
+            val intent = Intent("com.example.fitflow.WATER_UPDATED")
+            intent.setPackage(ctx.packageName)
+            ctx.sendBroadcast(intent)
         }
 
         fun refresh(ctx: Context) {

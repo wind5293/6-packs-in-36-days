@@ -10,10 +10,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.ArrowBack
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.HeartPulse
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,7 +67,8 @@ fun ProfileScreen(
     onAddWater: (Int) -> Unit = {},
     onSetWaterGoal: (Int) -> Unit = {},
     onSetStepGoal: (Int) -> Unit = {},
-    onDemoNotification: () -> Unit = {}
+    onDemoNotification: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     val completedCount = completedDays.size
     val planByDayNumber = remember(workoutPlan) { workoutPlan.associateBy { it.dayNumber } }
@@ -135,22 +140,27 @@ fun ProfileScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
-                    "IDENTITY",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 3.sp
-                )
-                Row {
-                    Text(
-                        "PROFILE",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Normal
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.padding(end = 12.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
+                }
+                Column {
+                    Row {
+                        Text(
+                            "REPORT",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            fontStyle = FontStyle.Normal
+                        )
+                    }
                 }
             }
         }
@@ -175,53 +185,22 @@ fun ProfileScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Default.Person,
+                        Lucide.HeartPulse,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(40.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    "Welcome, my friend!",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 18.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Normal
-                )
+
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    ActivityStatItem("WORKOUTS", completedCount.toString(), "days")
-                    ActivityStatItem("KCAL", totalKcal.toString(), "kcal")
-                    ActivityStatItem("MINUTES", totalMinutes.toString(), "min")
+                    StatsItem("WEIGHT", userProfile?.weight?.let { "%.1f".format(it) } ?: "-", "kg", false)
+                    StatsItem("HEIGHT", userProfile?.height?.let { "%.0f".format(it) } ?: "-", "cm", false)
+                    StatsItem("BMI", userProfile?.bmi?.let { "%.1f".format(it) } ?: "-", "", true)
                 }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Body stats card (Weight / Height / BMI only)
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(32.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
-                    RoundedCornerShape(32.dp)
-                )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                StatsItem("WEIGHT", userProfile?.weight?.let { "%.1f".format(it) } ?: "-", "kg", false)
-                StatsItem("HEIGHT", userProfile?.height?.let { "%.0f".format(it) } ?: "-", "cm", false)
-                StatsItem("BMI", userProfile?.bmi?.let { "%.1f".format(it) } ?: "-", "", true)
             }
         }
 

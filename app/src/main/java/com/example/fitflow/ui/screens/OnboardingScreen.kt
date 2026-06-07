@@ -52,9 +52,10 @@ fun OnboardingScreen(
         birthYear: Int,
         targetWeight: Float,
         workoutTime: String
-    ) -> Unit
+    ) -> Unit,
+    isRecalibrate: Boolean = false
 ) {
-    val totalSteps = 6
+    val totalSteps = if (isRecalibrate) 5 else 6
     val pagerState = rememberPagerState(pageCount = { totalSteps })
     val scope = rememberCoroutineScope()
     // State chung

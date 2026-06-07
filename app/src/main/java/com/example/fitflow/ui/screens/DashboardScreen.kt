@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.fitflow.data.model.UserProfile
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Chat
@@ -62,6 +63,8 @@ import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
 import com.composables.icons.lucide.Flame
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Bot
+import com.composables.icons.lucide.HeartPulse
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
@@ -115,7 +118,8 @@ fun DashboardScreen(
     libraryMuscleGroups: List<String> = listOf("ALL"),
     onLibrarySearchQueryChange: (String) -> Unit = {},
     onLibraryMuscleGroupChange: (String) -> Unit = {},
-    onOpenLibrary: () -> Unit = {}
+    onOpenLibrary: () -> Unit = {},
+    onOpenProfile: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -129,20 +133,27 @@ fun DashboardScreen(
 
     var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(
-            top = 8.dp,
-            start = 16.dp,
-            end = 16.dp,
-            bottom = paddingValues.calculateBottomPadding() + 16.dp,
-        )
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        stickyHeader {
-            HeaderSection(onOpenChatbot = onOpenChatbot)
-        }
+        HeaderSection(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp),
+            onOpenChatbot = onOpenChatbot,
+            onOpenProfile = onOpenProfile
+        )
+        
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                top = 16.dp
+            )
+        ) {
+
         item {
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -203,6 +214,7 @@ fun DashboardScreen(
                 onExerciseClick = { selectedExercise = it }
             )
         }
+    }
     }
 
     if (selectedExercise != null) {
@@ -444,7 +456,7 @@ private fun DashboardLibraryExerciseItem(
 
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(3.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = exercise.name,
@@ -454,25 +466,30 @@ private fun DashboardLibraryExerciseItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = muscles.ifBlank { exercise.exercise_type },
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = muscles.ifBlank { exercise.exercise_type },
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                Text(
+                    text = exercise.difficulty.replaceFirstChar { it.uppercase() },
+                    fontSize = 7.sp,
+                    fontWeight = FontWeight.Black,
+                    color = badgeColor,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(badgeColor.copy(alpha = 0.12f))
+                        .padding(horizontal = 5.dp, vertical = 2.dp)
+                )
+            }
         }
-
-        Text(
-            text = exercise.difficulty.replaceFirstChar { it.uppercase() },
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Black,
-            color = badgeColor,
-            modifier = Modifier
-                .clip(RoundedCornerShape(999.dp))
-                .background(badgeColor.copy(alpha = 0.12f))
-                .padding(horizontal = 10.dp, vertical = 6.dp)
-        )
     }
 }
 
@@ -580,10 +597,12 @@ fun TodayWeightSection(userProfile: UserProfile) {
 
 @Composable
 fun HeaderSection(
-    onOpenChatbot: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    onOpenChatbot: () -> Unit = {},
+    onOpenProfile: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
             .padding(bottom = 8.dp),
@@ -596,34 +615,75 @@ fun HeaderSection(
                 color = Color(0xFFFF6B00),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Normal
+                fontStyle = FontStyle.Italic
             )
             Text(
                 text = "FLOW",
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Normal
+                fontStyle = FontStyle.Italic
             )
         }
-        IconButton(
-            onClick = onOpenChatbot,
-            modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
-                    RoundedCornerShape(50)
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                IconButton(
+                    onClick = onOpenProfile,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
+                            RoundedCornerShape(50)
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            RoundedCornerShape(50)
+                        )
+                ) {
+                    Icon(
+                        Lucide.HeartPulse,
+                        contentDescription = "Report",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(
+                    text = "REPORT",
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Normal,
+                    modifier = Modifier.offset(y = (-4).dp)
                 )
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                    RoundedCornerShape(50)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                IconButton(
+                    onClick = onOpenChatbot,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
+                            RoundedCornerShape(50)
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            RoundedCornerShape(50)
+                        )
+                ) {
+                    Icon(
+                        Lucide.Bot,
+                        contentDescription = "AI Coach",
+                        tint = Color(0xFFFF6B00)
+                    )
+                }
+                Text(
+                    text = "FITBRO AI",
+                    fontSize = 9.sp,
+                    color = Color(0xFFFF6B00),
+                    fontWeight = FontWeight.Black,
+                    fontStyle = FontStyle.Normal,
+                    modifier = Modifier.offset(y = (-4).dp)
                 )
-        ) {
-            Icon(
-                Icons.Default.Chat,
-                contentDescription = "AI Coach",
-                tint = MaterialTheme.colorScheme.surfaceVariant
-            )
+            }
         }
     }
 }
@@ -685,8 +745,9 @@ fun WeeklyGoalSection(
             ) {
                 Text(
                     stringResource(R.string.dashboard_weekly_goal),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.5.sp,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
@@ -733,7 +794,8 @@ fun WeeklyGoalSection(
                         else -> Color.Transparent
                     }
                     val textColor = when {
-                        isCompleted || isToday -> MaterialTheme.colorScheme.background
+                        isCompleted -> Color.White
+                        isToday -> MaterialTheme.colorScheme.background
                         isPast -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
                         else -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     }
@@ -947,8 +1009,9 @@ fun DailyChallengeSection(
         Text(
             "Daily Challenge",
             color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 0.5.sp
         )
 
         IconButton(
@@ -1047,7 +1110,7 @@ fun DailyChallengeSection(
                 ) {
                     Text(
                         "START",
-                        color = MaterialTheme.colorScheme.primary,
+                        color = gradientColors.first(),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 2.sp
@@ -1251,23 +1314,40 @@ fun HealthMetricsSection(
     if (showAddWaterDialog) {
         AlertDialog(
             onDismissRequest = { showAddWaterDialog = false; customWaterInput = "" },
-            title = { Text("Add Water", fontWeight = FontWeight.Black) },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Lucide.GlassWater, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(24.dp))
+                    }
+                    Text("Add Water", fontWeight = FontWeight.Black, fontSize = 22.sp)
+                }
+            },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(20.dp), modifier = Modifier.padding(top = 8.dp)) {
                     // Quick presets
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(150, 250, 350, 500).forEach { amount ->
-                            OutlinedButton(
-                                onClick = {
-                                    onAddWater(amount)
-                                    showAddWaterDialog = false
-                                    customWaterInput = ""
-                                },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(4.dp)
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        onAddWater(amount)
+                                        showAddWaterDialog = false
+                                        customWaterInput = ""
+                                    }
+                                    .padding(vertical = 12.dp)
                             ) {
-                                Text("${amount}ml", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("${amount}ml", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
                             }
                         }
                     }
@@ -1277,12 +1357,17 @@ fun HealthMetricsSection(
                         onValueChange = { customWaterInput = it.filter { c -> c.isDigit() } },
                         singleLine = true,
                         label = { Text("Custom amount (ml)") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                            focusedLabelColor = MaterialTheme.colorScheme.secondary
+                        )
                     )
                 }
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         val parsed = customWaterInput.toIntOrNull()
                         if (parsed != null && parsed > 0) {
@@ -1291,14 +1376,15 @@ fun HealthMetricsSection(
                             customWaterInput = ""
                         }
                     },
-                    enabled = customWaterInput.toIntOrNull()?.let { it > 0 } == true
-                ) { Text("Add") }
+                    enabled = customWaterInput.toIntOrNull()?.let { it > 0 } == true,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                ) { Text("Add", fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
                 TextButton(onClick = { showAddWaterDialog = false; customWaterInput = "" }) {
-                    Text(
-                        stringResource(R.string.common_cancel)
-                    )
+                    Text(stringResource(R.string.common_cancel), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
             }
         )
@@ -1308,36 +1394,55 @@ fun HealthMetricsSection(
     if (showWaterGoalDialog) {
         AlertDialog(
             onDismissRequest = { showWaterGoalDialog = false },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
-                Text(
-                    stringResource(R.string.dashboard_water_goal_title),
-                    fontWeight = FontWeight.Black
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Lucide.GlassWater, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(24.dp))
+                    }
+                    Text(stringResource(R.string.dashboard_water_goal_title), fontWeight = FontWeight.Black, fontSize = 22.sp)
+                }
             },
             text = {
-                OutlinedTextField(
-                    value = waterGoalInput,
-                    onValueChange = { waterGoalInput = it.filter { c -> c.isDigit() } },
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.dashboard_goal_label)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(modifier = Modifier.padding(top = 8.dp)) {
+                    OutlinedTextField(
+                        value = waterGoalInput,
+                        onValueChange = { waterGoalInput = it.filter { c -> c.isDigit() } },
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.dashboard_goal_label)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                            focusedLabelColor = MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                }
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         val parsed = waterGoalInput.toIntOrNull()
                         if (parsed != null && parsed > 0) {
                             onSetWaterGoal(parsed)
                             showWaterGoalDialog = false
                         }
-                    }
-                ) { Text(stringResource(R.string.common_save)) }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                ) { Text(stringResource(R.string.common_save), fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showWaterGoalDialog = false
-                }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = { showWaterGoalDialog = false }) {
+                    Text(stringResource(R.string.common_cancel), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
             }
         )
     }
@@ -1346,22 +1451,39 @@ fun HealthMetricsSection(
     if (showStepGoalDialog) {
         AlertDialog(
             onDismissRequest = { showStepGoalDialog = false },
-            title = { Text("Set Step Goal", fontWeight = FontWeight.Black) },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Lucide.Footprints, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                    }
+                    Text("Set Step Goal", fontWeight = FontWeight.Black, fontSize = 22.sp)
+                }
+            },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(20.dp), modifier = Modifier.padding(top = 8.dp)) {
                     // Quick presets
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(5000, 8000, 10000, 12000).forEach { goal ->
-                            OutlinedButton(
-                                onClick = {
-                                    onSetStepGoal(goal)
-                                    showStepGoalDialog = false
-                                },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(4.dp)
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        onSetStepGoal(goal)
+                                        showStepGoalDialog = false
+                                    }
+                                    .padding(vertical = 12.dp)
                             ) {
-                                Text("${goal/1000}K", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("${goal/1000}K", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             }
                         }
                     }
@@ -1371,25 +1493,33 @@ fun HealthMetricsSection(
                         onValueChange = { stepGoalInput = it.filter { c -> c.isDigit() } },
                         singleLine = true,
                         label = { Text("Custom goal (steps)") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                 }
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         val parsed = stepGoalInput.toIntOrNull()
                         if (parsed != null && parsed > 0) {
                             onSetStepGoal(parsed)
                             showStepGoalDialog = false
                         }
-                    }
-                ) { Text(stringResource(R.string.common_save)) }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                ) { Text(stringResource(R.string.common_save), fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showStepGoalDialog = false
-                }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = { showStepGoalDialog = false }) {
+                    Text(stringResource(R.string.common_cancel), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
             }
         )
     }

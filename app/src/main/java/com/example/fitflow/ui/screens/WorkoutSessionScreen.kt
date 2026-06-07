@@ -5,6 +5,8 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -529,34 +531,158 @@ fun WorkoutSessionScreen(
     }
 
     if (showPauseDialog) {
-        AlertDialog(
-            onDismissRequest = { },
-            title = { Text(text = "Paused") },
-            text = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = current?.name ?: "")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "Do you want to resume or restart this exercise?")
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showPauseDialog = false
-                    remaining = current?.durationSec ?: 0
-                    isRunning = true
-                }) {
-                    Text("Restart", color = primaryColor)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showPauseDialog = false
-                    isRunning = true
-                }) {
-                    Text("Resume", color = textColor)
+        LaunchedEffect(Unit) {
+            settingsViewModel.pauseMusic()
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                if (isRunning) {
+                    settingsViewModel.resumeMusic()
                 }
             }
-        )
+        }
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { },
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.85f))
+                    .padding(24.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Top Bar
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        IconButton(onClick = {
+                            showPauseDialog = false
+                            isRunning = true
+                        }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
+                        }
+                        Text(
+                            "Exercise ${index + 1}/${exercises.size}",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Center Content
+                    // GIF/Image card + Title
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Card(
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.width(160.dp).aspectRatio(1f),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            coil.compose.AsyncImage(
+                                model = gifUrls[current?.name],
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("Pause", fontSize = 48.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = 2.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text((current?.name ?: "").uppercase(), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                Icons.AutoMirrored.Outlined.HelpOutline,
+                                contentDescription = "Help",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable { showInstructionScreen = true }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Resume Card
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showPauseDialog = false
+                                isRunning = true
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 24.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("Resume", color = MaterialTheme.colorScheme.primary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Only ${exercises.size - index - 1} exercise(s) left. Come on!",
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(MaterialTheme.colorScheme.primary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.ArrowForward,
+                                    contentDescription = "Resume",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Restart Button
+                    OutlinedButton(
+                        onClick = {
+                            showPauseDialog = false
+                            remaining = current?.durationSec ?: 0
+                            isRunning = true
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(72.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.5f))
+                    ) {
+                        Text("Restart", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Medium)
+                    }
+
+                    Spacer(modifier = Modifier.weight(1.5f))
+                }
+            }
+        }
     }
 }
 

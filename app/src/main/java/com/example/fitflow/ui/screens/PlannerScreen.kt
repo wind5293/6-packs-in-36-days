@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocalCafe
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -182,15 +183,7 @@ fun PlannerScreen(
                         .align(Alignment.BottomStart)
                         .padding(start = 24.dp, end = 24.dp, bottom = 48.dp)
                 ) {
-                    // Flash icons & Level
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Lucide.Zap, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        Icon(Lucide.Zap, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        Icon(Lucide.Zap, contentDescription = null, tint = Color.White.copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Beginner", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
+
                     // Goal title
                     Text(
                         text = userProfile?.goal?.title ?: "Workout Plan",
@@ -295,42 +288,32 @@ fun PlannerScreen(
                     thickness = 1.dp
                 )
                 Spacer(modifier = Modifier.height(20.dp))
-                OutlinedButton(
+                Button(
                     onClick = { showResetDialog = true },
                     shape = RoundedCornerShape(16.dp),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 1.dp,
-                        brush = androidx.compose.ui.graphics.SolidColor(
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
-                        )
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
                         Icons.Default.Refresh,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "RESET PLAN",
-                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "Toàn bộ tiến trình của kế hoạch này sẽ được đặt lại về Day 1",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
-        }
+        } // end LazyColumn
         
         // Fixed Top App Bar
         Column(
@@ -345,13 +328,12 @@ fun PlannerScreen(
             ) {
                 IconButton(
                     onClick = onBack,
-                    modifier = Modifier.padding(start = 4.dp)
+                    modifier = Modifier.padding(start = 16.dp)
                 ) {
                     Icon(
-                        imageVector = Lucide.ChevronLeft,
+                        imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
+                        tint = Color.White
                     )
                 }
                 

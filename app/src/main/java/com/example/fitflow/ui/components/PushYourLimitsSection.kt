@@ -190,7 +190,7 @@ private fun PushYourLimitsCard(
                     onClick = onClick,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = workout.buttonBgColor,
-                        contentColor = workout.buttonTextColor
+                        contentColor = workout.gradientStart
                     ),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
@@ -198,6 +198,7 @@ private fun PushYourLimitsCard(
                 ) {
                     Text(
                         text = "START",
+                        color = workout.gradientStart,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp

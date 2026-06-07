@@ -38,7 +38,6 @@ fun ExerciseInstructionOverlayScreen(
     }
 
     var detail by remember(exercise.name) { mutableStateOf<Exercise?>(null) }
-    var selectedTab by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(exercise.name) {
         detail = repository.findBestMatchByName(exercise.name)
@@ -86,86 +85,29 @@ fun ExerciseInstructionOverlayScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    .wrapContentHeight(),
                 contentAlignment = Alignment.Center
             ) {
-                when (selectedTab) {
-                    0 -> {
-                        if (gifUrl != null) {
-                            val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(gifUrl)
-                                    .crossfade(true)
-                                    .build(),
-                                imageLoader = imageLoader,
-                                contentDescription = "Exercise animation",
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Text("No animation available", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    1 -> {
-                        Text("Updating...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    2 -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = "Play",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    "Video updating...",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Custom Tabs
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                val tabs = listOf("Animation", "Muscle", "Video")
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = selectedTab == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            .clickable { selectedTab = index }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            fontSize = 14.sp
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (gifUrl != null) {
+                        val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(gifUrl)
+                                .crossfade(true)
+                                .build(),
+                            imageLoader = imageLoader,
+                            contentDescription = "Exercise animation",
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight()
                         )
+                    } else {
+                        Text("No animation available", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(32.dp))
                     }
                 }
             }
@@ -330,7 +272,6 @@ fun LibraryExerciseInstructionOverlayScreen(
     onClose: () -> Unit,
 ) {
     val context = LocalContext.current
-    var selectedTab by remember { mutableIntStateOf(0) }
 
     val gifUrl = remember(exercise) {
         exercise.local_gifs.firstOrNull()?.let { GifUrlHelper.getUrl(it) }
@@ -371,86 +312,29 @@ fun LibraryExerciseInstructionOverlayScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    .wrapContentHeight(),
                 contentAlignment = Alignment.Center
             ) {
-                when (selectedTab) {
-                    0 -> {
-                        if (gifUrl != null) {
-                            val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(gifUrl)
-                                    .crossfade(true)
-                                    .build(),
-                                imageLoader = imageLoader,
-                                contentDescription = "Exercise animation",
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Text("No animation available", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    1 -> {
-                        Text("Updating...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    2 -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = "Play",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    "Video updating...",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Custom Tabs
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                val tabs = listOf("Animation", "Muscle", "Video")
-                tabs.forEachIndexed { index, label ->
-                    val isSelected = selectedTab == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            .clickable { selectedTab = index }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            fontSize = 14.sp
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (gifUrl != null) {
+                        val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(gifUrl)
+                                .crossfade(true)
+                                .build(),
+                            imageLoader = imageLoader,
+                            contentDescription = "Exercise animation",
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight()
                         )
+                    } else {
+                        Text("No animation available", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(32.dp))
                     }
                 }
             }

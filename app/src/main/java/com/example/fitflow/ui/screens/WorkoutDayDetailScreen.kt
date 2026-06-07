@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -167,6 +169,7 @@ fun WorkoutDayDetailScreen(
                     ) {
                         Text(
                             text = "RESTART",
+                            maxLines = 1,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 2.sp
@@ -181,7 +184,7 @@ fun WorkoutDayDetailScreen(
                         ),
                         shape = CircleShape,
                         modifier = Modifier
-                            .weight(1.5f)
+                            .weight(1f)
                             .height(56.dp)
                     ) {
                         val total = dayPlan.workoutExercises.size
@@ -189,6 +192,7 @@ fun WorkoutDayDetailScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "CONTINUE",
+                                maxLines = 1,
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 2.sp
@@ -248,9 +252,10 @@ fun HeaderAndSummarySection(
         else it.sets * 45
     } / 60
 
-    val imageRes = if (dayPlan.dayNumber == 0) {
-        val supplementary = PushYourLimitsCatalog.all().find { it.title == dayPlan.title }
-        supplementary?.imageRes ?: R.drawable.co_bung_2
+    val supplementary = PushYourLimitsCatalog.all().find { it.title == dayPlan.title }
+    
+    val imageRes = if (supplementary != null) {
+        supplementary.imageRes ?: R.drawable.co_bung_2
     } else {
         when (goal) {
             FitnessGoal.WEIGHT_LOSS -> R.drawable.cobap2
@@ -261,99 +266,144 @@ fun HeaderAndSummarySection(
         }
     }
 
+    val bgBrush: Brush = if (supplementary != null) {
+        if (supplementary.isFullBackground) {
+            androidx.compose.ui.graphics.SolidColor(supplementary.gradientStart)
+        } else {
+            Brush.horizontalGradient(listOf(supplementary.gradientStart, supplementary.gradientEnd))
+        }
+    } else {
+        Brush.verticalGradient(listOf(OrangePrimary, OrangeGlow))
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(380.dp)
     ) {
-        Box (
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(260.dp)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(OrangePrimary, OrangeGlow)
-                    )
-                )
         ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .fillMaxHeight()
-                    .width(220.dp)
-            ) {
+            // ── Supplementary: full-bleed image like the card ──
+            if (supplementary != null && supplementary.imageRes != null) {
                 Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = "Workout Image",
+                    painter = painterResource(id = supplementary.imageRes),
+                    contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (supplementary.mirrorImage) Modifier.graphicsLayer(scaleX = -1f)
+                            else Modifier
+                        )
                 )
+                // Gradient overlay same as card
+                if (supplementary.isFullBackground) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.horizontalGradient(
+                                    0.0f to supplementary.gradientStart,
+                                    0.5f to supplementary.gradientStart.copy(alpha = 0.6f),
+                                    1.0f to Color.Transparent
+                                )
+                            )
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        supplementary.gradientStart.copy(alpha = 0.85f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
+                }
+            } else {
+                // Daily challenge: colored background + athlete image on right
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(OrangePrimary, Color.Transparent),
-                                startX = 0f,
-                                endX = 200f
-                            )
-                        )
+                        .background(bgBrush)
                 )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .fillMaxHeight()
+                        .width(220.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = "Workout Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
+
+            // Text overlay — positioned top-start, below the back button row
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
-                    .padding(end = 140.dp)
+                    .align(Alignment.TopStart)
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 60.dp)
             ) {
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(y = (-8).dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFFFFFFFF),
-                            contentDescription = "back")
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
                 val mainTitle = if (dayPlan.dayNumber == 0) dayPlan.title else "Day ${dayPlan.dayNumber}"
-                Text(
-                    text = mainTitle,
-                    color = Color.White,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontSize = 32.sp,
-                    lineHeight = 36.sp,
-                    fontWeight = FontWeight.Black,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 8.dp)
-                ) {
-                    val iconCount = when (dayPlan.difficulty.lowercase()) {
-                        "easy"     -> 1
-                        "advanced" -> 3
-                        else       -> 2
-                    }
-                    repeat(iconCount) {
-                        Icon(
-                            imageVector = Lucide.Zap,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
+                if (supplementary != null) {
                     Text(
-                        text = dayPlan.difficulty.replaceFirstChar { it.uppercase() },
+                        text = supplementary.muscleGroup.uppercase(),
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = supplementary.title,
+                        color = supplementary.textColor,
+                        fontSize = 22.sp,
+                        lineHeight = 26.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${supplementary.difficulty} • ${supplementary.durationMinutes} Min",
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                } else {
+                    Text(
+                        text = mainTitle,
                         color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontSize = 32.sp,
+                        lineHeight = 36.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            // Back button top-left
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, start = 4.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        tint = Color.White,
+                        contentDescription = "back"
                     )
                 }
             }

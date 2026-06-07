@@ -127,8 +127,8 @@ fun LibraryScreen(
             onValueChange = { viewModel.setSearchQuery(it) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
-                .padding(bottom = 16.dp),
+                .padding(bottom = 16.dp)
+                .height(56.dp),
             placeholder = {
                 Text(
                     "Find exercise...",

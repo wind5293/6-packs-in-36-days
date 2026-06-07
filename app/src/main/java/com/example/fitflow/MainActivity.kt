@@ -89,6 +89,14 @@ class MainActivity : ComponentActivity() {
 
     private var uiViewModel: UserViewModel? = null
 
+    private val waterUpdateReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
+            if (intent?.action == "com.example.fitflow.WATER_UPDATED") {
+                uiViewModel?.refreshHealthMetrics()
+            }
+        }
+    }
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -114,6 +122,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createNotificationChannel()
+        
+        val filter = android.content.IntentFilter("com.example.fitflow.WATER_UPDATED")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(waterUpdateReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(waterUpdateReceiver, filter)
+        }
+        
         val app = application as FitFlowApplication
         val viewModel: UserViewModel by viewModels {
             UserViewModelFactory(app.userPreferences, app.exerciseRepository, PlanRepository(applicationContext))
@@ -150,34 +166,7 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry?.destination?.route ?: "dashboard"
                 val settingsViewModel: WorkoutSettingsViewModel by viewModels()
 
-                Scaffold(
-                    bottomBar = {
-                        val hideNav = currentRoute == "onboarding"
-                                || currentRoute == "workout_setup"
-                                || currentRoute == "loading"
-                                || currentRoute == "update_goal"
-                                || currentRoute == "chatbot"
-                                || currentRoute == "planner"
-                                || (currentRoute.startsWith("day_detail"))
-                                || (currentRoute.startsWith("workout_session"))
-                                || (currentRoute.startsWith("workout_completed"))
-                            || (currentRoute.startsWith("day_workout_summary"))
-                                || (currentRoute.startsWith("edit_plan"))
-                                || (currentRoute.startsWith("workout_settings"))
-                                || currentRoute == "history"
-                                || (currentRoute.startsWith("streak_achieved"))
-                        if (!hideNav) {
-                            BottomNavbar(currentRoute) { route ->
-                                navController.navigate(route) {
-                                    // Luôn pop về "dashboard" — root thật sự của backstack
-                                    popUpTo("dashboard") { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        }
-                    }
-                ) { paddingValues ->
+                Scaffold() { paddingValues ->
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -278,6 +267,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onOpenChatbot = { navController.navigate("chatbot") },
+                                onOpenProfile = { navController.navigate("profile") },
                                 onOpenPlanner = {
                                     navController.navigate("planner") {
                                         popUpTo("dashboard") { saveState = true }
@@ -286,7 +276,8 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onOpenSupplementary = { id ->
-                                    navController.navigate("supplementary_detail/$id")
+                                    val encodedId = android.net.Uri.encode(id)
+                                    navController.navigate("supplementary_detail/$encodedId")
                                 },
                                 onOpenDaySummary = { dayNumber, epochDay ->
                                     navController.navigate("day_workout_summary/$dayNumber?date=$epochDay")
@@ -320,10 +311,10 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(
                             route = "planner",
-                            enterTransition = { EnterTransition.None },
-                            exitTransition = { ExitTransition.None },
-                            popEnterTransition = { EnterTransition.None },
-                            popExitTransition = { ExitTransition.None }
+                            enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
+                            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) },
+                            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
+                            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
                         ) {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
@@ -459,7 +450,7 @@ class MainActivity : ComponentActivity() {
                                 isStepSensorEnabled = stepSensorEnabled,
                                 isStepTrackingActive = stepTrackingActive,
                                 onRecordWeight = { weight, date -> viewModel.recordWeight(weight, date) },
-                                onReCalibrate = { navController.navigate("onboarding") },
+                                onReCalibrate = { navController.navigate("onboarding_recalibrate") },
                                 onUnlockStepSensor = {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                         requestActivityRecognitionPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
@@ -472,7 +463,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("onboarding") {
-                            OnboardingScreen(onComplete = { selectedGoal, height, weight, birthYear, targetWeight, workoutTime ->
+                            OnboardingScreen(
+                                onComplete = { selectedGoal, height, weight, birthYear, targetWeight, workoutTime ->
                                 viewModel.saveProfile(selectedGoal, height, weight, birthYear, targetWeight, workoutTime)
 
                                 val timeParts = workoutTime.split(":")
@@ -486,9 +478,64 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("workout_setup")
                             })
                         }
+                        composable("onboarding_recalibrate") {
+                            OnboardingScreen(
+                                isRecalibrate = true,
+                                onComplete = { selectedGoal, height, weight, birthYear, targetWeight, workoutTime ->
+                                viewModel.saveProfile(selectedGoal, height, weight, birthYear, targetWeight, workoutTime)
+                                navController.popBackStack()
+                            })
+                        }
                         composable("library") {
                             LibraryScreen(
                                 viewModel = libraryViewModel,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                        composable("profile") {
+                            val userProfile by viewModel.userProfile.collectAsState()
+                            val completedDays by viewModel.completedDays.collectAsState()
+                            val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val startDate by viewModel.startDate.collectAsState()
+                            val completedDateMap by viewModel.completedDateMap.collectAsState()
+                            val weightHistory by viewModel.weightHistory.collectAsState()
+                            val healthMetricsHistory by viewModel.healthMetricsHistory.collectAsState()
+                            val todayHealthMetrics by viewModel.todayHealthMetrics.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
+                            val activityGranted by viewModel.activityRecognitionGranted.collectAsState()
+                            val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
+                            val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
+                            
+                            ProfileScreen(
+                                userProfile = userProfile,
+                                completedDays = completedDays,
+                                workoutPlan = workoutPlan,
+                                startDate = startDate,
+                                completedDateMap = completedDateMap,
+                                weightHistory = weightHistory,
+                                healthMetricsHistory = healthMetricsHistory,
+                                todayHealthMetrics = todayHealthMetrics,
+                                globalWorkoutLogs = globalWorkoutLogs,
+                                isActivityRecognitionGranted = activityGranted,
+                                isStepSensorEnabled = stepSensorEnabled,
+                                isStepTrackingActive = stepTrackingActive,
+                                onRecordWeight = { weight, date -> viewModel.recordWeight(weight, date) },
+                                onReCalibrate = { navController.navigate("onboarding_recalibrate") },
+                                onUnlockStepSensor = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        requestActivityRecognitionPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
+                                    }
+                                },
+                                onAddWater = { amount ->
+                                    viewModel.addWater(amount)
+                                    FitnessNotificationService.waterCurrent =
+                                        (FitnessNotificationService.waterCurrent + amount)
+                                            .coerceAtMost(FitnessNotificationService.waterGoal)
+                                    FitnessNotificationService.refresh(this@MainActivity)
+                                },
+                                onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
+                                onSetStepGoal = { goal -> viewModel.setStepGoal(goal) },
+                                onDemoNotification = { viewModel.scheduleDemoWorkoutReminder(this@MainActivity) },
                                 onBack = { navController.popBackStack() }
                             )
                         }
@@ -719,7 +766,8 @@ class MainActivity : ComponentActivity() {
                                         // Wait, workout_session requires dayNumber.
                                         // I should navigate to supplementary_session/$id
                                         // Currently supplementary_session doesn't take startIndex, so we just pass without it or add it later.
-                                        navController.navigate("supplementary_session/$id")
+                                        val encodedId = android.net.Uri.encode(id)
+                                        navController.navigate("supplementary_session/$encodedId")
                                     },
                                     onEditPlan = { },
                                     onOpenSettings = { navController.navigate("workout_settings") }
@@ -755,7 +803,8 @@ class MainActivity : ComponentActivity() {
                                         settingsViewModel.stopMusic()
                                         val totalKcal = exercises!!.sumOf { it.kcal }
                                         viewModel.markSupplementaryComplete(title, activeSeconds, totalKcal)
-                                        navController.navigate("supplementary_completed/$id?activeSeconds=$activeSeconds") {
+                                        val encodedId = android.net.Uri.encode(id)
+                                        navController.navigate("supplementary_completed/$encodedId?activeSeconds=$activeSeconds") {
                                             popUpTo("dashboard") { saveState = true }
                                         }
                                     },
@@ -813,6 +862,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        unregisterReceiver(waterUpdateReceiver)
         uiViewModel?.stopStepTracking()
         super.onDestroy()
     }
