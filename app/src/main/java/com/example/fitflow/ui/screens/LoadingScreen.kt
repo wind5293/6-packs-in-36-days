@@ -34,17 +34,13 @@ fun LoadingScreen(
         }
     }
 
-    val firstProgress by animateFloatAsState(
-        targetValue = provisioningState.firstSegmentProgress,
+    val totalProgressRaw = (provisioningState.firstSegmentProgress + provisioningState.secondSegmentProgress) / 2f
+    val animatedTotalProgress by animateFloatAsState(
+        targetValue = totalProgressRaw,
         animationSpec = tween(durationMillis = 300),
-        label = "first_progress"
+        label = "total_progress"
     )
-
-    val secondProgress by animateFloatAsState(
-        targetValue = provisioningState.secondSegmentProgress,
-        animationSpec = tween(durationMillis = 300),
-        label = "second_progress"
-    )
+    val percentage = (animatedTotalProgress * 100).toInt()
 
     val statusText = when {
         provisioningState.requiresMobileDataConsent -> "Using mobile data may consume data to prepare workouts."
@@ -95,39 +91,31 @@ fun LoadingScreen(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
         ) {
-            ProgressTrack(
-                progress = firstProgress,
-                modifier = Modifier.weight(1f)
+            Text(
+                text = "PREPARING",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
             )
-            ProgressTrack(
-                progress = secondProgress,
-                modifier = Modifier.weight(1f)
+            Text(
+                text = "$percentage%",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Row(
+        ProgressTrack(
+            progress = animatedTotalProgress,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "GENERATE WORKOUT",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = "GIF",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-        }
+            height = 12.dp
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -182,17 +170,17 @@ fun LoadingScreen(
 }
 
 @Composable
-private fun ProgressTrack(progress: Float, modifier: Modifier = Modifier) {
+private fun ProgressTrack(progress: Float, modifier: Modifier = Modifier, height: androidx.compose.ui.unit.Dp = 12.dp) {
     Box(
         modifier = modifier
-            .height(4.dp)
+            .height(height)
             .clip(RoundedCornerShape(50))
             .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(progress)
-                .height(4.dp)
+                .height(height)
                 .clip(RoundedCornerShape(50))
                 .background(MaterialTheme.colorScheme.primary)
         )

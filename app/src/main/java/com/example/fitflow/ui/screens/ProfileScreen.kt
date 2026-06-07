@@ -46,6 +46,7 @@ fun ProfileScreen(
     weightHistory: List<Pair<LocalDate, Float>> = emptyList(),
     healthMetricsHistory: List<DailyHealthMetrics> = emptyList(),
     todayHealthMetrics: DailyHealthMetrics? = null,
+    globalWorkoutLogs: List<com.example.fitflow.data.model.WorkoutLogEntry> = emptyList(),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
     isStepTrackingActive: Boolean = false,
@@ -82,22 +83,17 @@ fun ProfileScreen(
     var currentWeightKg by remember(latestRecordedWeight) { mutableStateOf(latestRecordedWeight) }
     var showWeightSheet by remember { mutableStateOf(false) }
 
-    val weeklyDayNumbers = remember(completedDays, completedDateMap, startDate) {
-        (0..6).map { offset ->
-            val date = weekStart.plusDays(offset.toLong())
-            if (startDate != null) {
-                val mappedDay = java.time.temporal.ChronoUnit.DAYS.between(startDate, date).toInt() + 1
-                if (mappedDay in completedDays) mappedDay else null
-            } else {
-                completedDateMap[date]
-            }
-        }
+    val weeklyDayDates = remember(weekStart) {
+        (0..6).map { offset -> weekStart.plusDays(offset.toLong()) }
     }
 
-    val weeklyDurationSeconds = remember(weeklyDayNumbers, workoutPlan) {
-        weeklyDayNumbers.map { dayNumber ->
-            val exercises = planByDayNumber[dayNumber]?.workoutExercises ?: emptyList()
-            exercises.sumOf { ex -> if (ex.durationSec > 0) ex.durationSec else ex.reps * 3 }
+    val logsByDate = remember(globalWorkoutLogs) {
+        globalWorkoutLogs.groupBy { LocalDate.ofEpochDay(it.dateEpochDay) }
+    }
+
+    val weeklyDurationSeconds = remember(weeklyDayDates, logsByDate) {
+        weeklyDayDates.map { date ->
+            logsByDate[date]?.sumOf { it.durationSec } ?: 0
         }
     }
 
@@ -105,9 +101,9 @@ fun ProfileScreen(
         weeklyDurationSeconds.map { seconds -> (seconds / 60f).roundToInt() }
     }
 
-    val weeklyKcal = remember(weeklyDayNumbers, workoutPlan) {
-        weeklyDayNumbers.map { dayNumber ->
-            planByDayNumber[dayNumber]?.workoutExercises?.sumOf { it.kcal } ?: 0
+    val weeklyKcal = remember(weeklyDayDates, logsByDate) {
+        weeklyDayDates.map { date ->
+            logsByDate[date]?.sumOf { it.kcal } ?: 0
         }
     }
 

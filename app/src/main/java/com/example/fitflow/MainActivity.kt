@@ -442,8 +442,10 @@ class MainActivity : ComponentActivity() {
                             val activityGranted by viewModel.activityRecognitionGranted.collectAsState()
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
+                            val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             ProfileScreen(
                                 userProfile = userProfile,
+                                globalWorkoutLogs = globalWorkoutLogs,
                                 completedDays = completedDays,
                                 workoutPlan = workoutPlan,
                                 startDate = startDate,
@@ -626,10 +628,9 @@ class MainActivity : ComponentActivity() {
                                 userProfile = userProfile,
                                 onSaveWeight = { newWeight -> viewModel.recordWeight(newWeight) },
                                 onNext = {
-                                    navController.navigate("day_workout_summary/$dayNumber") {
-                                        popUpTo("dashboard") { saveState = true }
+                                    navController.navigate("dashboard") {
+                                        popUpTo("dashboard") { inclusive = false }
                                         launchSingleTop = true
-                                        restoreState = true
                                     }
                                 }
                             )
