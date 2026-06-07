@@ -77,6 +77,9 @@ class UserViewModel(
     private val _currentStreak = MutableStateFlow(0)
     val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
 
+    private val _longestStreak = MutableStateFlow(0)
+    val longestStreak: StateFlow<Int> = _longestStreak.asStateFlow()
+
     private val _startDate = MutableStateFlow<LocalDate?>(null)
     val startDate: StateFlow<LocalDate?> = _startDate.asStateFlow()
 
@@ -139,6 +142,7 @@ class UserViewModel(
         else
             userPreferences.getCompletedDateMap()
         _currentStreak.value = userPreferences.getCurrentStreak()
+        _longestStreak.value = userPreferences.getLongestStreak()
         _startDate.value = userPreferences.getStartDate()
         _weightHistory.value = userPreferences.getWeightHistory()
         _workoutTimestamps.value = userPreferences.getWorkoutTimestamps()
@@ -337,6 +341,13 @@ class UserViewModel(
                 userPreferences.setCurrentStreak(streak)
                 userPreferences.setLastWorkoutDate(today)
                 _currentStreak.value = streak
+
+                // Cập nhật kỷ lục dài nhất nếu streak mới hơn
+                val longest = userPreferences.getLongestStreak()
+                if (streak > longest) {
+                    userPreferences.setLongestStreak(streak)
+                    _longestStreak.value = streak
+                }
             }
         }
     }

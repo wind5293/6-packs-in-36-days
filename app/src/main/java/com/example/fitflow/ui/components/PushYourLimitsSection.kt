@@ -3,11 +3,12 @@ package com.example.fitflow.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.fitflow.data.model.SupplementaryWorkout
 import com.example.fitflow.domain.PushYourLimitsCatalog
+import java.util.Locale
 
 @Composable
 fun PushYourLimitsSection(
@@ -48,11 +50,13 @@ fun PushYourLimitsSection(
             letterSpacing = 2.sp
         )
         Spacer(modifier = Modifier.height(14.dp))
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(end = 4.dp)
+        val scrollState = rememberScrollState()
+        Row(
+            modifier = Modifier
+                .horizontalScroll(scrollState),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(workouts, key = { it.id }) { workout ->
+            workouts.forEach { workout ->
                 PushYourLimitsCard(
                     workout = workout,
                     onClick = { onWorkoutClick(workout.id) }
@@ -91,7 +95,7 @@ private fun PushYourLimitsCard(
             .width(300.dp)
             .height(160.dp)
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
@@ -156,7 +160,7 @@ private fun PushYourLimitsCard(
                 }
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 140.dp),
