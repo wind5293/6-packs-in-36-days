@@ -950,26 +950,15 @@ fun DailyChallengeSection(
                     )
                 )
         ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 8.dp)
-                    .size(width = 140.dp, height = 150.dp)
-            ) {
+            Box(modifier = Modifier.matchParentSize()) {
                 Image(
                     painter = painterResource(id = imageRes),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 32.dp,
-                                bottomStart = 32.dp,
-                                topEnd = 16.dp,
-                                bottomEnd = 16.dp
-                            )
-                        )
+                        .fillMaxHeight()
+                        .width(160.dp)
+                        .align(Alignment.CenterEnd)
                         .alpha(0.9f)
                 )
             }
@@ -978,8 +967,8 @@ fun DailyChallengeSection(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Day number — big
                 Text(
