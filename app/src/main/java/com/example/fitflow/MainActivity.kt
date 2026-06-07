@@ -217,6 +217,7 @@ class MainActivity : ComponentActivity() {
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
+                            val longestStreak by viewModel.longestStreak.collectAsState()
                             val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             val libraryFilterState by libraryViewModel.filterState.collectAsState()
                             val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
@@ -246,6 +247,7 @@ class MainActivity : ComponentActivity() {
                                 completedDateMap = completedDateMap,
                                 globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
+                                longestStreak = longestStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
                                 startDate = startDate,
@@ -353,10 +355,15 @@ class MainActivity : ComponentActivity() {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val dayPlan =
                                 workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
+                            val partialProgressMap by viewModel.partialProgressMap.collectAsState()
+                            val partialIndex = partialProgressMap[dayNumber]
                             WorkoutDayDetailScreen(
                                 dayPlan = dayPlan,
+                                partialIndex = partialIndex,
                                 onBack = { navController.popBackStack() },
-                                onStartSession = { navController.navigate("workout_session/$dayNumber") },
+                                onStartSession = { startIndex -> 
+                                    navController.navigate("workout_session/$dayNumber?startIndex=$startIndex") 
+                                },
                                 onEditPlan = { navController.navigate("edit_plan/$dayNumber") },
                                 onOpenSettings = { navController.navigate("workout_settings") }
                             )
@@ -527,17 +534,28 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable(
-                            route = "workout_session/{dayNumber}",
-                            arguments = listOf(navArgument("dayNumber") { type = NavType.IntType })
+                            route = "workout_session/{dayNumber}?startIndex={startIndex}",
+                            arguments = listOf(
+                                navArgument("dayNumber") { type = NavType.IntType },
+                                navArgument("startIndex") { type = NavType.IntType; defaultValue = 0 }
+                            )
                         ) { backStackEntry ->
                             val dayNumber =
                                 backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val startIndex = backStackEntry.arguments?.getInt("startIndex") ?: 0
+                            
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val dayPlan =
                                 workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
                             
                             WorkoutSessionScreen(
                                 exercises = dayPlan.workoutExercises,
+                                startIndex = startIndex,
+                                onExit = { currentIndex ->
+                                    viewModel.savePartialProgress(dayNumber, currentIndex)
+                                    settingsViewModel.stopMusic()
+                                    navController.popBackStack()
+                                },
                                 onBack = {
                                     settingsViewModel.stopMusic()
                                     navController.popBackStack()
@@ -694,10 +712,11 @@ class MainActivity : ComponentActivity() {
                                 WorkoutDayDetailScreen(
                                     dayPlan = dayPlan!!,
                                     onBack = { navController.popBackStack() },
-                                    onStartSession = {
+                                    onStartSession = { startIndex ->
                                         // Push Your Limits uses the standard workout_session but without a dayNumber.
                                         // Wait, workout_session requires dayNumber.
                                         // I should navigate to supplementary_session/$id
+                                        // Currently supplementary_session doesn't take startIndex, so we just pass without it or add it later.
                                         navController.navigate("supplementary_session/$id")
                                     },
                                     onEditPlan = { },

@@ -60,6 +60,7 @@ fun PlannerScreen(
     val context = LocalContext.current
     val userViewModel: UserViewModel = viewModel(context as ComponentActivity)
     val userProfile by userViewModel.userProfile.collectAsState()
+    val partialProgressMap by userViewModel.partialProgressMap.collectAsState()
 
     var showResetDialog by remember { mutableStateOf(false) }
 
@@ -261,6 +262,7 @@ fun PlannerScreen(
         items(workoutPlan) { dayPlan ->
             val isCompleted = dayPlan.dayNumber in completedDays
             val isCurrent = dayPlan.dayNumber == realCurrentDay
+            val partialIndex = partialProgressMap[dayPlan.dayNumber]
 
             Box(
                 modifier = Modifier
@@ -272,6 +274,7 @@ fun PlannerScreen(
                     dayPlan = dayPlan,
                     isCompleted = isCompleted,
                     isCurrent = isCurrent,
+                    partialIndex = partialIndex,
                     onClick = { onDayClick(dayPlan.dayNumber, dayPlan.isRest) },
                     onRestClick = { userViewModel.markDayComplete(dayPlan.dayNumber) }
                 )
@@ -415,12 +418,15 @@ fun DayPlanItemRedesigned(
     dayPlan: DayPlan,
     isCompleted: Boolean,
     isCurrent: Boolean,
+    partialIndex: Int?,
     onClick: () -> Unit,
     onRestClick: () -> Unit
 ) {
-    val bgColor = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-    val textColor = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
-    val subTextColor = if (isCurrent) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+    // If it's not completed, but has partial progress, we treat it as active/current-like for coloring
+    val isActive = isCurrent || partialIndex != null
+    val bgColor = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+    val textColor = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+    val subTextColor = if (isActive) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
 
     Card(
         shape = RoundedCornerShape(20.dp),
@@ -429,7 +435,7 @@ fun DayPlanItemRedesigned(
             .fillMaxWidth()
             .border(
                 1.dp,
-                if (isCurrent) Color.Transparent else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                if (isActive) Color.Transparent else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
                 RoundedCornerShape(20.dp)
             )
             .clickable(onClick = onClick)
@@ -451,8 +457,20 @@ fun DayPlanItemRedesigned(
                     fontStyle = FontStyle.Italic
                 )
                 Spacer(modifier = Modifier.height(2.dp))
+                
+                val subtitleText = when {
+                    isCompleted -> "Finished"
+                    dayPlan.isRest -> "Rest"
+                    partialIndex != null -> {
+                        val total = dayPlan.workoutExercises.size
+                        val percent = if (total > 0) (partialIndex * 100) / total else 0
+                        "$percent% Completed"
+                    }
+                    else -> "${dayPlan.workoutExercises.size} Exercises"
+                }
+                
                 Text(
-                    text = if (isCompleted) "Finished" else if (dayPlan.isRest) "Rest" else "${dayPlan.workoutExercises.size} Exercises",
+                    text = subtitleText,
                     color = subTextColor,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -474,8 +492,8 @@ fun DayPlanItemRedesigned(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-            } else if (isCurrent) {
-                // Current Day Buttons
+            } else if (isActive) {
+                // Current Day Buttons or Partially completed
                 if (dayPlan.isRest) {
                     Button(
                         onClick = onRestClick,
@@ -500,7 +518,7 @@ fun DayPlanItemRedesigned(
                         shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.height(40.dp)
                     ) {
-                        Text("START", fontWeight = FontWeight.Black, fontSize = 13.sp)
+                        Text(if (partialIndex != null) "CONTINUE" else "START", fontWeight = FontWeight.Black, fontSize = 13.sp)
                     }
                 }
             } else {

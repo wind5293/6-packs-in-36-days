@@ -8,11 +8,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -49,8 +51,9 @@ import com.example.fitflow.utils.GifUrlHelper
 fun WorkoutDayDetailScreen(
     dayPlan: DayPlan,
     goal: FitnessGoal? = null,
+    partialIndex: Int? = null,
     onBack: () -> Unit,
-    onStartSession: () -> Unit = {},
+    onStartSession: (Int) -> Unit = {},
     onEditPlan: () -> Unit = {},
     onOpenSettings: () -> Unit = {}
 ) {
@@ -121,9 +124,11 @@ fun WorkoutDayDetailScreen(
                     )
                 }
             }
-            items(dayPlan.workoutExercises) { exercise ->
+            itemsIndexed(dayPlan.workoutExercises) { index, exercise ->
+                val isCompleted = partialIndex != null && index < partialIndex
                 ExerciseExpandableItem(
                     exercise = exercise,
+                    isCompleted = isCompleted,
                     onClick = { selectedExercise = exercise }
                 )
             }
@@ -144,24 +149,79 @@ fun WorkoutDayDetailScreen(
                 )
                 .padding(24.dp)
         ) {
-            Button(
-                onClick = onStartSession,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                shape = CircleShape,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Text(
-                    text = "START",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
+            if (partialIndex != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = { onStartSession(0) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onBackground
+                        ),
+                        shape = CircleShape,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp)
+                    ) {
+                        Text(
+                            text = "RESTART",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 2.sp
+                            )
+                        )
+                    }
+                    Button(
+                        onClick = { onStartSession(partialIndex) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        shape = CircleShape,
+                        modifier = Modifier
+                            .weight(1.5f)
+                            .height(56.dp)
+                    ) {
+                        val total = dayPlan.workoutExercises.size
+                        val percent = if (total > 0) (partialIndex * 100) / total else 0
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "CONTINUE",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 2.sp
+                                )
+                            )
+                            Text(
+                                text = "$percent% completed",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            } else {
+                Button(
+                    onClick = { onStartSession(0) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                ) {
+                    Text(
+                        text = "START",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
                     )
-                )
+                }
             }
         }
 
@@ -380,6 +440,7 @@ fun SummaryItem(
 @Composable
 private fun ExerciseExpandableItem(
     exercise: WorkoutExercise,
+    isCompleted: Boolean = false,
     onClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -425,6 +486,21 @@ private fun ExerciseExpandableItem(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
+                }
+                if (isCompleted) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Completed",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
 
