@@ -359,8 +359,10 @@ class MainActivity : ComponentActivity() {
                                 workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
                             val partialProgressMap by viewModel.partialProgressMap.collectAsState()
                             val partialIndex = partialProgressMap[dayNumber]
+                            val userProfile by viewModel.userProfile.collectAsState()
                             WorkoutDayDetailScreen(
                                 dayPlan = dayPlan,
+                                goal = userProfile?.goal,
                                 partialIndex = partialIndex,
                                 onBack = { navController.popBackStack() },
                                 onStartSession = { startIndex -> 
@@ -563,7 +565,7 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFinish = { activeSeconds ->
                                     settingsViewModel.stopMusic()
-                                    val isNewStreak = viewModel.markDayComplete(dayNumber)
+                                    val isNewStreak = viewModel.markDayComplete(dayNumber, activeSeconds)
                                     if (isNewStreak) {
                                         navController.navigate("streak_achieved/$dayNumber?activeSeconds=$activeSeconds") {
                                             popUpTo("dashboard") { saveState = true }
@@ -730,10 +732,12 @@ class MainActivity : ComponentActivity() {
                         ) { backStackEntry ->
                             val id = backStackEntry.arguments?.getString("id") ?: return@composable
                             var exercises by remember { mutableStateOf<List<WorkoutExercise>?>(null) }
+                            var title by remember { mutableStateOf("Workout") }
 
                             LaunchedEffect(id) {
                                 val workout = viewModel.getSupplementaryWorkout(id)
                                 exercises = workout?.exercises
+                                title = workout?.title ?: "Workout"
                             }
 
                             if (exercises != null) {
@@ -743,12 +747,56 @@ class MainActivity : ComponentActivity() {
                                         settingsViewModel.stopMusic()
                                         navController.popBackStack()
                                     },
-                                    onFinish = { activeSeconds ->
+                                    onExit = { _ ->
                                         settingsViewModel.stopMusic()
                                         navController.popBackStack()
                                     },
+                                    onFinish = { activeSeconds ->
+                                        settingsViewModel.stopMusic()
+                                        val totalKcal = exercises!!.sumOf { it.kcal }
+                                        viewModel.markSupplementaryComplete(title, activeSeconds, totalKcal)
+                                        navController.navigate("supplementary_completed/$id?activeSeconds=$activeSeconds") {
+                                            popUpTo("dashboard") { saveState = true }
+                                        }
+                                    },
                                     onOpenSettings = { navController.navigate("workout_settings?inSession=true") },
                                     settingsViewModel = settingsViewModel
+                                )
+                            }
+                        }
+                        composable(
+                            route = "supplementary_completed/{id}?activeSeconds={activeSeconds}",
+                            arguments = listOf(
+                                navArgument("id") { type = NavType.StringType },
+                                navArgument("activeSeconds") { 
+                                    type = NavType.IntType 
+                                    defaultValue = 0
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+                            val activeSeconds = backStackEntry.arguments?.getInt("activeSeconds") ?: 0
+                            
+                            var dayPlan by remember { mutableStateOf<DayPlan?>(null) }
+                            LaunchedEffect(id) {
+                                val workout = viewModel.getSupplementaryWorkout(id)
+                                dayPlan = workout?.toDayPlan()
+                            }
+                            
+                            val userProfile by viewModel.userProfile.collectAsState()
+
+                            if (dayPlan != null) {
+                                WorkoutCompletedScreen(
+                                    dayPlan = dayPlan,
+                                    totalActiveSeconds = activeSeconds,
+                                    userProfile = userProfile,
+                                    onSaveWeight = { newWeight -> viewModel.recordWeight(newWeight) },
+                                    onNext = {
+                                        navController.navigate("dashboard") {
+                                            popUpTo("dashboard") { inclusive = false }
+                                            launchSingleTop = true
+                                        }
+                                    }
                                 )
                             }
                         }

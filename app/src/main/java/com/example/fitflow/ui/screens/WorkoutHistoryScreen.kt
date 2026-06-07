@@ -55,10 +55,11 @@ fun WorkoutHistoryScreen(
     // Calendar marks: all dates that appear in global logs
     val completedDates = historyEntries.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
 
-    // Weekly report: current week (Mon-Sun) containing today
+    // Weekly report: current week (Sun-Sat) containing today
     val today = LocalDate.now()
-    val startOfWeek = today.with(DayOfWeek.MONDAY)
-    val endOfWeek = today.with(DayOfWeek.SUNDAY)
+    val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
+    val startOfWeek = today.minusDays(todayIndex.toLong())
+    val endOfWeek = startOfWeek.plusDays(6)
 
     val weekEntries = historyEntries.filter {
         val date = LocalDate.ofEpochDay(it.dateEpochDay)
@@ -363,7 +364,7 @@ private fun WeekSummaryCard(
                 ) {
                     Text("🔥", fontSize = 12.sp)
                     Text(
-                        "${String.format("%.1f", totalKcal.toFloat() / 10)} Kcal",
+                        "${totalKcal.toInt()} Kcal",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.secondary
@@ -446,8 +447,9 @@ private fun WorkoutHistoryItem(entry: WorkoutLogEntry) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val titleText = if (entry.dayNumber == -1) "Supplementary" else "Day ${entry.dayNumber}"
                     Text(
-                        "Day ${entry.dayNumber}",
+                        titleText,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -502,7 +504,7 @@ private fun WorkoutHistoryItem(entry: WorkoutLogEntry) {
                         Text("•", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f), fontSize = 12.sp)
                         
                         Text(
-                            "${String.format(java.util.Locale.US, "%.1f", kcal.toFloat() / 10)} Kcal",
+                            "${kcal.toInt()} Kcal",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.secondary,
                             fontWeight = FontWeight.Medium,
