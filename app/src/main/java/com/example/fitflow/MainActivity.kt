@@ -63,6 +63,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
 import com.example.fitflow.notification.FitnessNotificationService
+import com.example.fitflow.ui.screens.ChatbotScreen
 import com.example.fitflow.viewmodel.LibraryViewModel
 
 class MainActivity : ComponentActivity() {
@@ -154,7 +155,7 @@ class MainActivity : ComponentActivity() {
                                 || currentRoute == "workout_setup"
                                 || currentRoute == "loading"
                                 || currentRoute == "update_goal"
-                                || currentRoute == "planner"
+                                || currentRoute == "chatbot"
                                 || (currentRoute.startsWith("day_detail"))
                                 || (currentRoute.startsWith("workout_session"))
                                 || (currentRoute.startsWith("workout_completed"))
@@ -214,7 +215,6 @@ class MainActivity : ComponentActivity() {
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
-                            val longestStreak by viewModel.longestStreak.collectAsState()
                             val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             val libraryFilterState by libraryViewModel.filterState.collectAsState()
                             val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
@@ -244,7 +244,6 @@ class MainActivity : ComponentActivity() {
                                 completedDateMap = completedDateMap,
                                 globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
-                                longestStreak = longestStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
                                 startDate = startDate,
@@ -267,11 +266,19 @@ class MainActivity : ComponentActivity() {
                                 onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
                                 onSetStepGoal = { goal -> viewModel.setStepGoal(goal) },
                                 onStartWorkout = {
-                                    navController.navigate("planner")
+                                    navController.navigate("planner") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 },
-                                onOpenChatbot = {  },
+                                onOpenChatbot = { navController.navigate("chatbot") },
                                 onOpenPlanner = {
-                                    navController.navigate("planner")
+                                    navController.navigate("planner") {
+                                        popUpTo("dashboard") { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 },
                                 onOpenSupplementary = { id ->
                                     navController.navigate("supplementary_detail/$id")
@@ -307,10 +314,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(
-                            route = "planner"
+                            route = "planner",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None },
+                            popEnterTransition = { EnterTransition.None },
+                            popExitTransition = { ExitTransition.None }
                         ) {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
+                            // Ngày tiếp theo cần tập = ngày workout đầu tiên chưa hoàn thành
                             val currentDay = workoutPlan
                                 .filter { !it.isRest }
                                 .firstOrNull { it.dayNumber !in completedDays }
@@ -327,8 +339,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onOpenSettings = { navController.navigate("workout_settings") },
-                                onResetPlan = { viewModel.resetPlan() },
-                                onBack = { navController.popBackStack() }
+                                onResetPlan = { viewModel.resetPlan() }
                             )
                         }
                         composable(
@@ -338,12 +349,10 @@ class MainActivity : ComponentActivity() {
                             val dayNumber =
                                 backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
-                            val userProfile by viewModel.userProfile.collectAsState()
                             val dayPlan =
                                 workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
                             WorkoutDayDetailScreen(
                                 dayPlan = dayPlan,
-                                goal = userProfile?.goal,
                                 onBack = { navController.popBackStack() },
                                 onStartSession = { navController.navigate("workout_session/$dayNumber") },
                                 onEditPlan = { navController.navigate("edit_plan/$dayNumber") },
@@ -462,12 +471,13 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable(
-                            route = "library"
+                            route = "library",
+                            enterTransition = { EnterTransition.None },
+                            exitTransition = { ExitTransition.None },
+                            popEnterTransition = { EnterTransition.None },
+                            popExitTransition = { ExitTransition.None }
                         ) {
-                            LibraryScreen(
-                                viewModel = libraryViewModel,
-                                onBack = { navController.popBackStack() }
-                            )
+                            LibraryScreen(viewModel = libraryViewModel)
                         }
                         composable("loading") {
                             val provisioningState by viewModel.planProvisioningState.collectAsState()
@@ -685,6 +695,11 @@ class MainActivity : ComponentActivity() {
                                     settingsViewModel = settingsViewModel
                                 )
                             }
+                        }
+                        composable("chatbot") {
+                            ChatbotScreen(
+                                onBack = { navController.popBackStack() }
+                            )
                         }
                     } // end NavHost
                     } // end Box
