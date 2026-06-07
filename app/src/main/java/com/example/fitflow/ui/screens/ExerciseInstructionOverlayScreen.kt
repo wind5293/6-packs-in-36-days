@@ -322,3 +322,240 @@ fun ExerciseInstructionOverlayScreen(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun LibraryExerciseInstructionOverlayScreen(
+    exercise: Exercise,
+    onClose: () -> Unit,
+) {
+    val context = LocalContext.current
+    var selectedTab by remember { mutableIntStateOf(0) }
+
+    val gifUrl = remember(exercise) {
+        exercise.local_gifs.firstOrNull()?.let { GifUrlHelper.getUrl(it) }
+    }
+
+    val targetMuscles = exercise.target_muscles
+        .filter { it.lowercase() != "main" }
+        .distinct()
+        .ifEmpty { listOf("Full Body") }
+
+    val instructions = exercise.instructions
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onClose,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.background,
+        dragHandle = { BottomSheetDefaults.DragHandle() },
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
+                .padding(horizontal = 24.dp)
+        ) {
+            Text(
+                text = exercise.name,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Media Box
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                when (selectedTab) {
+                    0 -> {
+                        if (gifUrl != null) {
+                            val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(gifUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                imageLoader = imageLoader,
+                                contentDescription = "Exercise animation",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text("No animation available", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    1 -> {
+                        Text("Updating...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    2 -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = "Play",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "Video updating...",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Custom Tabs
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val tabs = listOf("Animation", "Muscle", "Video")
+                tabs.forEachIndexed { index, label ->
+                    val isSelected = selectedTab == index
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                            .clickable { selectedTab = index }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = label,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Scrollable Content
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // Instructions
+                Text(
+                    text = "INSTRUCTIONS",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                if (instructions.isEmpty()) {
+                    Text(
+                        text = "Instruction is not available for this exercise yet.",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        fontSize = 14.sp
+                    )
+                } else {
+                    instructions.forEach { line ->
+                        val cleanedLine = line.replaceFirst(Regex("^[\\d\\.\\)\\s]+"), "")
+                        Text(
+                            text = cleanedLine,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
+                            lineHeight = 24.sp,
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(bottom = 14.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Target Muscles
+                Text(
+                    text = "TARGET MUSCLES",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    targetMuscles.forEach { muscle ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 14.dp, vertical = 10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = muscle,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            // Close button
+            Button(
+                onClick = onClose,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Text(
+                    text = "CLOSE",
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp,
+                    fontSize = 18.sp
+                )
+            }
+        }
+    }
+}

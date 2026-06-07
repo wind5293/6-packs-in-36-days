@@ -50,8 +50,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.fitflow.FitFlowApplication
+import com.example.fitflow.utils.GifUrlHelper
 import com.composables.icons.lucide.Eye
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
@@ -118,6 +123,8 @@ fun DashboardScreen(
     val currentDayPlan = workoutPlan
         .filter { !it.isRest }
         .firstOrNull { it.dayNumber !in completedDays }
+
+    var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
 
     LazyColumn(
         modifier = Modifier
@@ -186,9 +193,17 @@ fun DashboardScreen(
                 muscleGroups = libraryMuscleGroups,
                 onSearchQueryChange = onLibrarySearchQueryChange,
                 onMuscleGroupChange = onLibraryMuscleGroupChange,
-                onViewAll = onOpenLibrary
+                onViewAll = onOpenLibrary,
+                onExerciseClick = { selectedExercise = it }
             )
         }
+    }
+
+    if (selectedExercise != null) {
+        LibraryExerciseInstructionOverlayScreen(
+            exercise = selectedExercise!!,
+            onClose = { selectedExercise = null }
+        )
     }
 }
 
@@ -199,7 +214,8 @@ private fun DashboardLibrarySection(
     muscleGroups: List<String>,
     onSearchQueryChange: (String) -> Unit,
     onMuscleGroupChange: (String) -> Unit,
-    onViewAll: () -> Unit
+    onViewAll: () -> Unit,
+    onExerciseClick: (Exercise) -> Unit
 ) {
     val exercisePages = remember(filteredExercises) { filteredExercises.chunked(5) }
     val pagerState = rememberPagerState(pageCount = { exercisePages.size.coerceAtLeast(1) })
@@ -266,12 +282,12 @@ private fun DashboardLibrarySection(
                 onSelect = onMuscleGroupChange
             )
 
-            Text(
-                text = stringResource(R.string.dashboard_library_results_count, filteredExercises.size),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.secondary
-            )
+//            Text(
+//                text = stringResource(R.string.dashboard_library_results_count, filteredExercises.size),
+//                fontSize = 11.sp,
+//                fontWeight = FontWeight.Black,
+//                color = MaterialTheme.colorScheme.secondary
+//            )
 
             if (filteredExercises.isEmpty()) {
                 Text(
@@ -288,16 +304,16 @@ private fun DashboardLibrarySection(
                 ) { page ->
                     DashboardLibraryPage(
                         exercises = exercisePages[page],
-                        onExerciseClick = onViewAll
+                        onExerciseClick = onExerciseClick
                     )
                 }
 
-                if (exercisePages.size > 1) {
-                    DashboardLibraryPagerIndicator(
-                        pageCount = exercisePages.size,
-                        currentPage = pagerState.currentPage
-                    )
-                }
+//                if (exercisePages.size > 1) {
+//                    DashboardLibraryPagerIndicator(
+//                        pageCount = exercisePages.size,
+//                        currentPage = pagerState.currentPage
+//                    )
+//                }
             }
         }
     }
@@ -346,7 +362,7 @@ private fun LibraryFilterRow(
 @Composable
 private fun DashboardLibraryPage(
     exercises: List<Exercise>,
-    onExerciseClick: () -> Unit
+    onExerciseClick: (Exercise) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -355,7 +371,7 @@ private fun DashboardLibraryPage(
         exercises.forEach { exercise ->
             DashboardLibraryExerciseItem(
                 exercise = exercise,
-                onClick = onExerciseClick
+                onClick = { onExerciseClick(exercise) }
             )
         }
     }
@@ -378,6 +394,9 @@ private fun DashboardLibraryExerciseItem(
             .joinToString(" · ")
     }
 
+    val context = LocalContext.current
+    val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -390,17 +409,31 @@ private fun DashboardLibraryExerciseItem(
     ) {
         Box(
             modifier = Modifier
-                .size(52.dp)
+                .width(110.dp)
+                .height(75.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = exercise.exercise_type.take(3).uppercase(),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.primary
-            )
+            if (exercise.local_gifs.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(GifUrlHelper.getUrl(exercise.local_gifs.first()))
+                        .crossfade(true)
+                        .build(),
+                    imageLoader = imageLoader,
+                    contentDescription = exercise.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text(
+                    text = exercise.exercise_type.take(3).uppercase(),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         Column(

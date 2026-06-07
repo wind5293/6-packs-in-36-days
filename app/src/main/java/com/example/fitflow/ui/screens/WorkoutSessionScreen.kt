@@ -234,8 +234,8 @@ fun WorkoutSessionScreen(
 
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .background(if (phase == SessionPhase.RESTING) primaryColor else bgColor)
+                .fillMaxWidth()
+                .background(bgColor)
                 .padding(top = 16.dp)
         ) {
             for (i in 0 until totalSteps) {

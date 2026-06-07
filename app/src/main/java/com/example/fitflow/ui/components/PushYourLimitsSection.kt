@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.fitflow.data.model.SupplementaryWorkout
 import com.example.fitflow.domain.PushYourLimitsCatalog
+import java.util.Locale
 
 @Composable
 fun PushYourLimitsSection(
@@ -91,7 +92,7 @@ private fun PushYourLimitsCard(
             .width(300.dp)
             .height(160.dp)
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
@@ -156,7 +157,7 @@ private fun PushYourLimitsCard(
                 }
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 140.dp),
