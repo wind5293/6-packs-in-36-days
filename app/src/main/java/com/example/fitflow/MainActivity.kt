@@ -157,6 +157,7 @@ class MainActivity : ComponentActivity() {
                                 || currentRoute == "loading"
                                 || currentRoute == "update_goal"
                                 || currentRoute == "chatbot"
+                                || currentRoute == "planner"
                                 || (currentRoute.startsWith("day_detail"))
                                 || (currentRoute.startsWith("workout_session"))
                                 || (currentRoute.startsWith("workout_completed"))
@@ -480,14 +481,11 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("workout_setup")
                             })
                         }
-                        composable(
-                            route = "library",
-                            enterTransition = { EnterTransition.None },
-                            exitTransition = { ExitTransition.None },
-                            popEnterTransition = { EnterTransition.None },
-                            popExitTransition = { ExitTransition.None }
-                        ) {
-                            LibraryScreen(viewModel = libraryViewModel)
+                        composable("library") {
+                            LibraryScreen(
+                                viewModel = libraryViewModel,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
                         composable("loading") {
                             val provisioningState by viewModel.planProvisioningState.collectAsState()

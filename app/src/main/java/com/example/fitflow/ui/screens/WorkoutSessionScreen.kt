@@ -12,8 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.ThumbDown
-import androidx.compose.material.icons.outlined.ThumbUp
+
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -237,8 +236,9 @@ fun WorkoutSessionScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(if (phase == SessionPhase.RESTING) primaryColor else bgColor)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .background(bgColor)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             for (i in 0 until totalSteps) {
                 Box(
@@ -375,35 +375,7 @@ fun WorkoutSessionScreen(
                             ),
                             color = textColor
                         )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        ) {
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(buttonBgColor)
-                            ) {
-                                Icon(
-                                    Icons.Outlined.ThumbDown, contentDescription = "Too Hard",
-                                    tint = textColor, modifier = Modifier.size(20.dp)
-                                )
-                            }
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(buttonBgColor)
-                            ) {
-                                Icon(
-                                    Icons.Outlined.ThumbUp, contentDescription = "Too Easy",
-                                    tint = textColor, modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
+
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -857,7 +829,7 @@ private fun RestScreen(
                             style = MaterialTheme.typography.titleLarge.copy(
                                 color = textColor,
                                 fontWeight = FontWeight.Bold,
-                                fontStyle = FontStyle.Italic
+                                fontStyle = FontStyle.Normal
                             ),
                         )
                     }
@@ -867,7 +839,7 @@ private fun RestScreen(
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = primaryColor,
                                 fontWeight = FontWeight.Bold,
-                                fontStyle = FontStyle.Italic
+                                fontStyle = FontStyle.Normal
                             ),
                         )
                     } else if (nextExercise.durationSec > 0) {
@@ -876,7 +848,7 @@ private fun RestScreen(
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = primaryColor,
                                 fontWeight = FontWeight.Bold,
-                                fontStyle = FontStyle.Italic
+                                fontStyle = FontStyle.Normal
                             ),
                         )
                     }
@@ -959,7 +931,7 @@ private fun RestScreen(
                     color = primaryColor,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Normal
                 )
             )
 
@@ -972,7 +944,7 @@ private fun RestScreen(
                     fontSize = 80.sp,
                     lineHeight = 80.sp,
                     fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Normal
                 )
             )
         }

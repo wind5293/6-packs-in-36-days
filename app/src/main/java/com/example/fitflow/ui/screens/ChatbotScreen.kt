@@ -197,7 +197,7 @@ fun ChatbotScreen(
                     "FitFlow",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic,
+                    fontStyle = FontStyle.Normal,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }

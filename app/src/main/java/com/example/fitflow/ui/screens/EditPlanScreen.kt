@@ -129,7 +129,7 @@ fun EditPlanScreen(
                         Text(
                             text = "SAVE",
                             fontWeight = FontWeight.Bold,
-                            fontStyle = FontStyle.Italic,
+                            fontStyle = FontStyle.Normal,
                             fontSize = 13.sp
                         )
                     }

@@ -57,14 +57,14 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                     Text(
                         "SETUP",
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                 }
             }
@@ -88,7 +88,7 @@ fun WorkoutSetupScreen(onComplete: (FitnessGoal) -> Unit) {
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Normal
                 )
             }
             Slider(

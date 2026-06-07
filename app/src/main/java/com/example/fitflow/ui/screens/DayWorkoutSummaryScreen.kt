@@ -332,7 +332,7 @@ private fun CircularProgressSection(
         Text(
             text = if (isCompleted) totalMinutes.toString() else "0",
             fontWeight = FontWeight.Black,
-            fontStyle = FontStyle.Italic,
+            fontStyle = FontStyle.Normal,
             fontSize = 42.sp,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -388,7 +388,7 @@ private fun OverviewSection(
         Text(
             "Overview",
             fontWeight = FontWeight.Black,
-            fontStyle = FontStyle.Italic,
+            fontStyle = FontStyle.Normal,
             fontSize = 20.sp,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -496,7 +496,7 @@ private fun OverviewSection(
 //            Text(
 //                text = stringResource(titleRes),
 //                fontWeight = FontWeight.Black,
-//                fontStyle = FontStyle.Italic,
+//                fontStyle = FontStyle.Normal,
 //                fontSize = 20.sp,
 //                color = MaterialTheme.colorScheme.onBackground
 //            )
@@ -580,7 +580,7 @@ private fun OverviewStatCard(
             Text(
                 value,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic,
+                fontStyle = FontStyle.Normal,
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onBackground
             )

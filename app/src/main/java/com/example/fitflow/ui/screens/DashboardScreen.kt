@@ -259,7 +259,7 @@ private fun DashboardLibrarySection(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                 }
                 TextButton(onClick = onViewAll) {
@@ -543,7 +543,7 @@ fun TodayWeightSection(userProfile: UserProfile) {
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -596,14 +596,14 @@ fun HeaderSection(
                 color = Color(0xFFFF6B00),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Normal
             )
             Text(
                 text = "FLOW",
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Normal
             )
         }
         IconButton(
@@ -1088,7 +1088,7 @@ fun WorkoutsSummarySection(
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                     Text(
                         stringResource(R.string.dashboard_days_suffix_format, totalWorkoutDays),
@@ -1119,7 +1119,7 @@ fun WorkoutsSummarySection(
                         color = MaterialTheme.colorScheme.secondary,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                     Text(
                         stringResource(R.string.dashboard_kcal),
@@ -1474,7 +1474,7 @@ fun MetricHorizontalCard(
                     value,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic,
+                    fontStyle = FontStyle.Normal,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(

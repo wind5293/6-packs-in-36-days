@@ -146,7 +146,7 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                 }
             }
@@ -182,7 +182,7 @@ fun ProfileScreen(
                 Text(
                     "Welcome, my friend!",
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 18.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic
+                    fontSize = 18.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Normal
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
@@ -467,7 +467,7 @@ fun ActivityStatItem(label: String, value: String, unit: String) {
         Text(
             value,
             color = MaterialTheme.colorScheme.primary,
-            fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic
+            fontSize = 28.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Normal
         )
         Text(
             unit,
@@ -614,7 +614,7 @@ fun StatsItem(label: String, value: String, unit: String, isHighlight: Boolean) 
                 color = if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Normal
             )
             if (unit.isNotEmpty()) {
                 Text(

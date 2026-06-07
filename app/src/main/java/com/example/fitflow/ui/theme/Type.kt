@@ -17,8 +17,8 @@ val AppFontFamily = FontFamily(
     Font(R.font.barlow_semibold, FontWeight.SemiBold),
     Font(R.font.barlow_bold, FontWeight.Bold),
     Font(R.font.barlow_black, FontWeight.Black),
-    Font(R.font.barlow_bold_italic, FontWeight.Bold, FontStyle.Italic),
-    Font(R.font.barlow_blackitalic, FontWeight.Black, FontStyle.Italic)
+    Font(R.font.barlow_bold_italic, FontWeight.Bold, FontStyle.Normal),
+    Font(R.font.barlow_blackitalic, FontWeight.Black, FontStyle.Normal)
 )
 
 private val BaseTypography = Typography()
@@ -30,7 +30,7 @@ val Typography = Typography(
     displayLarge = BaseTypography.displayLarge.copy(
         fontFamily = AppFontFamily,
         fontWeight = FontWeight.Black,
-        fontStyle = FontStyle.Italic,
+        fontStyle = FontStyle.Normal,
         fontSize = 72.sp,
         lineHeight = 72.sp,
         letterSpacing = 0.15.em
@@ -44,7 +44,7 @@ val Typography = Typography(
     headlineMedium = BaseTypography.headlineMedium.copy(
         fontFamily = AppFontFamily,
         fontWeight = FontWeight.ExtraBold,
-        fontStyle = FontStyle.Italic,
+        fontStyle = FontStyle.Normal,
         fontSize = 28.sp,
         letterSpacing = 0.03.em
     ),
@@ -59,7 +59,7 @@ val Typography = Typography(
     titleLarge = BaseTypography.titleLarge.copy(
         fontFamily = AppFontFamily,
         fontWeight = FontWeight.Black,
-        fontStyle = FontStyle.Italic,
+        fontStyle = FontStyle.Normal,
         fontSize = 20.sp
     ),
 

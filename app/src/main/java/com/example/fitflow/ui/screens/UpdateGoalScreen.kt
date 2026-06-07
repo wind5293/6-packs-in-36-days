@@ -146,14 +146,14 @@ fun UpdateGoalScreen(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                     Text(
                         "UPDATE",
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Normal
                     )
                 }
             }

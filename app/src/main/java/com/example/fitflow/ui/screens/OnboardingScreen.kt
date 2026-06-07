@@ -138,14 +138,14 @@ fun OnboardingHeader(currentStep: Int, totalSteps: Int) {
                 stringResource(R.string.onboarding_brand_fit),
                 fontWeight = FontWeight.Black,
                 fontSize = 24.sp,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Normal
             )
             Text(
                 stringResource(R.string.onboarding_brand_flow),
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Black,
                 fontSize = 24.sp,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Normal
             )
         }
         Spacer(Modifier.height(16.dp))
@@ -376,7 +376,7 @@ fun BmiInfoStep(weight: Float, height: Float) {
                     text = String.format("%.1f", bmi),
                     fontSize = 52.sp,
                     fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Normal
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
@@ -870,7 +870,7 @@ fun YearWheelPicker(
                         fontSize = if (isSelected) 32.sp else 20.sp,
                         fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium,
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
-                        fontStyle = if (isSelected) FontStyle.Italic else FontStyle.Normal
+                        fontStyle = if (isSelected) FontStyle.Normal else FontStyle.Normal
                     )
                 }
             }
