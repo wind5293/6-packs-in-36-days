@@ -277,7 +277,8 @@ class UserViewModel(
         startPlanProvisioning(context.applicationContext, goal)
     }
 
-    fun markDayComplete(dayNumber: Int) {
+    fun markDayComplete(dayNumber: Int): Boolean {
+        var isNewStreak = false
         val current = _completedDays.value.toMutableSet()
         if (!current.contains(dayNumber)) {
             current.add(dayNumber)
@@ -338,6 +339,7 @@ class UserViewModel(
             }
 
             if (lastWorkout != today) {
+                isNewStreak = true
                 userPreferences.setCurrentStreak(streak)
                 userPreferences.setLastWorkoutDate(today)
                 _currentStreak.value = streak
@@ -350,6 +352,7 @@ class UserViewModel(
                 }
             }
         }
+        return isNewStreak
     }
 
     /**
@@ -512,6 +515,32 @@ class UserViewModel(
             AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
+    }
+
+    fun scheduleDemoWorkoutReminder(context: Context) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, WorkoutReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context, 1001, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Set alarm for 5 seconds from now
+        val triggerTime = System.currentTimeMillis() + 5000
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        } else {
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        }
     }
 
     init {

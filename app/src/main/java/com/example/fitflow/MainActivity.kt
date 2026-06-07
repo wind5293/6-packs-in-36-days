@@ -44,6 +44,7 @@ import com.example.fitflow.ui.screens.ProfileScreen
 import com.example.fitflow.ui.screens.OnboardingScreen
 import com.example.fitflow.ui.screens.EditPlanScreen
 import com.example.fitflow.ui.screens.DayWorkoutSummaryScreen
+import com.example.fitflow.ui.screens.StreakAchievedScreen
 import com.example.fitflow.ui.screens.WorkoutCompletedScreen
 import com.example.fitflow.ui.screens.WorkoutHistoryScreen
 import com.example.fitflow.ui.theme.FitflowTheme
@@ -162,6 +163,7 @@ class MainActivity : ComponentActivity() {
                                 || (currentRoute.startsWith("edit_plan"))
                                 || (currentRoute.startsWith("workout_settings"))
                                 || currentRoute == "history"
+                                || (currentRoute.startsWith("streak_achieved"))
                         if (!hideNav) {
                             BottomNavbar(currentRoute) { route ->
                                 navController.navigate(route) {
@@ -443,7 +445,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onAddWater = { amount -> viewModel.addWater(amount) },
                                 onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
-                                onSetStepGoal = { goal -> viewModel.setStepGoal(goal) }
+                                onSetStepGoal = { goal -> viewModel.setStepGoal(goal) },
+                                onDemoNotification = { viewModel.scheduleDemoWorkoutReminder(applicationContext) }
                             )
                         }
                         composable("onboarding") {
@@ -531,13 +534,47 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFinish = { activeSeconds ->
                                     settingsViewModel.stopMusic()
-                                    viewModel.markDayComplete(dayNumber)
-                                    navController.navigate("workout_completed/$dayNumber?activeSeconds=$activeSeconds") {
-                                        popUpTo("dashboard") { saveState = true }
+                                    val isNewStreak = viewModel.markDayComplete(dayNumber)
+                                    if (isNewStreak) {
+                                        navController.navigate("streak_achieved/$dayNumber?activeSeconds=$activeSeconds") {
+                                            popUpTo("dashboard") { saveState = true }
+                                        }
+                                    } else {
+                                        navController.navigate("workout_completed/$dayNumber?activeSeconds=$activeSeconds") {
+                                            popUpTo("dashboard") { saveState = true }
+                                        }
                                     }
                                 },
                                 onOpenSettings = { navController.navigate("workout_settings?inSession=true") },
                                 settingsViewModel = settingsViewModel
+                            )
+                        }
+                        composable(
+                            route = "streak_achieved/{dayNumber}?activeSeconds={activeSeconds}",
+                            arguments = listOf(
+                                navArgument("dayNumber") { type = NavType.IntType },
+                                navArgument("activeSeconds") { 
+                                    type = NavType.IntType 
+                                    defaultValue = 0
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val dayNumber = backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
+                            val activeSeconds = backStackEntry.arguments?.getInt("activeSeconds") ?: 0
+                            
+                            val currentStreak by viewModel.currentStreak.collectAsState()
+                            val longestStreak by viewModel.longestStreak.collectAsState()
+                            val completedDateMap by viewModel.completedDateMap.collectAsState()
+
+                            StreakAchievedScreen(
+                                currentStreak = currentStreak,
+                                longestStreak = longestStreak,
+                                completedDateMap = completedDateMap,
+                                onContinue = {
+                                    navController.navigate("workout_completed/$dayNumber?activeSeconds=$activeSeconds") {
+                                        popUpTo("dashboard") { saveState = true }
+                                    }
+                                }
                             )
                         }
                         composable(
