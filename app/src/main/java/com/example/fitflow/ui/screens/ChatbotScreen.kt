@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Image
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.example.fitflow.data.ClaudeApiService
 import com.example.fitflow.ui.theme.FitflowTheme
 
 data class ChatMessage(
@@ -57,6 +58,7 @@ fun ChatbotScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     var messages by remember {
         mutableStateOf(
@@ -309,6 +311,40 @@ fun ChatbotScreen(
             items(messages) { message ->
                 ChatBubble(message = message)
             }
+            if (isLoading) {
+                item {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("🤖", fontSize = 14.sp)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colorScheme.surface,
+                                    RoundedCornerShape(5.dp)
+                                )
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         // ── Quick suggestions ──
@@ -430,20 +466,38 @@ fun ChatbotScreen(
                 val canSend = inputText.isNotBlank() || selectedImageUri != null
                 IconButton(
                     onClick = {
-                        if (canSend) {
+                        if (canSend && !isLoading) {
                             val userMsg = ChatMessage(
                                 text = inputText.trim(),
                                 isFromUser = true,
                                 imageUri = selectedImageUri
                             )
+                            val currentInput = inputText.trim()
                             messages = messages + userMsg
                             inputText = ""
                             selectedImageUri = null
+                            isLoading = true
+
                             coroutineScope.launch {
-                                kotlinx.coroutines.delay(600)
-                                messages = messages + ChatMessage(
-                                    text = "Got it! Let me help you with that 💪",
-                                    isFromUser = false
+                                // Truyền history (bỏ tin nhắn vừa thêm)
+                                val history = messages.dropLast(1).map { it.text to it.isFromUser }
+
+                                val result = ClaudeApiService.sendMessage(currentInput, history)
+                                isLoading = false
+
+                                result.fold(
+                                    onSuccess = { reply ->
+                                        messages = messages + ChatMessage(
+                                            text = reply,
+                                            isFromUser = false
+                                        )
+                                    },
+                                    onFailure = { error ->
+                                        messages = messages + ChatMessage(
+                                            text = "Sorry, something went wrong. Please try again.",
+                                            isFromUser = false
+                                        )
+                                    }
                                 )
                             }
                         }
