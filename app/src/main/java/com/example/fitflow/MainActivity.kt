@@ -344,7 +344,8 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onOpenSettings = { navController.navigate("workout_settings") },
-                                onResetPlan = { viewModel.resetPlan() }
+                                onResetPlan = { viewModel.resetPlan() },
+                                onBack = { navController.popBackStack() }
                             )
                         }
                         composable(
