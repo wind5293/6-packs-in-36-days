@@ -7,9 +7,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.fitflow.data.model.UserProfile
@@ -35,9 +39,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -46,18 +52,21 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.composables.icons.lucide.Eye
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
 import com.composables.icons.lucide.Lucide
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.DailyHealthMetrics
+import com.example.fitflow.data.model.Exercise
 import com.example.fitflow.data.model.FitnessGoal
 import com.example.fitflow.data.model.StepSource
 import com.example.fitflow.data.model.WorkoutLogEntry
 import com.example.fitflow.domain.PushYourLimitsCatalog
 import com.example.fitflow.ui.components.PushYourLimitsSection
 import com.example.fitflow.ui.theme.FitflowTheme
+import com.example.fitflow.viewmodel.LibraryFilterState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -92,7 +101,13 @@ fun DashboardScreen(
     onOpenSupplementary: (String) -> Unit = {},
     onOpenDaySummary: (Int, Long) -> Unit = { _, _ -> },
     onOpenHistory: () -> Unit = {},
-    onOpenChangeGoal: () -> Unit = {}
+    onOpenChangeGoal: () -> Unit = {},
+    libraryFilterState: LibraryFilterState = LibraryFilterState(),
+    libraryExercises: List<Exercise> = emptyList(),
+    libraryMuscleGroups: List<String> = listOf("ALL"),
+    onLibrarySearchQueryChange: (String) -> Unit = {},
+    onLibraryMuscleGroupChange: (String) -> Unit = {},
+    onOpenLibrary: () -> Unit = {}
 ) {
     val totalWorkoutDays = workoutPlan.count { !it.isRest }
     val completedCount = completedDays.size
@@ -131,7 +146,7 @@ fun DashboardScreen(
                     val todayIndex = if (today.dayOfWeek.value == 7) 0 else today.dayOfWeek.value
                     val startOfWeek = today.minusDays(todayIndex.toLong())
                     val date = startOfWeek.plusDays(weekIndex.toLong())
-
+                    
                     val dayNum = completedDateMap[date] ?: -1
                     onOpenDaySummary(dayNum, date.toEpochDay())
                 }
@@ -150,10 +165,8 @@ fun DashboardScreen(
                     onClick = onOpenPlanner,
                     onOpenSettings = onOpenChangeGoal
                 )
+                Spacer(modifier = Modifier.height(18.dp))
             }
-        }
-        item {
-            Spacer(modifier = Modifier.height(18.dp))
         }
         item {
             // Push Your Limits horizontal scroller — uses local catalog
@@ -166,37 +179,287 @@ fun DashboardScreen(
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
-//        item {
-//            if (userProfile != null) {
-//                TodayWeightSection(userProfile = userProfile)
-//            }
-//        }
         item {
-            Spacer(modifier = Modifier.height(24.dp))
+            DashboardLibrarySection(
+                filterState = libraryFilterState,
+                filteredExercises = libraryExercises,
+                muscleGroups = libraryMuscleGroups,
+                onSearchQueryChange = onLibrarySearchQueryChange,
+                onMuscleGroupChange = onLibraryMuscleGroupChange,
+                onViewAll = onOpenLibrary
+            )
         }
-//        item {
-//            WorkoutsSummarySection(
-//                completedCount = completedCount,
-//                totalWorkoutDays = totalWorkoutDays,
-//                totalKcal = totalKcal,
-//                onStartWorkout = onStartWorkout
-//            )
-//        }
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun DashboardLibrarySection(
+    filterState: LibraryFilterState,
+    filteredExercises: List<Exercise>,
+    muscleGroups: List<String>,
+    onSearchQueryChange: (String) -> Unit,
+    onMuscleGroupChange: (String) -> Unit,
+    onViewAll: () -> Unit
+) {
+    val exercisePages = remember(filteredExercises) { filteredExercises.chunked(5) }
+    val pagerState = rememberPagerState(pageCount = { exercisePages.size.coerceAtLeast(1) })
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                RoundedCornerShape(24.dp)
+            )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.dashboard_library_knowledge),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    Text(
+                        text = stringResource(R.string.dashboard_library_title),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+                TextButton(onClick = onViewAll) {
+                    Text(
+                        text = stringResource(R.string.dashboard_library_view_all),
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+
+            OutlinedTextField(
+                value = filterState.searchQuery,
+                onValueChange = onSearchQueryChange,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.dashboard_library_search_placeholder)) },
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            LibraryFilterRow(
+                title = stringResource(R.string.dashboard_library_filter_muscle),
+                options = muscleGroups,
+                selected = filterState.muscleGroup,
+                onSelect = onMuscleGroupChange
+            )
+
+            Text(
+                text = stringResource(R.string.dashboard_library_results_count, filteredExercises.size),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
+            if (filteredExercises.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.dashboard_library_empty_state),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
+                    fontSize = 12.sp,
+                    lineHeight = 18.sp
+                )
+            } else {
+                HorizontalPager(
+                    state = pagerState,
+                    pageSpacing = 12.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) { page ->
+                    DashboardLibraryPage(
+                        exercises = exercisePages[page],
+                        onExerciseClick = onViewAll
+                    )
+                }
+
+                if (exercisePages.size > 1) {
+                    DashboardLibraryPagerIndicator(
+                        pageCount = exercisePages.size,
+                        currentPage = pagerState.currentPage
+                    )
+                }
+            }
         }
-//        item {
-//            HealthMetricsSection(
-//                metrics = healthMetrics,
-//                isActivityRecognitionGranted = isActivityRecognitionGranted,
-//                isStepSensorEnabled = isStepSensorEnabled,
-//                isStepTrackingActive = isStepTrackingActive,
-//                onUnlockStepSensor = onUnlockStepSensor,
-//                onAddWater = onAddWater,
-//                onSetWaterGoal = onSetWaterGoal,
-//                onSetStepGoal = onSetStepGoal
-//            )
-//        }
+    }
+}
+
+@Composable
+private fun LibraryFilterRow(
+    title: String,
+    options: List<String>,
+    selected: String,
+    onSelect: (String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = title,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 1.sp,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            options.forEach { option ->
+                FilterChip(
+                    selected = selected == option,
+                    onClick = { onSelect(option) },
+                    label = {
+                        Text(
+                            text = option,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                    },
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DashboardLibraryPage(
+    exercises: List<Exercise>,
+    onExerciseClick: () -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        exercises.forEach { exercise ->
+            DashboardLibraryExerciseItem(
+                exercise = exercise,
+                onClick = onExerciseClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun DashboardLibraryExerciseItem(
+    exercise: Exercise,
+    onClick: () -> Unit
+) {
+    val badgeColor = when (exercise.difficulty) {
+        "beginner" -> MaterialTheme.colorScheme.secondary
+        "advanced" -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.primary
+    }
+    val muscles = remember(exercise.target_muscles) {
+        exercise.target_muscles
+            .filter { it != "Main" }
+            .take(2)
+            .joinToString(" · ")
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .clickable { onClick() }
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.55f))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(52.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = exercise.exercise_type.take(3).uppercase(),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Text(
+                text = exercise.name,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = muscles.ifBlank { exercise.exercise_type },
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Text(
+            text = exercise.difficulty.replaceFirstChar { it.uppercase() },
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Black,
+            color = badgeColor,
+            modifier = Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(badgeColor.copy(alpha = 0.12f))
+                .padding(horizontal = 10.dp, vertical = 6.dp)
+        )
+    }
+}
+
+@Composable
+private fun DashboardLibraryPagerIndicator(
+    pageCount: Int,
+    currentPage: Int
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(pageCount) { page ->
+            val isSelected = page == currentPage
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .size(width = if (isSelected) 18.dp else 8.dp, height = 8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.18f)
+                    )
+            )
+        }
     }
 }
 
@@ -378,41 +641,23 @@ fun WeeklyGoalSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.dashboard_weekly_goal),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    IconButton(
-                        onClick = onViewHistory,
-                        modifier = Modifier.size(20.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Visibility,
-                            contentDescription = "View History",
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
                 Text(
-                    stringResource(
-                        R.string.dashboard_weekly_goal_progress,
-                        completedCount,
-                        weeklyGoal
-                    ),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (completedCount >= weeklyGoal)
-                        MaterialTheme.colorScheme.secondary
-                    else
-                        MaterialTheme.colorScheme.primary
+                    stringResource(R.string.dashboard_weekly_goal),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
+                IconButton(
+                    onClick = onViewHistory,
+                    modifier = Modifier.size(20.dp)
+                ) {
+                    Icon(
+                        Lucide.Eye,
+                        contentDescription = "View History",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -813,11 +1058,9 @@ fun HealthMetricsSection(
     var customWaterInput by remember { mutableStateOf("") }
 
     // Step progress
-    val stepProgress =
-        (metrics.steps.toFloat() / metrics.stepGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
+    val stepProgress = (metrics.steps.toFloat() / metrics.stepGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
     // Water progress
-    val waterProgress =
-        (metrics.waterIntakeMl.toFloat() / metrics.waterGoalMl.coerceAtLeast(1)).coerceIn(0f, 1f)
+    val waterProgress = (metrics.waterIntakeMl.toFloat() / metrics.waterGoalMl.coerceAtLeast(1)).coerceIn(0f, 1f)
 
     Text(
         stringResource(R.string.dashboard_health_metrics),
@@ -998,11 +1241,7 @@ fun HealthMetricsSection(
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(4.dp)
                             ) {
-                                Text(
-                                    "${goal / 1000}K",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Text("${goal/1000}K", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

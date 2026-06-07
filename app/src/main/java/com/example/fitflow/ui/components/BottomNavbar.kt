@@ -17,9 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.House
-import com.composables.icons.lucide.List
 import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.User
 
 @Composable
@@ -45,10 +43,6 @@ fun BottomNavbar(currentRoute: String, onNavigate: (String) -> Unit) {
 
             NavItem("Plan", Lucide.Calendar, currentRoute == "planner") {
                 onNavigate("planner")
-            }
-
-            NavItem("Library", Lucide.List, currentRoute == "library") {
-                onNavigate("library")
             }
 
             NavItem("Me", Lucide.User, currentRoute == "profile") {
