@@ -27,11 +27,11 @@ class StepCounterManager(
         when {
             stepCounterSensor != null -> {
                 activeSensorType = Sensor.TYPE_STEP_COUNTER
-                return sensorManager.registerListener(this, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                return sensorManager.registerListener(this, stepCounterSensor, SensorManager.SENSOR_DELAY_FASTEST, 0)
             }
             stepDetectorSensor != null -> {
                 activeSensorType = Sensor.TYPE_STEP_DETECTOR
-                return sensorManager.registerListener(this, stepDetectorSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                return sensorManager.registerListener(this, stepDetectorSensor, SensorManager.SENSOR_DELAY_FASTEST, 0)
             }
             else -> {
                 activeSensorType = null

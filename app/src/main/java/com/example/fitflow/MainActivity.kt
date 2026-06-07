@@ -154,6 +154,7 @@ class MainActivity : ComponentActivity() {
                                 || currentRoute == "workout_setup"
                                 || currentRoute == "loading"
                                 || currentRoute == "update_goal"
+                                || currentRoute == "planner"
                                 || (currentRoute.startsWith("day_detail"))
                                 || (currentRoute.startsWith("workout_session"))
                                 || (currentRoute.startsWith("workout_completed"))
@@ -213,6 +214,7 @@ class MainActivity : ComponentActivity() {
                             val stepSensorEnabled by viewModel.stepSensorEnabled.collectAsState()
                             val stepTrackingActive by viewModel.stepTrackingActive.collectAsState()
                             val currentStreak by viewModel.currentStreak.collectAsState()
+                            val longestStreak by viewModel.longestStreak.collectAsState()
                             val globalWorkoutLogs by viewModel.globalWorkoutLogs.collectAsState()
                             val libraryFilterState by libraryViewModel.filterState.collectAsState()
                             val libraryExercises by libraryViewModel.filteredExercises.collectAsState()
@@ -242,6 +244,7 @@ class MainActivity : ComponentActivity() {
                                 completedDateMap = completedDateMap,
                                 globalWorkoutLogs = globalWorkoutLogs,
                                 currentStreak = currentStreak,
+                                longestStreak = longestStreak,
                                 workoutPlan = workoutPlan,
                                 userProfile = userProfile,
                                 startDate = startDate,
@@ -264,19 +267,11 @@ class MainActivity : ComponentActivity() {
                                 onSetWaterGoal = { goal -> viewModel.setWaterGoal(goal) },
                                 onSetStepGoal = { goal -> viewModel.setStepGoal(goal) },
                                 onStartWorkout = {
-                                    navController.navigate("planner") {
-                                        popUpTo("dashboard") { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                    navController.navigate("planner")
                                 },
                                 onOpenChatbot = {  },
                                 onOpenPlanner = {
-                                    navController.navigate("planner") {
-                                        popUpTo("dashboard") { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                    navController.navigate("planner")
                                 },
                                 onOpenSupplementary = { id ->
                                     navController.navigate("supplementary_detail/$id")
@@ -312,15 +307,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(
-                            route = "planner",
-                            enterTransition = { EnterTransition.None },
-                            exitTransition = { ExitTransition.None },
-                            popEnterTransition = { EnterTransition.None },
-                            popExitTransition = { ExitTransition.None }
+                            route = "planner"
                         ) {
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
                             val completedDays by viewModel.completedDays.collectAsState()
-                            // Ngày tiếp theo cần tập = ngày workout đầu tiên chưa hoàn thành
                             val currentDay = workoutPlan
                                 .filter { !it.isRest }
                                 .firstOrNull { it.dayNumber !in completedDays }
@@ -337,7 +327,8 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onOpenSettings = { navController.navigate("workout_settings") },
-                                onResetPlan = { viewModel.resetPlan() }
+                                onResetPlan = { viewModel.resetPlan() },
+                                onBack = { navController.popBackStack() }
                             )
                         }
                         composable(

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,12 +23,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,16 +44,18 @@ import com.example.fitflow.viewmodel.UserViewModel
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Zap
 import com.composables.icons.lucide.Coffee
+import com.composables.icons.lucide.ChevronLeft
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
     workoutPlan: List<DayPlan>,
     completedDays: Set<Int> = emptySet(),
-    currentDay: Int = -1, // Ignored, we calculate it ourselves to include rest days
+    currentDay: Int = -1,
     onDayClick: (Int, Boolean) -> Unit = { _, _ -> },
     onOpenSettings: () -> Unit = {},
-    onResetPlan: () -> Unit = {}
+    onResetPlan: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val userViewModel: UserViewModel = viewModel(context as ComponentActivity)
@@ -118,12 +124,37 @@ fun PlannerScreen(
     val daysLeft = (workoutPlan.size - completedDays.size).coerceAtLeast(0)
     val progress = if (workoutPlan.isNotEmpty()) completedDays.size.toFloat() / workoutPlan.size else 0f
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 80.dp)
-    ) {
+    val listState = rememberLazyListState()
+    val headerHeightPx = with(LocalDensity.current) { 200.dp.toPx() }
+    val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val topBarHeightPx = with(LocalDensity.current) { (56.dp + topPadding).toPx() }
+    
+    val topBarAlpha by remember {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex > 0) 1f
+            else (listState.firstVisibleItemScrollOffset / (headerHeightPx * 0.5f)).coerceIn(0f, 1f)
+        }
+    }
+    
+    val isProgressBarPinned by remember {
+        derivedStateOf {
+            val itemInfo = listState.layoutInfo.visibleItemsInfo.find { it.index == 1 }
+            if (itemInfo != null) {
+                itemInfo.offset <= topBarHeightPx
+            } else {
+                listState.firstVisibleItemIndex > 1
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
         item {
             Box(
                 modifier = Modifier
@@ -169,6 +200,8 @@ fun PlannerScreen(
                     )
                 }
 
+                // Back button moved to sticky Top App Bar
+
                 // Overlapping rounded surface at the bottom of the header
                 Box(
                     modifier = Modifier
@@ -183,14 +216,14 @@ fun PlannerScreen(
             }
         }
 
-        stickyHeader {
-            val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
+                    .alpha(if (isProgressBarPinned) 0f else 1f)
                     .padding(horizontal = 24.dp)
-                    .padding(top = topPadding + 16.dp)
+                    .padding(top = 16.dp)
             ) {
                 // Progress Bar
                 Row(verticalAlignment = Alignment.Bottom) {
@@ -221,7 +254,7 @@ fun PlannerScreen(
                     trackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
@@ -292,6 +325,86 @@ fun PlannerScreen(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
                 )
+            }
+        }
+        }
+        
+        // Fixed Top App Bar
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = topBarAlpha))
+                .padding(top = topPadding)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.padding(start = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = Lucide.ChevronLeft,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                
+                // Fade in Title
+                if (topBarAlpha > 0.3f) {
+                    Text(
+                        text = userProfile?.goal?.title ?: "Workout Plan",
+                        color = Color.White.copy(alpha = (topBarAlpha - 0.3f) / 0.7f),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+            }
+        }
+        
+        // Pinned Progress Bar (exactly matches the original one)
+        if (isProgressBarPinned) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 56.dp + topPadding)
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp)
+            ) {
+                // Progress Bar
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = "$daysLeft",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = FontStyle.Italic
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "days left",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 3.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(CircleShape),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }
