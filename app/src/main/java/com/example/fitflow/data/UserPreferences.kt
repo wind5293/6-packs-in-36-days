@@ -228,7 +228,41 @@ class UserPreferences(context: Context) {
         prefs.edit()
             .putString(goalDaysKey(goal), "")
             .putString(goalDateMapKey(goal), "")
+            .putString(goalPartialProgressKey(goal), "")
             .apply()
+    }
+
+    // ─── Partial Workout Progress storage ─────────────────────────────────────
+    private fun goalPartialProgressKey(goal: FitnessGoal) = "partial_progress_${goal.name}"
+
+    fun savePartialWorkoutProgress(goal: FitnessGoal, dayNumber: Int, currentExerciseIndex: Int) {
+        val key = goalPartialProgressKey(goal)
+        val currentMap = getPartialWorkoutProgressMap(goal).toMutableMap()
+        currentMap[dayNumber] = currentExerciseIndex
+        val encoded = currentMap.entries.joinToString(",") { "${it.key}:${it.value}" }
+        prefs.edit().putString(key, encoded).apply()
+    }
+
+    fun getPartialWorkoutProgressMap(goal: FitnessGoal): Map<Int, Int> {
+        val key = goalPartialProgressKey(goal)
+        val raw = prefs.getString(key, "") ?: return emptyMap()
+        if (raw.isBlank()) return emptyMap()
+        return raw.split(",").mapNotNull { token ->
+            val parts = token.split(":")
+            if (parts.size == 2) {
+                val day = parts[0].toIntOrNull() ?: return@mapNotNull null
+                val index = parts[1].toIntOrNull() ?: return@mapNotNull null
+                day to index
+            } else null
+        }.toMap()
+    }
+
+    fun clearPartialWorkoutProgress(goal: FitnessGoal, dayNumber: Int) {
+        val currentMap = getPartialWorkoutProgressMap(goal).toMutableMap()
+        currentMap.remove(dayNumber)
+        val key = goalPartialProgressKey(goal)
+        val encoded = currentMap.entries.joinToString(",") { "${it.key}:${it.value}" }
+        prefs.edit().putString(key, encoded).apply()
     }
 
     /** How many workout days have been completed for a given goal. */

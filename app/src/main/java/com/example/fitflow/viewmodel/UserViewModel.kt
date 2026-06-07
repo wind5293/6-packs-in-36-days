@@ -74,6 +74,9 @@ class UserViewModel(
     private val _completedDateMap = MutableStateFlow<Map<LocalDate, Int>>(emptyMap())
     val completedDateMap: StateFlow<Map<LocalDate, Int>> = _completedDateMap.asStateFlow()
 
+    private val _partialProgressMap = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    val partialProgressMap: StateFlow<Map<Int, Int>> = _partialProgressMap.asStateFlow()
+
     private val _currentStreak = MutableStateFlow(0)
     val currentStreak: StateFlow<Int> = _currentStreak.asStateFlow()
 
@@ -141,6 +144,12 @@ class UserViewModel(
             userPreferences.getCompletedDateMapForGoal(activeGoal)
         else
             userPreferences.getCompletedDateMap()
+        
+        _partialProgressMap.value = if (activeGoal != null)
+            userPreferences.getPartialWorkoutProgressMap(activeGoal)
+        else
+            emptyMap()
+
         _currentStreak.value = userPreferences.getCurrentStreak()
         _longestStreak.value = userPreferences.getLongestStreak()
         _startDate.value = userPreferences.getStartDate()
@@ -219,6 +228,7 @@ class UserViewModel(
                 // Immediately sync progress state to the NEW goal so UI is correct
                 _completedDays.value = userPreferences.getCompletedDaysForGoal(goal)
                 _completedDateMap.value = userPreferences.getCompletedDateMapForGoal(goal)
+                _partialProgressMap.value = userPreferences.getPartialWorkoutProgressMap(goal)
 
                 val generatedPlan = workoutPlanGenerator.generatePlan(goal)
                 val mergedPlan = generatedPlan.map { day ->
@@ -299,6 +309,12 @@ class UserViewModel(
             }
             _completedDateMap.value = dateMap
 
+            // Khi hoàn thành ngày, xóa luôn partial progress nếu có
+            if (activeGoal != null) {
+                userPreferences.clearPartialWorkoutProgress(activeGoal, dayNumber)
+                _partialProgressMap.value = userPreferences.getPartialWorkoutProgressMap(activeGoal)
+            }
+
             // Save exact timestamp
             val nowMillis = System.currentTimeMillis()
             userPreferences.saveWorkoutTimestamp(dayNumber, nowMillis)
@@ -364,6 +380,7 @@ class UserViewModel(
         userPreferences.clearCompletedDaysForGoal(activeGoal)
         _completedDays.value = emptySet()
         _completedDateMap.value = emptyMap()
+        _partialProgressMap.value = emptyMap()
     }
 
     /**
@@ -383,7 +400,20 @@ class UserViewModel(
         if (_userProfile.value?.goal == goal) {
             _completedDays.value = emptySet()
             _completedDateMap.value = emptyMap()
+            _partialProgressMap.value = emptyMap()
         }
+    }
+
+    fun savePartialProgress(dayNumber: Int, currentExerciseIndex: Int) {
+        val goal = _userProfile.value?.goal ?: return
+        userPreferences.savePartialWorkoutProgress(goal, dayNumber, currentExerciseIndex)
+        _partialProgressMap.value = userPreferences.getPartialWorkoutProgressMap(goal)
+    }
+
+    fun clearPartialProgress(dayNumber: Int) {
+        val goal = _userProfile.value?.goal ?: return
+        userPreferences.clearPartialWorkoutProgress(goal, dayNumber)
+        _partialProgressMap.value = userPreferences.getPartialWorkoutProgressMap(goal)
     }
 
     fun recordWeight(weight: Float) {

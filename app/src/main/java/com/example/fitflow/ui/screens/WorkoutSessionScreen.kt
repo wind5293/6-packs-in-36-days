@@ -43,7 +43,9 @@ enum class SessionPhase { PREPARING, EXERCISING, RESTING }
 @Composable
 fun WorkoutSessionScreen(
     exercises: List<WorkoutExercise> = sampleExercises(),
+    startIndex: Int = 0,
     onBack: () -> Unit = {},
+    onExit: (Int) -> Unit = {},
     onFinish: (Int) -> Unit = {},
     onOpenSettings: () -> Unit = {},
     viewModel: WorkoutSessionViewModel = viewModel(),
@@ -51,7 +53,9 @@ fun WorkoutSessionScreen(
 ) {
 
     var showInstructionScreen by remember { mutableStateOf(false) }
-    var index by remember { mutableStateOf(0) }
+    var showPauseDialog by remember { mutableStateOf(false) }
+    var showExitDialog by remember { mutableStateOf(false) }
+    var index by remember { mutableStateOf(startIndex) }
     var remaining by remember { mutableStateOf(exercises.getOrNull(0)?.durationSec ?: 0) }
     var isRunning by remember { mutableStateOf(false) }
     var phase by remember { mutableStateOf(SessionPhase.PREPARING) }
@@ -98,9 +102,7 @@ fun WorkoutSessionScreen(
     }
 
     BackHandler {
-        settingsViewModel.stopMusic()
-        ttsHelper.shutdown()
-        onBack()
+        showExitDialog = true
     }
 
     if (showInstructionScreen && current != null) {
@@ -277,7 +279,7 @@ fun WorkoutSessionScreen(
                     primaryColor = primaryColor,
                     prepareOverlay = true,
                     prepareCountdown = countdownRemaining,
-                    onBack = onBack,
+                    onBack = { showExitDialog = true },
                     onOpenSettings = onOpenSettings,
                     settingsViewModel = settingsViewModel,
                     modifier = Modifier.weight(1f)
@@ -349,7 +351,7 @@ fun WorkoutSessionScreen(
                     primaryColor = primaryColor,
                     prepareOverlay = false,
                     prepareCountdown = 0,
-                    onBack = onBack,
+                    onBack = { showExitDialog = true },
                     onOpenSettings = onOpenSettings,
                     settingsViewModel = settingsViewModel,
                     modifier = Modifier.weight(1f)
@@ -459,7 +461,12 @@ fun WorkoutSessionScreen(
                                         phase = SessionPhase.RESTING
                                     } else onFinish(totalActiveSeconds)
                                 } else {
-                                    isRunning = !isRunning
+                                    if (isRunning) {
+                                        isRunning = false
+                                        showPauseDialog = true
+                                    } else {
+                                        isRunning = true
+                                    }
                                 }
                             }
                         },
@@ -514,11 +521,70 @@ fun WorkoutSessionScreen(
                     totalExercises = exercises.size,
                     onAddTime = { viewModel.addRestTime(20 ) },
                     onSkip = { skipToNext() },
-                    onBack = onBack,
+                    onBack = { showExitDialog = true },
                     primaryColor = primaryColor
                 )
             }
         }
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text(text = "Quit Workout?") },
+            text = { Text(text = "$index exercises done! Every rep brings you closer to the goal. Do you want to quit now or save your progress for later?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExitDialog = false
+                    settingsViewModel.stopMusic()
+                    ttsHelper.shutdown()
+                    onExit(index)
+                }) {
+                    Text("Do it later", color = primaryColor)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showExitDialog = false
+                    if (phase == SessionPhase.EXERCISING && exercises.getOrNull(index)?.reps == 0) {
+                        isRunning = true
+                    }
+                }) {
+                    Text("Keep exercising", color = textColor)
+                }
+            }
+        )
+    }
+
+    if (showPauseDialog) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text(text = "Paused") },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = current?.name ?: "")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Do you want to resume or restart this exercise?")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showPauseDialog = false
+                    remaining = current?.durationSec ?: 0
+                    isRunning = true
+                }) {
+                    Text("Restart", color = primaryColor)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showPauseDialog = false
+                    isRunning = true
+                }) {
+                    Text("Resume", color = textColor)
+                }
+            }
+        )
     }
 }
 

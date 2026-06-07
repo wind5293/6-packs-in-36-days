@@ -52,7 +52,7 @@ fun OnboardingScreen(
         birthYear: Int,
         targetWeight: Float,
         workoutTime: String
-            ) -> Unit
+    ) -> Unit
 ) {
     val totalSteps = 6
     val pagerState = rememberPagerState(pageCount = { totalSteps })
@@ -694,7 +694,7 @@ fun RulerPicker(
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val tickSlotWidth = 16.dp
         val tickSpacing = 4.dp
-        val horizontalPadding = (maxWidth / 2) - (tickSlotWidth / 2)
+        val horizontalPadding = (this.maxWidth / 2) - (tickSlotWidth / 2)
         val selectedIndex = values.indexOf(selectedValue).coerceAtLeast(0)
 
         LaunchedEffect(selectedIndex) {
@@ -718,12 +718,12 @@ fun RulerPicker(
             }
                 .distinctUntilChanged()
                 .collect { centeredIndex ->
-                if (centeredIndex == null || centeredIndex !in values.indices) return@collect
-                val valueAtCenter = values[centeredIndex]
-                if (valueAtCenter != selectedValue) {
-                    onSelect(valueAtCenter)
+                    if (centeredIndex == null || centeredIndex !in values.indices) return@collect
+                    val valueAtCenter = values[centeredIndex]
+                    if (valueAtCenter != selectedValue) {
+                        onSelect(valueAtCenter)
+                    }
                 }
-            }
         }
 
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -827,12 +827,12 @@ fun YearWheelPicker(
         }
             .distinctUntilChanged()
             .collect { centeredIndex ->
-            if (centeredIndex == null || centeredIndex !in years.indices) return@collect
-            val yearAtCenter = years[centeredIndex]
-            if (yearAtCenter != selectedYear) {
-                onYearChange(yearAtCenter)
+                if (centeredIndex == null || centeredIndex !in years.indices) return@collect
+                val yearAtCenter = years[centeredIndex]
+                if (yearAtCenter != selectedYear) {
+                    onYearChange(yearAtCenter)
+                }
             }
-        }
     }
 
     Card(
