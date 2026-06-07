@@ -38,6 +38,8 @@ import com.example.fitflow.R
 import com.example.fitflow.FitFlowApplication
 import com.example.fitflow.data.model.DayPlan
 import com.example.fitflow.data.model.WorkoutExercise
+import com.example.fitflow.data.model.FitnessGoal
+import com.example.fitflow.domain.PushYourLimitsCatalog
 import com.example.fitflow.ui.theme.FitflowTheme
 import com.example.fitflow.ui.theme.OrangeGlow
 import com.example.fitflow.ui.theme.OrangePrimary
@@ -46,6 +48,7 @@ import com.example.fitflow.utils.GifUrlHelper
 @Composable
 fun WorkoutDayDetailScreen(
     dayPlan: DayPlan,
+    goal: FitnessGoal? = null,
     onBack: () -> Unit,
     onStartSession: () -> Unit = {},
     onEditPlan: () -> Unit = {},
@@ -89,6 +92,7 @@ fun WorkoutDayDetailScreen(
             item {
                 HeaderAndSummarySection(
                     dayPlan = dayPlan,
+                    goal = goal,
                     onBack = onBack,
                     onOpenSettings = onOpenSettings
                 )
@@ -173,6 +177,7 @@ fun WorkoutDayDetailScreen(
 @Composable
 fun HeaderAndSummarySection(
     dayPlan: DayPlan,
+    goal: FitnessGoal?,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
@@ -182,6 +187,19 @@ fun HeaderAndSummarySection(
         if (it.durationSec > 0) it.durationSec
         else it.sets * 45
     } / 60
+
+    val imageRes = if (dayPlan.dayNumber == 0) {
+        val supplementary = PushYourLimitsCatalog.all().find { it.title == dayPlan.title }
+        supplementary?.imageRes ?: R.drawable.co_bung_2
+    } else {
+        when (goal) {
+            FitnessGoal.WEIGHT_LOSS -> R.drawable.cobap2
+            FitnessGoal.MUSCLE_GAIN -> R.drawable.cobap1
+            FitnessGoal.ENDURANCE -> R.drawable.cobap3
+            FitnessGoal.MAINTENANCE -> R.drawable.cobap4
+            else -> R.drawable.co_bung_2
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -198,8 +216,34 @@ fun HeaderAndSummarySection(
                     )
                 )
         ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .fillMaxHeight()
+                    .width(220.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = "Workout Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(OrangePrimary, Color.Transparent),
+                                startX = 0f,
+                                endX = 200f
+                            )
+                        )
+                )
+            }
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .padding(16.dp)
+                    .padding(end = 140.dp)
             ) {
                 Row (
                     modifier = Modifier
@@ -217,24 +261,16 @@ fun HeaderAndSummarySection(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
+                val mainTitle = if (dayPlan.dayNumber == 0) dayPlan.title else "Day ${dayPlan.dayNumber}"
                 Text(
-                    text = "Day ${dayPlan.dayNumber}",
+                    text = mainTitle,
                     color = Color.White,
                     style = MaterialTheme.typography.headlineMedium,
-                    fontSize = 35.sp,
+                    fontSize = 32.sp,
+                    lineHeight = 36.sp,
+                    fontWeight = FontWeight.Black,
                     modifier = Modifier.padding(start = 8.dp)
                 )
-                if (dayPlan.title.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = dayPlan.title,
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -261,15 +297,6 @@ fun HeaderAndSummarySection(
                     )
                 }
             }
-            Image (
-                painter = painterResource(id = R.drawable.co_bung_2),
-                contentDescription = "6_pack",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .fillMaxHeight()
-                    .width(160.dp)
-            )
         }
         Card (
             modifier = Modifier
@@ -482,9 +509,10 @@ private val sampleExercises = listOf(
 fun WorkoutDayDetailScreenPreview() {
     FitflowTheme {
         WorkoutDayDetailScreen(
-            DayPlan(1, false, sampleExercises),
-            {},
-            {}
+            dayPlan = DayPlan(1, false, sampleExercises),
+            goal = null,
+            onBack = {},
+            onStartSession = {}
         )
     }
 }
@@ -495,6 +523,7 @@ fun HeaderAndSummarySectionPreview() {
     FitflowTheme {
         HeaderAndSummarySection(
             dayPlan = DayPlan(1, false, sampleExercises),
+            goal = null,
             onBack = {  },
             onOpenSettings = {  }
         )

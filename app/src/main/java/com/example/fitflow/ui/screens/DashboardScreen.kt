@@ -50,11 +50,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.fitflow.FitFlowApplication
+import com.example.fitflow.utils.GifUrlHelper
 import com.composables.icons.lucide.Eye
 import com.composables.icons.lucide.Footprints
 import com.composables.icons.lucide.GlassWater
+import com.composables.icons.lucide.Flame
 import com.composables.icons.lucide.Lucide
 import com.example.fitflow.R
 import com.example.fitflow.data.model.DayPlan
@@ -70,6 +76,7 @@ import com.example.fitflow.viewmodel.LibraryFilterState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DashboardScreen(
     paddingValues: PaddingValues = PaddingValues(0.dp),
@@ -77,6 +84,7 @@ fun DashboardScreen(
     completedDateMap: Map<LocalDate, Int> = emptyMap(),
     globalWorkoutLogs: List<WorkoutLogEntry> = emptyList(),
     currentStreak: Int = 0,
+    longestStreak: Int = 0,
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
     startDate: LocalDate? = null,
@@ -119,26 +127,30 @@ fun DashboardScreen(
         .filter { !it.isRest }
         .firstOrNull { it.dayNumber !in completedDays }
 
+    var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(
-            top = 16.dp,
+            top = 8.dp,
             start = 16.dp,
             end = 16.dp,
             bottom = paddingValues.calculateBottomPadding() + 16.dp,
         )
     ) {
-        item {
+        stickyHeader {
             HeaderSection(onOpenChatbot = onOpenChatbot)
         }
         item {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
         item {
             WeeklyGoalSection(
                 globalWorkoutLogs = globalWorkoutLogs,
+                currentStreak = currentStreak,
+                longestStreak = longestStreak,
                 onViewHistory = onOpenHistory,
                 onEditGoal = onOpenChangeGoal,
                 onToggleDay = { weekIndex ->
@@ -158,6 +170,7 @@ fun DashboardScreen(
         item {
             if (currentDayPlan != null) {
                 DailyChallengeSection(
+                    goal = userProfile?.goal,
                     currentDay = currentDayPlan.dayNumber,
                     totalDays = workoutPlan.count { !it.isRest },
                     dayTitle = currentDayPlan.title,
@@ -186,9 +199,17 @@ fun DashboardScreen(
                 muscleGroups = libraryMuscleGroups,
                 onSearchQueryChange = onLibrarySearchQueryChange,
                 onMuscleGroupChange = onLibraryMuscleGroupChange,
-                onViewAll = onOpenLibrary
+                onViewAll = onOpenLibrary,
+                onExerciseClick = { selectedExercise = it }
             )
         }
+    }
+
+    if (selectedExercise != null) {
+        LibraryExerciseInstructionOverlayScreen(
+            exercise = selectedExercise!!,
+            onClose = { selectedExercise = null }
+        )
     }
 }
 
@@ -199,7 +220,8 @@ private fun DashboardLibrarySection(
     muscleGroups: List<String>,
     onSearchQueryChange: (String) -> Unit,
     onMuscleGroupChange: (String) -> Unit,
-    onViewAll: () -> Unit
+    onViewAll: () -> Unit,
+    onExerciseClick: (Exercise) -> Unit
 ) {
     val exercisePages = remember(filteredExercises) { filteredExercises.chunked(5) }
     val pagerState = rememberPagerState(pageCount = { exercisePages.size.coerceAtLeast(1) })
@@ -266,12 +288,12 @@ private fun DashboardLibrarySection(
                 onSelect = onMuscleGroupChange
             )
 
-            Text(
-                text = stringResource(R.string.dashboard_library_results_count, filteredExercises.size),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.secondary
-            )
+//            Text(
+//                text = stringResource(R.string.dashboard_library_results_count, filteredExercises.size),
+//                fontSize = 11.sp,
+//                fontWeight = FontWeight.Black,
+//                color = MaterialTheme.colorScheme.secondary
+//            )
 
             if (filteredExercises.isEmpty()) {
                 Text(
@@ -288,16 +310,16 @@ private fun DashboardLibrarySection(
                 ) { page ->
                     DashboardLibraryPage(
                         exercises = exercisePages[page],
-                        onExerciseClick = onViewAll
+                        onExerciseClick = onExerciseClick
                     )
                 }
 
-                if (exercisePages.size > 1) {
-                    DashboardLibraryPagerIndicator(
-                        pageCount = exercisePages.size,
-                        currentPage = pagerState.currentPage
-                    )
-                }
+//                if (exercisePages.size > 1) {
+//                    DashboardLibraryPagerIndicator(
+//                        pageCount = exercisePages.size,
+//                        currentPage = pagerState.currentPage
+//                    )
+//                }
             }
         }
     }
@@ -346,7 +368,7 @@ private fun LibraryFilterRow(
 @Composable
 private fun DashboardLibraryPage(
     exercises: List<Exercise>,
-    onExerciseClick: () -> Unit
+    onExerciseClick: (Exercise) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -355,7 +377,7 @@ private fun DashboardLibraryPage(
         exercises.forEach { exercise ->
             DashboardLibraryExerciseItem(
                 exercise = exercise,
-                onClick = onExerciseClick
+                onClick = { onExerciseClick(exercise) }
             )
         }
     }
@@ -378,6 +400,9 @@ private fun DashboardLibraryExerciseItem(
             .joinToString(" · ")
     }
 
+    val context = LocalContext.current
+    val imageLoader = (context.applicationContext as FitFlowApplication).imageLoader
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -390,17 +415,31 @@ private fun DashboardLibraryExerciseItem(
     ) {
         Box(
             modifier = Modifier
-                .size(52.dp)
+                .width(110.dp)
+                .height(75.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = exercise.exercise_type.take(3).uppercase(),
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.primary
-            )
+            if (exercise.local_gifs.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(GifUrlHelper.getUrl(exercise.local_gifs.first()))
+                        .crossfade(true)
+                        .build(),
+                    imageLoader = imageLoader,
+                    contentDescription = exercise.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text(
+                    text = exercise.exercise_type.take(3).uppercase(),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         Column(
@@ -544,27 +583,28 @@ fun HeaderSection(
     onOpenChatbot: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.dashboard_status_report),
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontSize = 10.sp,
+                text = "FIT",
+                color = Color(0xFFFF6B00),
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
-                letterSpacing = 3.sp
+                fontStyle = FontStyle.Italic
             )
-            Row {
-                Text(
-                    stringResource(R.string.dashboard_title),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Black,
-                    fontStyle = FontStyle.Italic
-                )
-            }
+            Text(
+                text = "FLOW",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic
+            )
         }
         IconButton(
             onClick = onOpenChatbot,
@@ -604,6 +644,8 @@ fun quoteForDay(dayIndex: Int): String = when (dayIndex) {
 fun WeeklyGoalSection(
     weeklyGoal: Int = 3,
     globalWorkoutLogs: List<WorkoutLogEntry> = emptyList(),
+    currentStreak: Int = 0,
+    longestStreak: Int = 0,
     onViewHistory: () -> Unit = {},
     onEditGoal: () -> Unit = {},
     onToggleDay: (Int) -> Unit = {}
@@ -647,16 +689,23 @@ fun WeeklyGoalSection(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                IconButton(
-                    onClick = onViewHistory,
-                    modifier = Modifier.size(20.dp)
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        Lucide.Eye,
-                        contentDescription = "View History",
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                        modifier = Modifier.size(18.dp)
-                    )
+
+                    IconButton(
+                        onClick = onViewHistory,
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            Lucide.Eye,
+                            contentDescription = "View History",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
@@ -738,6 +787,91 @@ fun WeeklyGoalSection(
                 }
             }
 
+            // Streak info row
+            if (currentStreak > 0 || longestStreak > 0) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.04f))
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Current streak
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Text(
+                            text = "CURRENT STREAK",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(text = "🔥", fontSize = 16.sp)
+                            Text(
+                                text = "$currentStreak day${if (currentStreak != 1) "s" else ""}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFFF6B00)
+                            )
+                        }
+                    }
+
+                    // Divider
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(36.dp)
+                            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f))
+                    )
+
+                    // Longest streak
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "LONGEST STREAK",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "$longestStreak day${if (longestStreak != 1) "s" else ""}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
+                            )
+                            // NEW RECORD badge
+                            if (currentStreak > 0 && currentStreak >= longestStreak) {
+                                Text(
+                                    text = "🏆",
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                        if (currentStreak > 0 && currentStreak >= longestStreak) {
+                            Text(
+                                text = "NEW RECORD!",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                                color = Color(0xFFFFAA00)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Coach quote dialog
             Card(
                 colors = CardDefaults.cardColors(
@@ -780,6 +914,7 @@ fun WeeklyGoalSection(
 
 @Composable
 fun DailyChallengeSection(
+    goal: FitnessGoal? = null,
     currentDay: Int,
     totalDays: Int,
     dayTitle: String,
@@ -788,6 +923,19 @@ fun DailyChallengeSection(
     onOpenSettings: () -> Unit = {}
 ) {
     val completedDays = currentDay - 1
+    val titleUppercase = remember(dayTitle) { dayTitle.uppercase() }
+    val (gradientColors, imageRes) = when (goal) {
+        FitnessGoal.WEIGHT_LOSS -> 
+            listOf(Color(0xFF00A86B), Color(0xFF008A56)) to R.drawable.cobap2
+        FitnessGoal.MUSCLE_GAIN -> 
+            listOf(Color(0xFFFF5F07), Color(0xFFE04C00)) to R.drawable.cobap1
+        FitnessGoal.ENDURANCE -> 
+            listOf(Color(0xFF4B5563), Color(0xFF374151)) to R.drawable.cobap3
+        FitnessGoal.MAINTENANCE -> 
+            listOf(Color(0xFF6B4EFF), Color(0xFF533BCC)) to R.drawable.cobap4
+        else -> 
+            listOf(Color(0xFFFF6D00), Color(0xFFFF3D00)) to R.drawable.co_bung_2
+    }
 
     Row(
         modifier = Modifier
@@ -815,7 +963,7 @@ fun DailyChallengeSection(
         }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
     Card(
         shape = RoundedCornerShape(14.dp),
@@ -831,33 +979,19 @@ fun DailyChallengeSection(
                 .fillMaxWidth()
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFFFF6D00),
-                            Color(0xFFFF3D00)
-                        )
+                        colors = gradientColors
                     )
                 )
         ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 8.dp)
-                    .size(width = 140.dp, height = 150.dp)
-            ) {
+            Box(modifier = Modifier.matchParentSize()) {
                 Image(
-                    painter = painterResource(id = R.drawable.co_bung_2),
+                    painter = painterResource(id = imageRes),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 32.dp,
-                                bottomStart = 32.dp,
-                                topEnd = 16.dp,
-                                bottomEnd = 16.dp
-                            )
-                        )
+                        .fillMaxHeight()
+                        .width(160.dp)
+                        .align(Alignment.CenterEnd)
                         .alpha(0.9f)
                 )
             }
@@ -869,20 +1003,6 @@ fun DailyChallengeSection(
                     .padding(horizontal = 24.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Program name + difficulty
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        dayTitle.uppercase(),
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp
-                    )
-                }
-
                 // Day number — big
                 Text(
                     "Day $currentDay",
@@ -1448,10 +1568,11 @@ fun DailyChallengeSectionPreview() {
         ) {
             Column {
                 DailyChallengeSection(
-                    currentDay = 1,
+                    goal = FitnessGoal.MUSCLE_GAIN,
+                    currentDay = 2,
                     totalDays = 30,
-                    dayTitle = "Rock Hard Abs",
-                    exercises = listOf("Crunch", "Plank", "Leg Raise"),
+                    dayTitle = "Day 2 Training",
+                    exercises = listOf("Push Up", "Squat"),
                     onClick = { /* Không xử lý hành động trong preview */ }
                 )
             }

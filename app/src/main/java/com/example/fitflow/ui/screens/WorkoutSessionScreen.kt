@@ -89,11 +89,11 @@ fun WorkoutSessionScreen(
     }
 
     // Giữ màn hình sáng trong suốt buổi tập
-    val activity = LocalContext.current as? Activity
-    DisposableEffect(Unit) {
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    val view = androidx.compose.ui.platform.LocalView.current
+    DisposableEffect(view) {
+        view.keepScreenOn = true
         onDispose {
-            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            view.keepScreenOn = false
         }
     }
 
@@ -234,9 +234,9 @@ fun WorkoutSessionScreen(
 
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .background(if (phase == SessionPhase.RESTING) primaryColor else bgColor)
-                .padding(top = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             for (i in 0 until totalSteps) {
                 Box(
