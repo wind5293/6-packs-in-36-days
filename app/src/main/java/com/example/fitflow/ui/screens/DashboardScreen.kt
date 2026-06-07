@@ -163,6 +163,7 @@ fun DashboardScreen(
         item {
             if (currentDayPlan != null) {
                 DailyChallengeSection(
+                    goal = userProfile?.goal,
                     currentDay = currentDayPlan.dayNumber,
                     totalDays = workoutPlan.count { !it.isRest },
                     dayTitle = currentDayPlan.title,
@@ -880,6 +881,7 @@ fun WeeklyGoalSection(
 
 @Composable
 fun DailyChallengeSection(
+    goal: FitnessGoal? = null,
     currentDay: Int,
     totalDays: Int,
     dayTitle: String,
@@ -889,13 +891,17 @@ fun DailyChallengeSection(
 ) {
     val completedDays = currentDay - 1
     val titleUppercase = remember(dayTitle) { dayTitle.uppercase() }
-    val cardBrush = remember {
-        Brush.linearGradient(
-            colors = listOf(
-                Color(0xFFFF6D00),
-                Color(0xFFFF3D00)
-            )
-        )
+    val (gradientColors, imageRes) = when (goal) {
+        FitnessGoal.WEIGHT_LOSS -> 
+            listOf(Color(0xFF00A86B), Color(0xFF008A56)) to R.drawable.cobap2
+        FitnessGoal.MUSCLE_GAIN -> 
+            listOf(Color(0xFFFF5F07), Color(0xFFE04C00)) to R.drawable.cobap1
+        FitnessGoal.ENDURANCE -> 
+            listOf(Color(0xFF4B5563), Color(0xFF374151)) to R.drawable.cobap3
+        FitnessGoal.MAINTENANCE -> 
+            listOf(Color(0xFF6B4EFF), Color(0xFF533BCC)) to R.drawable.cobap4
+        else -> 
+            listOf(Color(0xFFFF6D00), Color(0xFFFF3D00)) to R.drawable.co_bung_2
     }
 
     Row(
@@ -938,7 +944,11 @@ fun DailyChallengeSection(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(brush = cardBrush)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = gradientColors
+                    )
+                )
         ) {
             Box(
                 modifier = Modifier
@@ -947,7 +957,7 @@ fun DailyChallengeSection(
                     .size(width = 140.dp, height = 150.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.co_bung_2),
+                    painter = painterResource(id = imageRes),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -971,20 +981,6 @@ fun DailyChallengeSection(
                     .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Program name + difficulty
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        titleUppercase,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp
-                    )
-                }
-
                 // Day number — big
                 Text(
                     "Day $currentDay",
@@ -1550,10 +1546,11 @@ fun DailyChallengeSectionPreview() {
         ) {
             Column {
                 DailyChallengeSection(
-                    currentDay = 1,
+                    goal = FitnessGoal.MUSCLE_GAIN,
+                    currentDay = 2,
                     totalDays = 30,
-                    dayTitle = "Rock Hard Abs",
-                    exercises = listOf("Crunch", "Plank", "Leg Raise"),
+                    dayTitle = "Day 2 Training",
+                    exercises = listOf("Push Up", "Squat"),
                     onClick = { /* Không xử lý hành động trong preview */ }
                 )
             }

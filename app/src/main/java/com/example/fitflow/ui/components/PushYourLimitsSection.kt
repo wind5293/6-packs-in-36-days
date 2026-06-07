@@ -23,9 +23,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import java.util.Locale
 import com.example.fitflow.data.model.SupplementaryWorkout
 import com.example.fitflow.domain.PushYourLimitsCatalog
-import java.util.Locale
+
 
 @Composable
 fun PushYourLimitsSection(

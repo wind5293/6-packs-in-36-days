@@ -338,10 +338,12 @@ class MainActivity : ComponentActivity() {
                             val dayNumber =
                                 backStackEntry.arguments?.getInt("dayNumber") ?: return@composable
                             val workoutPlan by viewModel.workoutPlan.collectAsState()
+                            val userProfile by viewModel.userProfile.collectAsState()
                             val dayPlan =
                                 workoutPlan.find { it.dayNumber == dayNumber } ?: return@composable
                             WorkoutDayDetailScreen(
                                 dayPlan = dayPlan,
+                                goal = userProfile?.goal,
                                 onBack = { navController.popBackStack() },
                                 onStartSession = { navController.navigate("workout_session/$dayNumber") },
                                 onEditPlan = { navController.navigate("edit_plan/$dayNumber") },
