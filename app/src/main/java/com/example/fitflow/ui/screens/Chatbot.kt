@@ -120,7 +120,7 @@ fun ChatbotScreen(
                 modifier = Modifier
                     .background(
                         MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        RoundedCornerShape(8.dp)
+                        RoundedCornerShape(4.dp)
                     )
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
@@ -220,49 +220,24 @@ fun ChatbotScreen(
                 maxLines = 3
             )
 
-            // Send button
-            Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .background(
-                        if (inputText.isNotBlank()) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
-                        RoundedCornerShape(16.dp)
-                    )
-                    .clip(RoundedCornerShape(16.dp))
-                    .then(
-                        if (inputText.isNotBlank()) {
-                            Modifier.border(0.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
-                        } else Modifier
-                    )
-                    .let { mod ->
-                        if (inputText.isNotBlank()) {
-                            mod.then(Modifier.clickable {
-                                val userMsg = ChatMessage(inputText.trim(), isFromUser = true)
-                                messages = messages + userMsg
-                                inputText = ""
-                                // TODO: gọi API chatbot ở đây, tạm thời reply cứng
-                                coroutineScope.launch {
-                                    kotlinx.coroutines.delay(600)
-                                    val botReply = ChatMessage(
-                                        "Great question! I'll help you with that. Keep pushing — consistency is everything! 💪",
-                                        isFromUser = false
-                                    )
-                                    messages = messages + botReply
-                                }
-                            })
-                        } else mod
-                    },
-                contentAlignment = Alignment.Center
+            IconButton(
+                onClick = {
+                    if (inputText.isNotBlank()) {
+                        // Gọi hàm xử lý gửi tin nhắn ở đây (ví dụ: onSendMessage(inputText))
+                        // Sau đó nhớ clear text trong ô nhập: inputText = ""
+                    }
+                },
+                enabled = inputText.isNotBlank(),
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    Icons.Default.Send,
+                    imageVector = Icons.Default.Send,
                     contentDescription = "Send",
                     tint = if (inputText.isNotBlank())
                         MaterialTheme.colorScheme.onPrimary
                     else
                         MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(30.dp)
                 )
             }
         }
@@ -302,10 +277,10 @@ fun ChatBubble(message: ChatMessage) {
                     else
                         MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(
-                        topStart = 20.dp,
-                        topEnd = 20.dp,
-                        bottomStart = if (message.isFromUser) 20.dp else 4.dp,
-                        bottomEnd = if (message.isFromUser) 4.dp else 20.dp
+                        topStart = 10.dp,
+                        topEnd = 10.dp,
+                        bottomStart = if (message.isFromUser) 10.dp else 0.dp,
+                        bottomEnd = if (message.isFromUser) 0.dp else 10.dp
                     )
                 )
                 .then(
@@ -314,10 +289,10 @@ fun ChatBubble(message: ChatMessage) {
                             1.dp,
                             MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f),
                             RoundedCornerShape(
-                                topStart = 20.dp,
-                                topEnd = 20.dp,
-                                bottomStart = 4.dp,
-                                bottomEnd = 20.dp
+                                topStart = 10.dp,
+                                topEnd = 10.dp,
+                                bottomStart = 0.dp,
+                                bottomEnd = 10.dp
                             )
                         )
                     } else Modifier

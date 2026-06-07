@@ -80,7 +80,14 @@ fun DashboardScreen(
     workoutPlan: List<DayPlan> = emptyList(),
     userProfile: UserProfile? = null,
     startDate: LocalDate? = null,
-    healthMetrics: DailyHealthMetrics = DailyHealthMetrics(LocalDate.now(), 0, 0, 2000, stepGoal = 6000, stepSource = StepSource.MANUAL),
+    healthMetrics: DailyHealthMetrics = DailyHealthMetrics(
+        LocalDate.now(),
+        0,
+        0,
+        2000,
+        stepGoal = 6000,
+        stepSource = StepSource.MANUAL
+    ),
     isActivityRecognitionGranted: Boolean = false,
     isStepSensorEnabled: Boolean = false,
     isStepTrackingActive: Boolean = false,
@@ -611,7 +618,8 @@ fun WeeklyGoalSection(
         !d.isBefore(startOfWeek) && !d.isAfter(endOfWeek)
     }
     val completedCount = weekLogs.distinctBy { it.dateEpochDay }.size
-    val completedDateSetGlobal = globalWorkoutLogs.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
+    val completedDateSetGlobal =
+        globalWorkoutLogs.map { LocalDate.ofEpochDay(it.dateEpochDay) }.toSet()
 
     var todayOffsetX by remember { mutableStateOf(0f) }
     var rowWidth by remember { mutableStateOf(0f) }
@@ -842,12 +850,14 @@ fun DailyChallengeSection(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(
-                            topStart = 32.dp,
-                            bottomStart = 32.dp,
-                            topEnd = 16.dp,
-                            bottomEnd = 16.dp
-                        ))
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 32.dp,
+                                bottomStart = 32.dp,
+                                topEnd = 16.dp,
+                                bottomEnd = 16.dp
+                            )
+                        )
                         .alpha(0.9f)
                 )
             }
@@ -1165,7 +1175,11 @@ fun HealthMetricsSection(
                 ) { Text("Add") }
             },
             dismissButton = {
-                TextButton(onClick = { showAddWaterDialog = false; customWaterInput = "" }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = { showAddWaterDialog = false; customWaterInput = "" }) {
+                    Text(
+                        stringResource(R.string.common_cancel)
+                    )
+                }
             }
         )
     }
@@ -1174,7 +1188,12 @@ fun HealthMetricsSection(
     if (showWaterGoalDialog) {
         AlertDialog(
             onDismissRequest = { showWaterGoalDialog = false },
-            title = { Text(stringResource(R.string.dashboard_water_goal_title), fontWeight = FontWeight.Black) },
+            title = {
+                Text(
+                    stringResource(R.string.dashboard_water_goal_title),
+                    fontWeight = FontWeight.Black
+                )
+            },
             text = {
                 OutlinedTextField(
                     value = waterGoalInput,
@@ -1196,7 +1215,9 @@ fun HealthMetricsSection(
                 ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
-                TextButton(onClick = { showWaterGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = {
+                    showWaterGoalDialog = false
+                }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
@@ -1246,7 +1267,9 @@ fun HealthMetricsSection(
                 ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
-                TextButton(onClick = { showStepGoalDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = {
+                    showStepGoalDialog = false
+                }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
